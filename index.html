@@ -75,7 +75,7 @@
         
         .header { padding: 30px 20px 20px; text-align: center; background: transparent; z-index: 2;}
         
-        .scroll-content { padding: 30px 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; position: relative; }
+        .scroll-content { padding: 30px 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; position: relative; scroll-behavior: smooth; }
         
         .brand-zone { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -85,7 +85,6 @@
             transition: background 0.3s; 
         }
 
-        /* Nuova Row a 3 Bottoni */
         .upload-buttons-row { display: flex; gap: 8px; width: 100%; }
         .upload-btn { 
             flex: 1; padding: 12px 6px; background: #1a1a1a; color: #fff; border: 1px solid #333;
@@ -98,7 +97,6 @@
         .upload-btn.secondary { background: transparent; color: #ccc; border-color: #444; }
         .upload-btn.secondary svg { stroke: #ccc; }
 
-        /* Media Preview UI con Aspect Ratio 9/16 */
         .media-preview-box {
             display: none; width: 100%; aspect-ratio: 9/16; max-height: 60vh; 
             border-radius: 12px; overflow: hidden; position: relative; margin-top: 15px; border: 1px solid var(--cyan);
@@ -178,10 +176,10 @@
         .game-box { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; 
             overflow: hidden; background: #000; touch-action: none; cursor: crosshair; z-index: 1; 
-            /* La transition viene aggiunta dinamicamente via JS per lo zoom finale */
         }
         
-        #gameCanvas { display: block; width: 100%; height: 100%; touch-action: none; position: absolute; top:0; left:0; }
+        /* Modifica per mantenere l'aspect ratio (previene lo stretching nello zoom finale) */
+        #gameCanvas { display: block; width: 100%; height: 100%; object-fit: cover; touch-action: none; position: absolute; top:0; left:0; }
         .vignette-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; background: radial-gradient(circle at center, transparent 50%, rgba(0, 240, 255, 0.1) 100%); }
 
         .player-cursor { position: absolute; width: 14px; height: 14px; background: #fff; border: 2px solid var(--cyan); border-radius: 50%; box-shadow: 0 0 15px var(--cyan); pointer-events: none; transform: translate(-50%, -50%); z-index: 10; display: none; }
@@ -210,8 +208,6 @@
         .cinematic-text-overlay.active { opacity: 1; }
         .cinematic-text-overlay .splash-logo { font-size: 32px; line-height: 1.2; letter-spacing: -1px; }
 
-        /* Rimossa la final-image-screen, ora usiamo lo zoom della gameBox */
-        
         .secret-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; padding: 30px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; z-index: 420;}
         .secret-overlay.active { opacity: 1; }
         .secret-text { color: white; font-size: 24px; font-weight: 900; text-shadow: 0 0 15px rgba(0,240,255,0.8); line-height: 1.4; font-style: italic; text-transform: uppercase; }
@@ -219,7 +215,6 @@
         .tap-indicator { position: fixed; bottom: max(40px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 450; animation: pulseAlpha 2s infinite; display: none; }
         @keyframes pulseAlpha { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        /* Layer invisibile per gestire il Tap finale */
         .victory-tap-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: 490; display: none; cursor: pointer; }
 
         /* Player Video Vittoria */
@@ -253,7 +248,6 @@
             <div class="scroll-content">
                 <div class="glass-panel">
                     <div id="uploadActionGroup">
-                        <!-- NUOVA UI A 3 BOTTONI -->
                         <div class="upload-buttons-row">
                             <div class="upload-btn" onclick="document.getElementById('cameraInputImg').click()">
                                 <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -271,7 +265,6 @@
                         <div class="upload-desc">Video limitati ai primi 15s</div>
                     </div>
                     
-                    <!-- Media Preview Area (Aspect Ratio 9/16 Verticale) -->
                     <div id="mediaPreviewBox" class="media-preview-box">
                         <img id="previewImg" class="preview-content">
                         <video id="previewVid" class="preview-content" muted playsinline autoplay></video>
@@ -280,7 +273,6 @@
 
                     <div id="uploadStatusUI" class="upload-status" style="margin-top: 15px;">Media Pronto ✓</div>
                     
-                    <!-- Input separati per evitare bug OS -->
                     <input type="file" id="cameraInputImg" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelect(this)">
                     <input type="file" id="cameraInputVid" accept="video/*" capture="environment" style="display:none;" onchange="handleFileSelect(this)">
                     <input type="file" id="galleryInput" accept="image/*,video/*" style="display:none;" onchange="handleFileSelect(this)">
@@ -288,7 +280,7 @@
                     <div id="uploadError" class="error-msg">Errore file. Max 50MB.</div>
                 </div>
 
-                <div class="glass-panel">
+                <div class="glass-panel" id="diffSection">
                     <div>
                         <div class="section-title">Difficoltà</div>
                         <input type="range" id="diffSlider" class="range-slider" min="1" max="5" value="3" oninput="updateDiffLabels(this.value)">
@@ -358,14 +350,12 @@
                 <div class="brand-logo splash-logo">FILE<br>DECODIFICATO</div>
             </div>
             
-            <!-- Elementi di vittoria sganciati e posizionati globalmente -->
             <div id="secretMessageOverlay" class="secret-overlay">
                 <div id="secretMessageText" class="secret-text"></div>
             </div>
             <div id="tapIndicator" class="tap-indicator">Tocca per continuare</div>
             <div id="victoryTapLayer" class="victory-tap-layer" onclick="advanceVictory()"></div>
             
-            <!-- Player Video Vittoria -->
             <div id="videoPlayerOverlay" class="video-player-overlay">
                 <video id="rewardVideo" playsinline></video>
                 <button class="btn-skip-video" onclick="goToCTA()">CONTINUA ➔</button>
@@ -457,6 +447,12 @@
                     }
                 };
             }
+
+            // AUTO-SCROLL Morbido verso la sezione Difficoltà
+            setTimeout(() => {
+                const diffSection = document.getElementById('diffSection');
+                if(diffSection) diffSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 400);
         }
 
         function updateDiffLabels(val) { challenge.diff = parseInt(val); for(let i=1; i<=5; i++) document.getElementById('lbl'+i).className = (i == val) ? 'active' : ''; }
@@ -948,15 +944,27 @@
         function advanceVictory() {
             if (victoryState === 1) {
                 document.getElementById('secretMessageOverlay').classList.remove('active');
-                victoryState = 2;
+                
+                if (challenge.rt === 'video') {
+                    // Flusso immediato verso il video, bypassando l'immagine fissa
+                    document.getElementById('tapIndicator').style.display = 'none';
+                    document.getElementById('victoryTapLayer').style.display = 'none';
+                    const videoOverlay = document.getElementById('videoPlayerOverlay');
+                    const rewardVideo = document.getElementById('rewardVideo');
+                    videoOverlay.classList.add('active');
+                    rewardVideo.play();
+                } else {
+                    // Se immagine, si passa allo step visivo pulito
+                    victoryState = 2;
+                }
             } else if (victoryState === 2) {
                 document.getElementById('tapIndicator').style.display = 'none';
                 document.getElementById('victoryTapLayer').style.display = 'none';
                 
                 if(challenge.rt === 'video') {
+                    // Se non c'era messaggio segreto, si arriva qui al primo tap per avviare il video
                     const videoOverlay = document.getElementById('videoPlayerOverlay');
                     const rewardVideo = document.getElementById('rewardVideo');
-                    rewardVideo.src = `https://res.cloudinary.com/up98kcff/video/upload/eo_15/${challenge.pid}.mp4`;
                     videoOverlay.classList.add('active');
                     rewardVideo.play();
                 } else {
@@ -974,6 +982,15 @@
             if(p >= targetPercentage) {
                 clearInterval(gameInterval); isGameWon = true; isPlaying = false;
                 playerCursorDom.style.display = 'none';
+
+                // -------------------------------------------------------------
+                // PRE-LOAD SILENZIOSO DEL VIDEO (Elimina lo schermo nero futuro)
+                // -------------------------------------------------------------
+                if (challenge.rt === 'video') {
+                    const rewardVideo = document.getElementById('rewardVideo');
+                    rewardVideo.src = `https://res.cloudinary.com/up98kcff/video/upload/eo_15/${challenge.pid}.mp4`;
+                    rewardVideo.load();
+                }
                 
                 ctx.clearRect(0,0,WIDTH,HEIGHT);
                 ctx.drawImage(loadedImage, cropData.x, cropData.y, cropData.w, cropData.h, 0, 0, WIDTH, HEIGHT);
@@ -990,11 +1007,10 @@
                         document.getElementById('gameHud').style.opacity = '0';
                         glowOverlay.style.opacity = '0';
                         
-                        // SMOOTH ZOOM ANIMATION
+                        // SMOOTH ZOOM ANIMATION CON OBJECT-FIT
                         const gameBox = document.getElementById('mainGameBox');
                         const rect = gameBox.getBoundingClientRect();
                         
-                        // Fissiamo il box alle sue coordinate attuali
                         gameBox.style.position = 'fixed';
                         gameBox.style.top = rect.top + 'px';
                         gameBox.style.left = rect.left + 'px';
@@ -1002,10 +1018,8 @@
                         gameBox.style.height = rect.height + 'px';
                         gameBox.style.zIndex = '400';
                         
-                        // Forza il ricalcolo del browser (Reflow)
                         void gameBox.offsetWidth;
                         
-                        // Applichiamo la transizione e modifichiamo le dimensioni per il full screen
                         gameBox.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
                         gameBox.style.top = '0px';
                         gameBox.style.left = '0px';
@@ -1014,7 +1028,6 @@
                         gameBox.style.borderRadius = '0px';
 
                         setTimeout(() => {
-                            // Attiviamo il layer invisibile per il tap a tutto schermo
                             document.getElementById('victoryTapLayer').style.display = 'block';
                             document.getElementById('tapIndicator').style.display = 'block';
 
@@ -1041,7 +1054,6 @@
             const rewardVideo = document.getElementById('rewardVideo');
             if(rewardVideo) { rewardVideo.pause(); rewardVideo.src = ""; }
             
-            // Ripristino del box di gioco nel caso di nuove partite
             const gameBox = document.getElementById('mainGameBox');
             gameBox.style = "";
             
