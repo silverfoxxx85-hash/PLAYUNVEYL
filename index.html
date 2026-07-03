@@ -82,7 +82,14 @@
         .glass-panel { 
             background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 16px; 
             padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); 
-            transition: background 0.3s; 
+            transition: all 0.5s ease; 
+        }
+
+        /* STATO DISABILITATO */
+        .disabled-state {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(0.8);
         }
 
         .upload-buttons-row { display: flex; gap: 8px; width: 100%; }
@@ -112,8 +119,18 @@
         .upload-status { 
             text-align: center; font-size: 14px; font-weight: 800; color: var(--cyan); 
             display: none; padding: 15px; border-radius: 10px; background: rgba(0,240,255,0.1); 
-            border: 1px solid rgba(0,240,255,0.3); text-transform: uppercase; 
+            border: 1px solid rgba(0,240,255,0.3); text-transform: uppercase; transition: all 0.3s ease;
         }
+        
+        /* PULSANTE "PERSONALIZZA" ATTIVO */
+        .btn-personalize {
+            background: var(--cyan) !important;
+            color: #000 !important;
+            cursor: pointer !important;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+        .btn-personalize:active { transform: scale(0.97); }
+
         .upload-desc { text-align: center; font-size: 11px; color: #777; margin-top: 15px; font-weight: 600; text-transform: uppercase; }
         .error-msg { color: var(--red); font-size: 13px; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
 
@@ -141,7 +158,7 @@
             background: #000; color: var(--cyan); border: 1px solid var(--cyan); padding: 20px; 
             font-weight: 900; font-size: 16px; border-radius: 12px; cursor: pointer; text-transform: uppercase; 
             letter-spacing: 1px; width: 100%; margin-top: 10px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); 
-            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; 
+            transition: all 0.5s ease; display: flex; align-items: center; justify-content: center; gap: 10px; 
         }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #333; color: #666; }
         
@@ -178,7 +195,7 @@
             overflow: hidden; background: #000; touch-action: none; cursor: crosshair; z-index: 1; 
         }
         
-        /* Modifica per mantenere l'aspect ratio (previene lo stretching nello zoom finale) */
+        /* Object-Fit: cover previene lo stretching in fase di Zoom */
         #gameCanvas { display: block; width: 100%; height: 100%; object-fit: cover; touch-action: none; position: absolute; top:0; left:0; }
         .vignette-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; background: radial-gradient(circle at center, transparent 50%, rgba(0, 240, 255, 0.1) 100%); }
 
@@ -280,7 +297,8 @@
                     <div id="uploadError" class="error-msg">Errore file. Max 50MB.</div>
                 </div>
 
-                <div class="glass-panel" id="diffSection">
+                <!-- PROGRESSIVE DISCLOSURE: Disabilitato inizialmente -->
+                <div class="glass-panel disabled-state" id="diffSection">
                     <div>
                         <div class="section-title">Difficoltà</div>
                         <input type="range" id="diffSlider" class="range-slider" min="1" max="5" value="3" oninput="updateDiffLabels(this.value)">
@@ -303,7 +321,7 @@
                     </div>
                 </div>
 
-                <button id="btnSubmit" class="btn-submit" onclick="generateChallengeLink()">Genera Sfida</button>
+                <button id="btnSubmit" class="btn-submit disabled-state" onclick="generateChallengeLink()">Genera Sfida</button>
                 <div id="shareContainer" class="share-container">
                     <button class="btn-share" onclick="triggerNativeShare()">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
@@ -416,9 +434,15 @@
             const previewImg = document.getElementById('previewImg');
             const previewVid = document.getElementById('previewVid');
             const warningEl = document.getElementById('videoWarning');
+            const statusUI = document.getElementById('uploadStatusUI');
             
             previewBox.style.display = 'block';
-            document.getElementById('uploadStatusUI').style.display = 'block';
+            
+            // Ripristina l'aspetto del box di stato per sicurezza
+            statusUI.innerHTML = "MEDIA PRONTO ✓";
+            statusUI.className = "upload-status";
+            statusUI.style.display = 'block';
+            statusUI.onclick = null;
 
             let localUrl = URL.createObjectURL(file);
             document.getElementById('appBg').style.backgroundImage = `url(${localUrl})`; 
@@ -448,11 +472,25 @@
                 };
             }
 
-            // AUTO-SCROLL Morbido verso la sezione Difficoltà
+            // PROGRESSIVE DISCLOSURE - Dopo 2 secondi trasforma in pulsante per abilitare le opzioni
             setTimeout(() => {
-                const diffSection = document.getElementById('diffSection');
-                if(diffSection) diffSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 400);
+                statusUI.innerHTML = "PERSONALIZZA LA SFIDA ➔";
+                statusUI.classList.add('btn-personalize');
+                
+                statusUI.onclick = function() {
+                    // Sblocca le opzioni
+                    const diffSection = document.getElementById('diffSection');
+                    const btnSubmit = document.getElementById('btnSubmit');
+                    diffSection.classList.remove('disabled-state');
+                    btnSubmit.classList.remove('disabled-state');
+                    
+                    // Scroll fluido giù
+                    diffSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Nasconde il pulsante per evitare click multipli
+                    this.style.display = 'none';
+                };
+            }, 2000);
         }
 
         function updateDiffLabels(val) { challenge.diff = parseInt(val); for(let i=1; i<=5; i++) document.getElementById('lbl'+i).className = (i == val) ? 'active' : ''; }
@@ -954,7 +992,6 @@
                     videoOverlay.classList.add('active');
                     rewardVideo.play();
                 } else {
-                    // Se immagine, si passa allo step visivo pulito
                     victoryState = 2;
                 }
             } else if (victoryState === 2) {
@@ -962,7 +999,6 @@
                 document.getElementById('victoryTapLayer').style.display = 'none';
                 
                 if(challenge.rt === 'video') {
-                    // Se non c'era messaggio segreto, si arriva qui al primo tap per avviare il video
                     const videoOverlay = document.getElementById('videoPlayerOverlay');
                     const rewardVideo = document.getElementById('rewardVideo');
                     videoOverlay.classList.add('active');
@@ -983,9 +1019,7 @@
                 clearInterval(gameInterval); isGameWon = true; isPlaying = false;
                 playerCursorDom.style.display = 'none';
 
-                // -------------------------------------------------------------
-                // PRE-LOAD SILENZIOSO DEL VIDEO (Elimina lo schermo nero futuro)
-                // -------------------------------------------------------------
+                // PRE-LOAD SILENZIOSO DEL VIDEO
                 if (challenge.rt === 'video') {
                     const rewardVideo = document.getElementById('rewardVideo');
                     rewardVideo.src = `https://res.cloudinary.com/up98kcff/video/upload/eo_15/${challenge.pid}.mp4`;
@@ -1007,7 +1041,6 @@
                         document.getElementById('gameHud').style.opacity = '0';
                         glowOverlay.style.opacity = '0';
                         
-                        // SMOOTH ZOOM ANIMATION CON OBJECT-FIT
                         const gameBox = document.getElementById('mainGameBox');
                         const rect = gameBox.getBoundingClientRect();
                         
@@ -1028,17 +1061,28 @@
                         gameBox.style.borderRadius = '0px';
 
                         setTimeout(() => {
-                            document.getElementById('victoryTapLayer').style.display = 'block';
-                            document.getElementById('tapIndicator').style.display = 'block';
-
                             if (challenge.msg && challenge.msg.trim() !== "") {
+                                document.getElementById('victoryTapLayer').style.display = 'block';
+                                document.getElementById('tapIndicator').style.display = 'block';
                                 document.getElementById('secretMessageText').innerText = challenge.msg;
                                 document.getElementById('secretMessageOverlay').classList.add('active');
                                 victoryState = 1; 
                             } else {
-                                victoryState = 2; 
+                                if (challenge.rt === 'video') {
+                                    // AUTOPLAY: Se è video senza messaggio: attesa 1.5s poi autoplay
+                                    setTimeout(() => {
+                                        const videoOverlay = document.getElementById('videoPlayerOverlay');
+                                        const rewardVideo = document.getElementById('rewardVideo');
+                                        videoOverlay.classList.add('active');
+                                        rewardVideo.play();
+                                    }, 1500);
+                                } else {
+                                    // Se è foto senza messaggio: richiede tap per chiudere
+                                    document.getElementById('victoryTapLayer').style.display = 'block';
+                                    document.getElementById('tapIndicator').style.display = 'block';
+                                    victoryState = 2; 
+                                }
                             }
-                            
                         }, 800);
                     }, 800);
                 }, 2500);
