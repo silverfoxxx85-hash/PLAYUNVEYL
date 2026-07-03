@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UNVEIL - Photo Challenge</title>
+    <style>
+        :root {
+            --cyan: #00f0ff;
+            --red: #ff0055;
+            --bg-color: #080808; 
+            --text-color: #ffffff;
+            --glass-bg: rgba(20, 20, 20, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body, html { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+            background-color: var(--bg-color); overflow: hidden; touch-action: none;
+            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        
+        .app-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--bg-color); display: flex; flex-direction: column; overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+            background: #000; z-index: 999; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; transition: opacity 0.5s ease;
+        }
+
+        .brand-logo { 
+            font-size: 64px; font-weight: 900; text-transform: uppercase; letter-spacing: -3px; 
+            position: relative; display: inline-block; color: #fff; line-height: 1; 
+            text-shadow: 0 0 20px rgba(0,240,255,0.6);
+        }
+        .brand-logo::after { 
+            content: ''; position: absolute; left: -10%; top: 52%; width: 120%; height: 5px; 
+            background: var(--cyan); transform: rotate(-6deg); box-shadow: 0 0 15px var(--cyan); 
+        }
+        .brand-subtitle { font-size: 12px; font-weight: 800; color: #888; letter-spacing: 5px; text-transform: uppercase; margin-top: 12px; }
+        
+        .brand-logo.splash-logo {
+            color: #ffffff !important;
+            animation: cyberGlitch 4s infinite; 
+            text-align: center; line-height: 1.1;
+        }
+        @keyframes cyberGlitch {
+            0%, 20%, 40%, 60%, 80%, 100% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
+            21% { text-shadow: -3px 0 var(--red), 3px 0 var(--cyan); transform: translate(-2px, 1px) skewX(5deg); }
+            22% { text-shadow: 3px 0 var(--red), -3px 0 var(--cyan); transform: translate(2px, -1px) skewX(-5deg); }
+            23% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
+            61% { text-shadow: -2px 2px var(--red), 2px -2px var(--cyan); transform: translate(1px, 2px); }
+            62% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
+            81% { text-shadow: 2px 0 var(--red), -2px 0 var(--cyan); opacity: 0.8; }
+            82% { opacity: 1; }
+        }
+
+        .app-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            filter: blur(5px); opacity: 0; transition: opacity 0.6s ease; z-index: 0;
+        }
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 0; display: none;
+        }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; position: relative; z-index: 1; }
+        .screen.active { display: flex; }
+        
+        .header { padding: 30px 20px 20px; text-align: center; background: transparent; z-index: 2;}
+        
+        .scroll-content { padding: 30px 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; position: relative; }
+        
+        .brand-zone { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        .glass-panel { 
+            background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 16px; 
+            padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); 
+            transition: background 0.3s; 
+        }
+
+        .upload-buttons-row { display: flex; gap: 12px; width: 100%; }
+        .upload-btn { 
+            flex: 1; padding: 16px 10px; background: #1a1a1a; color: #fff; border: 1px solid #333;
+            text-align: center; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; 
+        }
+        .upload-btn:active { transform: scale(0.96); }
+        .upload-btn svg { stroke: #fff; fill: none; transition: stroke 0.2s; }
+        .upload-btn.secondary { background: transparent; color: #ccc; border-color: #444; }
+        .upload-btn.secondary svg { stroke: #ccc; }
+
+        /* Media Preview UI */
+        .media-preview-box {
+            display: none; width: 100%; height: 200px; border-radius: 12px; 
+            overflow: hidden; position: relative; margin-top: 15px; border: 1px solid var(--cyan);
+            box-shadow: 0 0 15px rgba(0,240,255,0.15); background: #000;
+        }
+        .preview-content { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .video-warning {
+            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255,0,85,0.9);
+            color: white; font-size: 11px; padding: 8px; text-align: center; font-weight: 800;
+            display: none; text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        .upload-status { 
+            text-align: center; font-size: 14px; font-weight: 800; color: var(--cyan); 
+            display: none; padding: 15px; border-radius: 10px; background: rgba(0,240,255,0.1); 
+            border: 1px solid rgba(0,240,255,0.3); text-transform: uppercase; 
+        }
+        .upload-desc { text-align: center; font-size: 11px; color: #777; margin-top: 15px; font-weight: 600; text-transform: uppercase; }
+        .error-msg { color: var(--red); font-size: 13px; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
+
+        .section-title { font-size: 13px; font-weight: 800; color: #eee; letter-spacing: 0.5px; margin-bottom: 12px; text-transform: uppercase; }
+        .range-slider { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        .slider-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; font-weight: 800; color: #555; }
+        .slider-labels span.active { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+
+        .attempts-row { display: flex; gap: 8px; }
+        .btn-attempt { 
+            flex: 1; padding: 14px 0; border: 1px solid #333; background: #111; 
+            border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; color: #666; 
+        }
+        .btn-attempt.active { border-color: var(--cyan); background: rgba(0,240,255,0.1); color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+
+        .secret-input { 
+            width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #111; 
+            color: #fff; font-size: 14px; font-weight: 600; margin-top: 15px; font-family: inherit; 
+            resize: none; transition: all 0.2s; 
+        }
+        .secret-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+        .secret-input::placeholder { color: #555; }
+
+        .btn-submit { 
+            background: #000; color: var(--cyan); border: 1px solid var(--cyan); padding: 20px; 
+            font-weight: 900; font-size: 16px; border-radius: 12px; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 1px; width: 100%; margin-top: 10px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); 
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; 
+        }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #333; color: #666; }
+        
+        .share-container { display: none; margin-top: 10px; }
+        .btn-share { 
+            background: var(--cyan); color: #000; border: none; padding: 20px; font-weight: 900; 
+            font-size: 16px; border-radius: 12px; cursor: pointer; text-transform: uppercase; width: 100%; 
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.2); display: flex; align-items: center; 
+            justify-content: center; gap: 10px; 
+        }
+
+        /* ---------------------------------------------------- */
+        /* HUD & GAMEPLAY */
+        /* ---------------------------------------------------- */
+        #screenGame { background: #050505; }
+        .game-hud { 
+            width: 100%; padding-top: max(20px, env(safe-area-inset-top)); padding-left: 20px; padding-right: 20px; padding-bottom: 10px;
+            background: transparent; color: white; display: flex; justify-content: space-between; align-items: center; 
+            font-size: 14px; font-weight: 800; z-index: 10; flex-shrink: 0; transition: opacity 0.5s ease;
+        }
+        .hud-btn-exit { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+        .hud-btn-exit:active { background: var(--red); color: white; border-color: var(--red); }
+        .hud-stats { display: flex; gap: 15px; }
+
+        .game-area { flex: 1; padding: 35px 25px 30px 25px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .game-box-wrapper { width: 100%; height: 100%; position: relative; }
+        .game-glow-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15); pointer-events: none; z-index: 6; transition: box-shadow 0.2s ease-out;
+        }
+        .game-box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; background: #000; touch-action: none; cursor: crosshair; z-index: 1; }
+        #gameCanvas { display: block; width: 100%; height: 100%; touch-action: none; position: absolute; top:0; left:0; }
+        .vignette-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; background: radial-gradient(circle at center, transparent 50%, rgba(0, 240, 255, 0.1) 100%); }
+
+        .player-cursor { position: absolute; width: 14px; height: 14px; background: #fff; border: 2px solid var(--cyan); border-radius: 50%; box-shadow: 0 0 15px var(--cyan); pointer-events: none; transform: translate(-50%, -50%); z-index: 10; display: none; }
+
+        /* ---------------------------------------------------- */
+        /* UI TOAST & SEQUENZA VITTORIA */
+        /* ---------------------------------------------------- */
+        .toast-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 30px; text-align: center; z-index: 100; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(5px);
+        }
+        .toast-overlay.active { opacity: 1; pointer-events: all; }
+        .toast-title { font-size: 32px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; color: white; letter-spacing: -1px; display:none;}
+        .toast-title.error { color: var(--red); display:block;}
+        .toast-title.success { color: #fff; text-shadow: 0 0 15px var(--cyan); display:block;}
+        .toast-desc { font-size: 14px; color: #ccc; font-weight: 600; margin-bottom: 25px; line-height: 1.5; display:none;}
+        .btn-toast { background: white; color: black; border: none; padding: 16px 32px; font-weight: 900; font-size: 14px; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; max-width: 200px; }
+        .btn-toast.primary { background: var(--cyan); }
+
+        .tutorial-list { color: #ccc; text-align: left; font-size: 14px; line-height: 1.6; list-style: none; padding: 0; font-weight: 600; width: 100%; max-width: 300px; margin-top: 40px; }
+        .tutorial-list li { margin-bottom: 20px; display: flex; align-items: flex-start; gap: 15px; }
+        .tutorial-list svg { flex-shrink: 0; margin-top: 2px;}
+        .tutorial-list b { color: white; }
+
+        .cinematic-text-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .cinematic-text-overlay.active { opacity: 1; }
+        .cinematic-text-overlay .splash-logo { font-size: 32px; line-height: 1.2; letter-spacing: -1px; }
+
+        .final-image-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background-size: cover; background-repeat: no-repeat; background-position: center; background-color: #000; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 1s ease; }
+        .final-image-screen.active { opacity: 1; pointer-events: all; cursor: pointer; }
+        
+        .secret-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; padding: 30px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; z-index: 410;}
+        .secret-overlay.active { opacity: 1; pointer-events: all; }
+        .secret-text { color: white; font-size: 24px; font-weight: 900; text-shadow: 0 0 15px rgba(0,240,255,0.8); line-height: 1.4; font-style: italic; text-transform: uppercase; }
+
+        .tap-indicator { position: absolute; bottom: max(40px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 450; animation: pulseAlpha 2s infinite; }
+        @keyframes pulseAlpha { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* Fullscreen Video Player Overlay */
+        .video-player-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000; z-index: 500; display: none; opacity: 0; transition: opacity 0.5s ease;}
+        .video-player-overlay.active { display: block; opacity: 1; }
+        #rewardVideo { width: 100%; height: 100%; object-fit: cover; }
+        .btn-skip-video { position: absolute; bottom: max(40px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--cyan); color: #000; border: none; padding: 12px 24px; font-weight: 900; font-size: 14px; border-radius: 8px; cursor: pointer; text-transform: uppercase; z-index: 510; box-shadow: 0 0 15px rgba(0,240,255,0.4); }
+
+    </style>
+</head>
+<body>
+
+    <div id="splashScreen">
+        <div class="brand-zone">
+            <div class="brand-logo splash-logo">Unveil</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div id="appBg" class="app-bg"></div>
+        <div id="bgOverlay" class="bg-overlay"></div>
+
+        <!-- SCHERMATA REGIA -->
+        <div id="screenRegia" class="screen active">
+            <div id="mainHeader" class="header">
+                <div class="brand-zone">
+                    <div class="brand-logo">Unveil</div>
+                    <div class="brand-subtitle">Photo Challenge</div>
+                </div>
+            </div>
+            <div class="scroll-content">
+                <div class="glass-panel">
+                    <div id="uploadActionGroup">
+                        <div class="upload-buttons-row">
+                            <div class="upload-btn" onclick="document.getElementById('cameraInput').click()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                Camera
+                            </div>
+                            <div class="upload-btn secondary" onclick="document.getElementById('galleryInput').click()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                Galleria
+                            </div>
+                        </div>
+                        <div class="upload-desc">Supporta Foto e Video (max 15s)</div>
+                    </div>
+                    
+                    <!-- Media Preview Area -->
+                    <div id="mediaPreviewBox" class="media-preview-box">
+                        <img id="previewImg" class="preview-content">
+                        <video id="previewVid" class="preview-content" muted playsinline autoplay></video>
+                        <div id="videoWarning" class="video-warning">Anteprima - Verranno mantenuti solo i primi 15 secondi</div>
+                    </div>
+
+                    <div id="uploadStatusUI" class="upload-status" style="margin-top: 15px;">Media Pronto ✓</div>
+                    <!-- Aggiornato accept per consentire i video -->
+                    <input type="file" id="cameraInput" accept="image/*,video/*" capture="environment" style="display:none;" onchange="handleFileSelect(this)">
+                    <input type="file" id="galleryInput" accept="image/*,video/*" style="display:none;" onchange="handleFileSelect(this)">
+                    <div id="uploadError" class="error-msg">Errore file. Max 50MB.</div>
+                </div>
+
+                <div class="glass-panel">
+                    <div>
+                        <div class="section-title">Difficoltà</div>
+                        <input type="range" id="diffSlider" class="range-slider" min="1" max="5" value="3" oninput="updateDiffLabels(this.value)">
+                        <div class="slider-labels">
+                            <span id="lbl1">1</span><span id="lbl2">2</span><span id="lbl3" class="active">3</span><span id="lbl4">4</span><span id="lbl5">5</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 25px;">
+                        <div class="section-title">Tentativi Massimi</div>
+                        <div class="attempts-row">
+                            <button class="btn-attempt" onclick="setAttempts(1, this)">1</button>
+                            <button class="btn-attempt" onclick="setAttempts(3, this)">3</button>
+                            <button class="btn-attempt" onclick="setAttempts(5, this)">5</button>
+                            <button class="btn-attempt btn-max active" onclick="setAttempts(Infinity, this)">∞</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 25px;">
+                        <div class="section-title">Messaggio Segreto</div>
+                        <input type="text" id="secretMsgInput" class="secret-input" maxlength="140" placeholder="Aggiungi un messaggio opzionale...">
+                    </div>
+                </div>
+
+                <button id="btnSubmit" class="btn-submit" onclick="generateChallengeLink()">Genera Sfida</button>
+                <div id="shareContainer" class="share-container">
+                    <button class="btn-share" onclick="triggerNativeShare()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        Condividi Link
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCHERMATA GIOCO -->
+        <div id="screenGame" class="screen">
+            <div class="game-hud" id="gameHud">
+                <button class="hud-btn-exit" onclick="resetToHome()">✕ ESCI</button>
+                <div class="hud-stats">
+                    <span id="hudProgress">AREA: 0%</span>
+                    <span id="hudAttempts">VITE: ∞</span>
+                </div>
+            </div>
+            
+            <div class="game-area" id="gameArea">
+                <div class="game-box-wrapper" id="gameBoxWrapper">
+                    <div class="game-glow-overlay" id="glowOverlay"></div>
+                    <div class="game-box" id="mainGameBox">
+                        <div class="vignette-overlay"></div>
+                        <canvas id="gameCanvas"></canvas>
+                    </div>
+                    <div id="playerCursor" class="player-cursor"></div>
+                </div>
+            </div>
+
+            <div id="toastContainer" class="toast-overlay">
+                <div id="toastTitle" class="toast-title">Titolo</div>
+                <div id="toastDesc" class="toast-desc">Descrizione</div>
+                <button id="toastBtn" class="btn-toast primary" onclick="handleToastAction()">INIZIA A GIOCARE</button>
+                
+                <ul class="tutorial-list" id="tutorialRules" style="display:none;">
+                    <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-7 7 7"/><path d="M12 5v14"/></svg><span>Trascina per isolare e decodificare le zone nascoste dell'immagine.</span></li>
+                    <li><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Evita le comete rosse: ogni impatto interromperà il tracciamento.</span></li>
+                    <li><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--cyan)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span id="tutTarget">Raggiungi il <b>X%</b> di decodifica per sbloccare l'intero file.</span></li>
+                </ul>
+            </div>
+            
+            <div id="victoryOverlay" class="cinematic-text-overlay">
+                <div class="brand-logo splash-logo">FILE<br>DECODIFICATO</div>
+            </div>
+            
+            <div id="finalImageScreen" class="final-image-screen" onclick="advanceVictory()">
+                <div id="secretMessageOverlay" class="secret-overlay">
+                    <div id="secretMessageText" class="secret-text"></div>
+                </div>
+                <div id="tapIndicator" class="tap-indicator" style="display:none;">Tocca per continuare</div>
+            </div>
+            
+            <!-- Player Video Vittoria -->
+            <div id="videoPlayerOverlay" class="video-player-overlay">
+                <video id="rewardVideo" playsinline></video>
+                <button class="btn-skip-video" onclick="goToCTA()">CONTINUA ➔</button>
+            </div>
+        </div>
+        
+        <!-- SCHERMATA CTA FINALE -->
+        <div id="screenCTA" class="screen">
+            <div class="scroll-content" style="justify-content: center; align-items: center; text-align: center; height:100%;">
+                <div class="brand-logo splash-logo" style="font-size: 48px; margin-bottom: 30px;">UNVEIL</div>
+                <h2 style="color:var(--cyan); font-weight: 900; text-transform: uppercase; font-size: 28px; margin-bottom: 15px;">Codifica il tuo file</h2>
+                <p style="color:#aaa; font-size:16px; font-weight: 600; margin-bottom: 40px; line-height: 1.5; max-width: 280px;">
+                    Ora tocca a te.<br>Nascondi una foto o un video, imposta la difficoltà e lancia la tua sfida.
+                </p>
+                <button class="btn-submit" onclick="resetToHome()">CREA LA TUA SFIDA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/up98kcff/auto/upload";
+        const CLOUDINARY_PRESET = "sito_upload";
+        
+        let challenge = { rawFile: null, isVideo: false, diff: 3, tries: Infinity, msg: "", pid: "", rt: "" };
+        let currentAttempts = 0;
+        let loadedImage = new Image(); loadedImage.crossOrigin = "Anonymous";
+        let finalShareUrl = "";
+        let victoryState = 0; 
+        
+        let previewVideoInterval;
+
+        window.onload = () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                splash.style.opacity = '0';
+                setTimeout(() => { splash.style.display = 'none'; }, 500);
+            }, 1200);
+            checkUrlAndRouting();
+        };
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            const errorEl = document.getElementById('uploadError');
+            if (!file) return;
+            
+            const isVid = file.type.startsWith('video/');
+            const isImg = file.type.startsWith('image/');
+            if (!isImg && !isVid) { errorEl.innerText = "Formato non valido."; errorEl.style.display = 'block'; return; }
+            if (file.size > 52428800) { errorEl.innerText = "Massimo 50 MB consentiti."; errorEl.style.display = 'block'; return; }
+
+            errorEl.style.display = 'none';
+            challenge.rawFile = file;
+            challenge.isVideo = isVid;
+            
+            document.getElementById('uploadActionGroup').style.display = 'none';
+            document.getElementById('bgOverlay').style.display = 'block'; 
+            document.getElementById('mainHeader').classList.add('dark-mode');
+            
+            const previewBox = document.getElementById('mediaPreviewBox');
+            const previewImg = document.getElementById('previewImg');
+            const previewVid = document.getElementById('previewVid');
+            const warningEl = document.getElementById('videoWarning');
+            
+            previewBox.style.display = 'block';
+            document.getElementById('uploadStatusUI').style.display = 'block';
+
+            let localUrl = URL.createObjectURL(file);
+            document.getElementById('appBg').style.backgroundImage = `url(${localUrl})`; 
+            document.getElementById('appBg').style.opacity = '1';
+
+            if(isImg) {
+                previewImg.src = localUrl;
+                previewImg.style.display = 'block';
+                previewVid.style.display = 'none';
+                warningEl.style.display = 'none';
+            } else {
+                previewImg.style.display = 'none';
+                previewVid.src = localUrl;
+                previewVid.style.display = 'block';
+                
+                previewVid.onloadedmetadata = function() {
+                    if(this.duration > 15) {
+                        warningEl.style.display = 'block';
+                    }
+                };
+                
+                // Troncamento finto a 15 secondi per l'anteprima
+                previewVid.ontimeupdate = function() {
+                    if(this.currentTime >= 15) {
+                        this.currentTime = 0;
+                        this.play();
+                    }
+                };
+            }
+        }
+
+        function updateDiffLabels(val) { challenge.diff = parseInt(val); for(let i=1; i<=5; i++) document.getElementById('lbl'+i).className = (i == val) ? 'active' : ''; }
+        function setAttempts(val, btn) { challenge.tries = val; document.querySelectorAll('.btn-attempt').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+
+        async function triggerNativeShare() {
+            if (navigator.share) {
+                try { await navigator.share({ title: 'Sfida Unveil', text: 'Ho creato una sfida nascosta per te!', url: finalShareUrl }); } catch (err) {}
+            } else { navigator.clipboard.writeText(finalShareUrl); alert("Link copiato!"); }
+        }
+
+        async function generateChallengeLink() {
+            if(!challenge.rawFile) { showToast("Errore", "Seleziona un media!", "OK", "error", hideToast); return; }
+            const btn = document.getElementById('btnSubmit'); const originalText = btn.innerHTML;
+            btn.innerHTML = "Elaborazione..."; btn.disabled = true;
+            
+            challenge.msg = document.getElementById('secretMsgInput').value.trim();
+
+            try {
+                const formData = new FormData(); 
+                formData.append("file", challenge.rawFile);
+                formData.append("upload_preset", CLOUDINARY_PRESET);
+
+                const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if(data.public_id) {
+                    const pid = encodeURIComponent(data.public_id);
+                    const rt = data.resource_type; // 'image' o 'video'
+                    
+                    const baseUrl = window.location.href.split('?')[0];
+                    let paramsStr = `?d=${challenge.diff}&t=${challenge.tries}&pid=${pid}&rt=${rt}`;
+                    if(challenge.msg) paramsStr += `&m=${encodeURIComponent(challenge.msg)}`;
+                    
+                    finalShareUrl = `${baseUrl}${paramsStr}`;
+                    btn.style.display = 'none'; document.getElementById('shareContainer').style.display = 'block';
+                } else { throw new Error("Upload fallito"); }
+            } catch (error) { 
+                showToast("Errore", "Connessione Cloudinary interrotta", "OK", "error", hideToast); 
+                btn.innerHTML = originalText; btn.disabled = false; 
+            }
+        }
+
+        // --- ENGINE DI GIOCO ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const gameBoxWrapper = document.getElementById('gameBoxWrapper');
+        const glowOverlay = document.getElementById('glowOverlay');
+        const playerCursorDom = document.getElementById('playerCursor');
+
+        let WIDTH = 0; let HEIGHT = 0;
+        let grid = []; let spheres = [];
+        let isDrawing = false, gameInterval = null, targetPercentage = 80;
+        let isGameWon = false, pulseTime = 0, isPlaying = false; 
+        
+        let player = { x: 0, y: 0 }; 
+        let currentPos = { x: 0, y: 0 }; 
+        let targetPos = { x: null, y: null }; 
+        let isPointerDown = false;
+        let playerSpeed = 2.6; 
+        let isRewinding = false; 
+        
+        let isImmune = true; 
+        const IMMUNITY_THRESHOLD = 30; 
+        const SNAP_WALL = 12;          
+        const SNAP_TRAIL = 6;          
+
+        let cropData = { x: 0, y: 0, w: 0, h: 0 };
+        let colorPixels = null, bwPixels = null, screenImageData = null;
+        let trailPoints = []; 
+        let currentToastAction = null;
+
+        function showToast(title, desc, btnText, type, callback, isTutorial = false) {
+            const tc = document.getElementById('toastContainer');
+            tc.className = 'toast-overlay active';
+            
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastTitle').className = `toast-title ${type}`;
+            document.getElementById('toastDesc').innerText = desc;
+            document.getElementById('toastDesc').style.display = desc ? 'block' : 'none';
+            document.getElementById('toastBtn').innerText = btnText;
+            document.getElementById('tutorialRules').style.display = isTutorial ? 'block' : 'none';
+            
+            if (title === "" && desc === "") document.getElementById('toastTitle').style.display = 'none';
+            
+            currentToastAction = callback;
+        }
+        function hideToast() { document.getElementById('toastContainer').className = 'toast-overlay'; }
+        function handleToastAction() { if(currentToastAction) currentToastAction(); else hideToast(); }
+
+        function checkUrlAndRouting() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.has('pid') && params.has('rt')) {
+                document.getElementById('screenRegia').classList.remove('active');
+                document.getElementById('screenGame').classList.add('active');
+                
+                challenge.diff = parseInt(params.get('d')) || 3;
+                challenge.tries = params.get('t') === 'Infinity' ? Infinity : parseInt(params.get('t'));
+                challenge.msg = params.get('m') ? decodeURIComponent(params.get('m')) : "";
+                challenge.pid = decodeURIComponent(params.get('pid'));
+                challenge.rt = params.get('rt'); // 'video' o 'image'
+                currentAttempts = challenge.tries;
+                
+                // COSTRUZIONE URL CLOUDINARY
+                // Indipendentemente da image o video, ci serve un fotogramma iniziale (.jpg)
+                let posterUrl = "";
+                if(challenge.rt === 'video') {
+                    // Prende il primo frame del video (so_0)
+                    posterUrl = `https://res.cloudinary.com/up98kcff/video/upload/so_0/${challenge.pid}.jpg`;
+                } else {
+                    posterUrl = `https://res.cloudinary.com/up98kcff/image/upload/${challenge.pid}.jpg`;
+                }
+
+                loadedImage.onload = function() { initGameData(); };
+                loadedImage.src = posterUrl;
+                
+            } else { document.getElementById('screenRegia').classList.add('active'); }
+        }
+
+        function initGameData() {
+            const targets = [0, 60, 70, 80, 85, 90]; targetPercentage = targets[challenge.diff];
+            isDrawing = false; isGameWon = false; isPlaying = false; isRewinding = false; trailPoints = [];
+            targetPos = { x: null, y: null }; isPointerDown = false; isImmune = true; victoryState = 0;
+
+            document.getElementById('hudProgress').innerText = `AREA: 0% / ${targetPercentage}%`;
+            document.getElementById('hudAttempts').innerText = `VITE: ${challenge.tries === Infinity ? '∞' : currentAttempts}`;
+            
+            document.getElementById('tutTarget').innerHTML = `Raggiungi il <b>${targetPercentage}%</b> di decodifica per sbloccare l'intero file.`;
+            
+            showToast("", "", "INIZIA A GIOCARE", "success", requestStartGameplay, true);
+        }
+
+        function requestStartGameplay() {
+            hideToast();
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().then(setupGameCanvas).catch(setupGameCanvas); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); setupGameCanvas(); } 
+            else { setupGameCanvas(); }
+        }
+
+        function setupGameCanvas() {
+            setTimeout(() => {
+                const boxWrapper = document.getElementById('mainGameBox');
+                const rect = boxWrapper.getBoundingClientRect();
+                WIDTH = Math.floor(rect.width); HEIGHT = Math.floor(rect.height);
+                canvas.width = WIDTH; canvas.height = HEIGHT;
+
+                let imgRatio = loadedImage.width / loadedImage.height; let canvasRatio = WIDTH / HEIGHT;
+                cropData = { x: 0, y: 0, w: loadedImage.width, h: loadedImage.height };
+                if (imgRatio > canvasRatio) { cropData.w = Math.floor(loadedImage.height * canvasRatio); cropData.x = Math.floor((loadedImage.width - cropData.w) / 2); } 
+                else { cropData.h = Math.floor(loadedImage.width / canvasRatio); cropData.y = Math.floor((loadedImage.height - cropData.h) / 2); }
+
+                grid = Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0));
+                for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) grid[y][x] = 1; } }
+                
+                player.x = Math.floor(WIDTH / 2); player.y = 0;
+                currentPos.x = player.x; currentPos.y = player.y;
+
+                let tempCanvas = document.createElement('canvas'); tempCanvas.width = 60; tempCanvas.height = Math.floor(60 / canvasRatio);
+                tempCanvas.getContext('2d').drawImage(loadedImage, cropData.x, cropData.y, cropData.w, cropData.h, 0, 0, tempCanvas.width, tempCanvas.height);
+                let colorCanvas = document.createElement('canvas'); colorCanvas.width = WIDTH; colorCanvas.height = HEIGHT;
+                let cCtx = colorCanvas.getContext('2d'); cCtx.imageSmoothingEnabled = false;
+                cCtx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, WIDTH, HEIGHT);
+                colorPixels = cCtx.getImageData(0, 0, WIDTH, HEIGHT).data;
+
+                bwPixels = new Uint8ClampedArray(colorPixels.length);
+                for(let i=0; i<colorPixels.length; i+=4) {
+                    let r = colorPixels[i], g = colorPixels[i+1], b = colorPixels[i+2], a = colorPixels[i+3];
+                    let gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                    bwPixels[i] = gray * 0.75; bwPixels[i+1] = gray * 0.75; bwPixels[i+2] = gray * 0.75; bwPixels[i+3] = a; 
+                }
+
+                screenImageData = new ImageData(WIDTH, HEIGHT); spheres = [];
+                
+                let numSpheres = [0, 3, 6, 9, 13, 18][challenge.diff];
+                let sSpeed = 1.4 + (challenge.diff * 0.5);
+                
+                for(let i=0; i<numSpheres; i++) { 
+                    spheres.push({ x: WIDTH / 2, y: HEIGHT / 2, vx: (Math.random() > 0.5 ? 1 : -1) * sSpeed, vy: (Math.random() > 0.5 ? 1 : -1) * sSpeed, radius: 6, history: [] }); 
+                }
+
+                setupFluidControls();
+                if(gameInterval) clearInterval(gameInterval);
+                gameInterval = setInterval(updateGame, 1000 / 60);
+
+                isPlaying = true; trailPoints = []; isImmune = true; playerCursorDom.style.display = 'block';
+            }, 300); 
+        }
+
+        function setupFluidControls() {
+            const boxWrapper = document.getElementById('mainGameBox');
+            function updateTarget(e) {
+                let rect = boxWrapper.getBoundingClientRect();
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                targetPos.x = clientX - rect.left; targetPos.y = clientY - rect.top;
+            }
+            boxWrapper.addEventListener('pointerdown', (e) => { e.preventDefault(); if(!isRewinding && isPlaying) { isPointerDown = true; updateTarget(e); } });
+            boxWrapper.addEventListener('pointermove', (e) => { e.preventDefault(); if (isPointerDown) updateTarget(e); });
+            
+            const handlePointerUp = () => {
+                isPointerDown = false; targetPos.x = null; targetPos.y = null;
+                if (isDrawing && !isRewinding) { isRewinding = true; } 
+            };
+            boxWrapper.addEventListener('pointerup', handlePointerUp);
+            boxWrapper.addEventListener('pointercancel', handlePointerUp);
+        }
+
+        function getBresenhamPoints(x0, y0, x1, y1) {
+            let pts = []; let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1; let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            let err = dx + dy, e2;
+            while (true) {
+                pts.push({x: x0, y: y0}); if (x0 === x1 && y0 === y1) break;
+                e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; }
+            }
+            return pts;
+        }
+
+        function applyGapFill(startX, startY, endX, endY) {
+            let pts = getBresenhamPoints(startX, startY, endX, endY);
+            for(let p of pts) {
+                let br = 3; 
+                for(let dy=-br; dy<=br; dy++) {
+                    for(let dx=-br; dx<=br; dx++) {
+                        let cx = p.x + dx; let cy = p.y + dy;
+                        if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx] === 0) grid[cy][cx] = 2;
+                    }
+                }
+            }
+        }
+
+        function processPixel(nx, ny) {
+            if (nx < 0) nx = 0; if (nx >= WIDTH) nx = WIDTH - 1;
+            if (ny < 0) ny = 0; if (ny >= HEIGHT) ny = HEIGHT - 1;
+            let target = grid[ny][nx];
+
+            if (target === 1) { 
+                if (isDrawing) { 
+                    if (trailPoints.length < 15) { isDrawing = false; trailPoints = []; player.x = nx; player.y = ny; return true; }
+                    isDrawing = false; applyGapFill(player.x, player.y, nx, ny); player.x = nx; player.y = ny; finalizeConquest(); return true; 
+                }
+                player.x = nx; player.y = ny;
+            } else { 
+                if (!isDrawing && target === 0) { isDrawing = true; trailPoints = []; }
+                if (isDrawing) {
+                    if (target === 2) {
+                        let isRecent = trailPoints.some(p => Math.abs(p.x - nx) <= 4 && Math.abs(p.y - ny) <= 4 && trailPoints.indexOf(p) > trailPoints.length - 15);
+                        if (!isRecent) { handleHit("Incrocio scia fatale"); return true; }
+                    } else {
+                        let br = 1;
+                        for(let dy=-br; dy<=br; dy++) {
+                            for(let dx=-br; dx<=br; dx++) {
+                                let cx = nx+dx; let cy = ny+dy;
+                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx]===0) { grid[cy][cx] = 2; }
+                            }
+                        }
+                        trailPoints.push({x: nx, y: ny}); player.x = nx; player.y = ny;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function checkImmunityDeactivation(cx, cy) {
+            if (!isImmune) return;
+            let isNearSafeElement = false; let step = 2; 
+            for (let dy = -IMMUNITY_THRESHOLD; dy <= IMMUNITY_THRESHOLD; dy += step) {
+                for (let dx = -IMMUNITY_THRESHOLD; dx <= IMMUNITY_THRESHOLD; dx += step) {
+                    let testX = Math.floor(cx + dx); let testY = Math.floor(cy + dy);
+                    if (testX >= 0 && testX < WIDTH && testY >= 0 && testY < HEIGHT && grid[testY][testX] === 1 && Math.hypot(dx, dy) < IMMUNITY_THRESHOLD) { 
+                        isNearSafeElement = true; break; 
+                    }
+                }
+                if (isNearSafeElement) break;
+            }
+            if (!isNearSafeElement) { isImmune = false; }
+        }
+
+        function updateGame() {
+            if (isGameWon) return; pulseTime += 0.15;
+            let currentSpeed = 0;
+
+            if (isPlaying && isRewinding) {
+                let rewindSpeed = 20; currentSpeed = rewindSpeed;
+                for (let i = 0; i < rewindSpeed; i++) {
+                    if (trailPoints.length > 0) {
+                        let pt = trailPoints.pop();
+                        let br = 1;
+                        for(let dy=-br; dy<=br; dy++) {
+                            for(let dx=-br; dx<=br; dx++) {
+                                let cx = pt.x+dx; let cy = pt.y+dy;
+                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx]===2) grid[cy][cx] = 0;
+                            }
+                        }
+                        if (trailPoints.length > 0) {
+                            let newHead = trailPoints[trailPoints.length - 1];
+                            player.x = newHead.x; player.y = newHead.y; currentPos.x = player.x; currentPos.y = player.y;
+                        } else {
+                            isRewinding = false; isDrawing = false; isImmune = true; break;
+                        }
+                    }
+                }
+            }
+
+            if (isPlaying && isPointerDown && targetPos.x !== null && !isRewinding) {
+                let dx = targetPos.x - currentPos.x; let dy = targetPos.y - currentPos.y; let dist = Math.hypot(dx, dy);
+                if (dist > 1) {
+                    let moveDist = Math.min(playerSpeed, dist); currentSpeed = moveDist;
+                    let newX = currentPos.x + (dx / dist) * moveDist; let newY = currentPos.y + (dy / dist) * moveDist;
+
+                    if (isImmune) checkImmunityDeactivation(newX, newY); 
+
+                    if (!isImmune && isDrawing && trailPoints.length > 15) {
+                        let forcedSnap = false; let snapX = Math.floor(newX); let snapY = Math.floor(newY);
+                        if (snapX < SNAP_WALL) { snapX = 0; forcedSnap = true; } 
+                        else if (snapX > WIDTH - 1 - SNAP_WALL) { snapX = WIDTH - 1; forcedSnap = true; }
+                        if (snapY < SNAP_WALL) { snapY = 0; forcedSnap = true; } 
+                        else if (snapY > HEIGHT - 1 - SNAP_WALL) { snapY = HEIGHT - 1; forcedSnap = true; }
+
+                        if (!forcedSnap) {
+                            let closestSafe = null; let minDist = SNAP_TRAIL;
+                            let intX = Math.floor(newX); let intY = Math.floor(newY);
+                            for (let sdy = -SNAP_TRAIL; sdy <= SNAP_TRAIL; sdy++) {
+                                for (let sdx = -SNAP_TRAIL; sdx <= SNAP_TRAIL; sdx++) {
+                                    let cx = intX + sdx; let cy = intY + sdy;
+                                    if (cx >= 0 && cx < WIDTH && cy >= 0 && cy < HEIGHT && grid[cy][cx] === 1) {
+                                        let d = Math.hypot(sdx, sdy);
+                                        if (d < minDist) {
+                                            let isTooCloseToStart = trailPoints.slice(0, 15).some(p => Math.abs(p.x - cx) <= 5 && Math.abs(p.y - cy) <= 5);
+                                            if (!isTooCloseToStart) { minDist = d; closestSafe = { x: cx, y: cy }; }
+                                        }
+                                    }
+                                }
+                            }
+                            if (closestSafe) { snapX = closestSafe.x; snapY = closestSafe.y; forcedSnap = true; }
+                        }
+
+                        if (forcedSnap) {
+                            isDrawing = false; applyGapFill(player.x, player.y, snapX, snapY);
+                            player.x = snapX; player.y = snapY; currentPos.x = snapX; currentPos.y = snapY;
+                            targetPos.x = null; targetPos.y = null; isPointerDown = false;
+                            finalizeConquest(); return;
+                        }
+                    }
+
+                    let p0 = { x: Math.floor(currentPos.x), y: Math.floor(currentPos.y) };
+                    let p1 = { x: Math.floor(newX), y: Math.floor(newY) };
+                    let pts = getBresenhamPoints(p0.x, p0.y, p1.x, p1.y);
+                    for(let p of pts) { if (processPixel(p.x, p.y)) break; } 
+                    if (isPlaying && !isDrawing) { currentPos.x = player.x; currentPos.y = player.y; } 
+                    else if (isPlaying) { currentPos.x = newX; currentPos.y = newY; } 
+                }
+            }
+
+            let baseGlow = isImmune ? 10 : 25;
+            let dynamicGlow = isImmune ? (Math.sin(pulseTime * 0.5) * 5) : (currentSpeed * 4 + Math.sin(pulseTime) * 10);
+            glowOverlay.style.boxShadow = `0 0 ${Math.max(10, baseGlow + dynamicGlow)}px rgba(0, 240, 255, ${isImmune ? 0.15 : 0.4})`;
+
+            if (isPlaying) {
+                let pulseScale = 1 + Math.abs(Math.sin(pulseTime)) * 0.3;
+                playerCursorDom.style.left = currentPos.x + 'px';
+                playerCursorDom.style.top = currentPos.y + 'px';
+                playerCursorDom.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
+            }
+
+            if (isPlaying) {
+                for(let s of spheres) {
+                    s.history.push({x: s.x, y: s.y}); if (s.history.length > 15) s.history.shift();
+                    let r = s.radius; let hitTrail = false; let tolerance = 0.4; 
+                    
+                    let oldX = s.x; s.x += s.vx; let hitX = false;
+                    let minY = Math.floor(s.y - r * tolerance); let maxY = Math.floor(s.y + r * tolerance);
+                    let c1 = Math.min(Math.floor(oldX + (s.vx > 0 ? r : -r)), Math.floor(s.x + (s.vx > 0 ? r : -r)));
+                    let c2 = Math.max(Math.floor(oldX + (s.vx > 0 ? r : -r)), Math.floor(s.x + (s.vx > 0 ? r : -r)));
+                    if (c1 < 0 || c2 >= WIDTH) { hitX = true; } else {
+                        for (let y = Math.max(minY,0); y <= Math.min(maxY, HEIGHT-1); y++) {
+                            for (let x = Math.max(c1,0); x <= Math.min(c2, WIDTH-1); x++) {
+                                if (grid[y][x] === 1) hitX = true; if (grid[y][x] === 2) hitTrail = true;
+                            }
+                        }
+                    }
+                    if (hitTrail) { handleHit("Impatto Cometa"); return; }
+                    if (hitX) { s.x = oldX; s.vx *= -1; }
+
+                    let oldY = s.y; s.y += s.vy; let hitY = false;
+                    let minX = Math.floor(s.x - r * tolerance); let maxX = Math.floor(s.x + r * tolerance);
+                    let r1 = Math.min(Math.floor(oldY + (s.vy > 0 ? r : -r)), Math.floor(s.y + (s.vy > 0 ? r : -r)));
+                    let r2 = Math.max(Math.floor(oldY + (s.vy > 0 ? r : -r)), Math.floor(s.y + (s.vy > 0 ? r : -r)));
+                    if (r1 < 0 || r2 >= HEIGHT) { hitY = true; } else {
+                        for (let x = Math.max(minX,0); x <= Math.min(maxX, WIDTH-1); x++) {
+                            for (let y = Math.max(r1,0); y <= Math.min(r2, HEIGHT-1); y++) {
+                                if (grid[y][x] === 1) hitY = true; if (grid[y][x] === 2) hitTrail = true;
+                            }
+                        }
+                    }
+                    if (hitTrail) { handleHit("Impatto Cometa"); return; }
+                    if (hitY) { s.y = oldY; s.vy *= -1; }
+                }
+            }
+            draw();
+        }
+
+        function finalizeConquest() {
+            let tempGrid = Array(HEIGHT).fill().map(() => new Uint8Array(WIDTH));
+            for(let y=0; y<HEIGHT; y++) {
+                for(let x=0; x<WIDTH; x++) {
+                    if(grid[y][x] === 2) {
+                        for(let dy=-1; dy<=1; dy++) {
+                            for(let dx=-1; dx<=1; dx++) {
+                                let cx = x+dx; let cy = y+dy;
+                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT) tempGrid[cy][cx] = 2;
+                            }
+                        }
+                    }
+                }
+            }
+            for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if(tempGrid[y][x] === 2) grid[y][x] = 2; } }
+            for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if(grid[y][x] === 2) grid[y][x] = 1; } }
+            trailPoints = []; 
+
+            let sphereCenters = spheres.map(s => ({ cx: Math.floor(s.x), cy: Math.floor(s.y) }));
+            let fillMap = Array(HEIGHT).fill().map(() => new Uint8Array(WIDTH));
+            let queue = [{x: player.x, y: player.y}]; fillMap[player.y][player.x] = 1; let head = 0;
+
+            while(head < queue.length) {
+                let curr = queue[head++];
+                let neighbors = [{x: curr.x, y: curr.y-1}, {x: curr.x, y: curr.y+1}, {x: curr.x-1, y: curr.y}, {x: curr.x+1, y: curr.y}];
+                for(let n of neighbors) {
+                    if(n.x >= 0 && n.x < WIDTH && n.y >= 0 && n.y < HEIGHT) {
+                        if(fillMap[n.y][n.x] === 0 && grid[n.y][n.x] === 1) { fillMap[n.y][n.x] = 1; queue.push(n); }
+                    }
+                }
+            }
+
+            let visitedDark = new Uint8Array(WIDTH * HEIGHT); let components = [];
+            for (let y = 0; y < HEIGHT; y++) {
+                for (let x = 0; x < WIDTH; x++) {
+                    let idx = y * WIDTH + x;
+                    if (grid[y][x] === 0 && visitedDark[idx] === 0) {
+                        let darkCells = []; let darkQueue = [idx]; visitedDark[idx] = 1; let hasSphere = false; let dHead = 0;
+                        while (dHead < darkQueue.length) {
+                            let currIdx = darkQueue[dHead++]; darkCells.push(currIdx);
+                            let cy = Math.floor(currIdx / WIDTH); let cx = currIdx % WIDTH;
+                            for(let sc of sphereCenters) { if (sc.cx === cx && sc.cy === cy) hasSphere = true; }
+                            if (cy > 0 && grid[cy-1][cx] === 0 && visitedDark[currIdx - WIDTH] === 0) { visitedDark[currIdx - WIDTH] = 1; darkQueue.push(currIdx - WIDTH); }
+                            if (cy < HEIGHT-1 && grid[cy+1][cx] === 0 && visitedDark[currIdx + WIDTH] === 0) { visitedDark[currIdx + WIDTH] = 1; darkQueue.push(currIdx + WIDTH); }
+                            if (cx > 0 && grid[cy][cx-1] === 0 && visitedDark[currIdx - 1] === 0) { visitedDark[currIdx - 1] = 1; darkQueue.push(currIdx - 1); }
+                            if (cx < WIDTH-1 && grid[cy][cx+1] === 0 && visitedDark[currIdx + 1] === 0) { visitedDark[currIdx + 1] = 1; darkQueue.push(currIdx + 1); }
+                        }
+                        components.push({ cells: darkCells, hasSphere: hasSphere });
+                    }
+                }
+            }
+            for (let comp of components) { if (!comp.hasSphere) { for (let dIdx of comp.cells) { grid[Math.floor(dIdx / WIDTH)][dIdx % WIDTH] = 1; } } }
+            
+            glowOverlay.style.boxShadow = `0 0 60px rgba(0, 240, 255, 1)`;
+            isImmune = true; 
+            checkWin();
+        }
+
+        function handleHit(msg) {
+            isPlaying = false; isPointerDown = false; isRewinding = false; targetPos.x = null; targetPos.y = null; isDrawing = false;
+            
+            for(let y=0; y<HEIGHT; y++) { 
+                for(let x=0; x<WIDTH; x++) { 
+                    if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) grid[y][x] = 1;
+                    else grid[y][x] = 0; 
+                } 
+            }
+            
+            player.x = Math.floor(WIDTH / 2); player.y = 0;
+            currentPos.x = player.x; currentPos.y = player.y;
+            spheres.forEach(s => { s.x = WIDTH / 2; s.y = HEIGHT / 2; s.history = []; });
+
+            trailPoints = []; isImmune = true; 
+            glowOverlay.style.boxShadow = `0 0 50px rgba(255, 0, 85, 1)`; 
+            document.getElementById('hudProgress').innerText = `AREA: 0% / ${targetPercentage}%`;
+            
+            if(challenge.tries !== Infinity) currentAttempts--;
+            document.getElementById('hudAttempts').innerText = `VITE: ${challenge.tries === Infinity ? '∞' : currentAttempts}`;
+
+            draw(); 
+
+            if(currentAttempts <= 0 && challenge.tries !== Infinity) { 
+                playerCursorDom.style.display = 'none';
+                showToast("GAME OVER", "Segnale perso. Tentativi esauriti.", "MENU PRINCIPALE", "error", resetToHome);
+            } else { 
+                showToast("IMPATTO", "Livello resettato. La tua scia è stata interrotta.", "RIPROVA", "error", () => { hideToast(); isPlaying = true; }); 
+            }
+        }
+
+        function advanceVictory() {
+            if (victoryState === 1) {
+                document.getElementById('secretMessageOverlay').classList.remove('active');
+                victoryState = 2;
+            } else if (victoryState === 2) {
+                document.getElementById('tapIndicator').style.display = 'none';
+                
+                // Se è un video, nascondi l'immagine e fai partire il player!
+                if(challenge.rt === 'video') {
+                    document.getElementById('finalImageScreen').style.display = 'none';
+                    const videoOverlay = document.getElementById('videoPlayerOverlay');
+                    const rewardVideo = document.getElementById('rewardVideo');
+                    
+                    // URL Cloudinary con taglio a 15 secondi (eo_15)
+                    rewardVideo.src = `https://res.cloudinary.com/up98kcff/video/upload/eo_15/${challenge.pid}.mp4`;
+                    
+                    videoOverlay.classList.add('active');
+                    rewardVideo.play();
+                } else {
+                    goToCTA();
+                }
+            }
+        }
+
+        function checkWin() {
+            let disc = 0, tot = 0;
+            for(let y=0; y < HEIGHT; y++) { for(let x=0; x < WIDTH; x++) { tot++; if(grid[y][x] === 1) disc++; } }
+            let p = Math.floor((disc / tot) * 100); p = Math.min(p, 100);
+            document.getElementById('hudProgress').innerText = `AREA: ${p}% / ${targetPercentage}%`;
+            
+            if(p >= targetPercentage) {
+                clearInterval(gameInterval); isGameWon = true; isPlaying = false;
+                playerCursorDom.style.display = 'none';
+                
+                ctx.clearRect(0,0,WIDTH,HEIGHT);
+                ctx.drawImage(loadedImage, cropData.x, cropData.y, cropData.w, cropData.h, 0, 0, WIDTH, HEIGHT);
+                glowOverlay.style.boxShadow = `0 0 50px rgba(0, 240, 255, 1)`;
+                
+                document.getElementById('gameHud').style.opacity = '0';
+                
+                const vo = document.getElementById('victoryOverlay');
+                vo.classList.add('active'); 
+                
+                setTimeout(() => {
+                    vo.classList.remove('active'); 
+                    
+                    setTimeout(() => {
+                        document.getElementById('gameHud').style.display = 'none';
+                        document.getElementById('gameBoxWrapper').style.display = 'none';
+                        
+                        const finalScreen = document.getElementById('finalImageScreen');
+                        finalScreen.style.backgroundImage = `url(${loadedImage.src})`;
+                        finalScreen.classList.add('active');
+                        
+                        document.getElementById('tapIndicator').style.display = 'block';
+
+                        if (challenge.msg && challenge.msg.trim() !== "") {
+                            document.getElementById('secretMessageText').innerText = challenge.msg;
+                            
+                            setTimeout(() => {
+                                document.getElementById('secretMessageOverlay').classList.add('active');
+                                victoryState = 1; 
+                            }, 1200);
+
+                        } else {
+                            victoryState = 2; 
+                        }
+                        
+                    }, 800);
+                }, 2500);
+            }
+        }
+
+        function goToCTA() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen(); 
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+            
+            // Ferma e resetta eventuali video
+            const rewardVideo = document.getElementById('rewardVideo');
+            if(rewardVideo) { rewardVideo.pause(); rewardVideo.src = ""; }
+            
+            document.getElementById('screenGame').classList.remove('active');
+            document.getElementById('finalImageScreen').classList.remove('active');
+            document.getElementById('videoPlayerOverlay').classList.remove('active');
+            document.querySelector('.app-container').style.background = '#000';
+            document.getElementById('appBg').style.opacity = '0';
+            document.getElementById('screenCTA').classList.add('active');
+        }
+
+        function resetToHome() { 
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+            window.location.href = window.location.href.split('?')[0]; 
+        }
+
+        function draw() {
+            if (isGameWon) return;
+            let sData = screenImageData.data;
+            for (let y = 0; y < HEIGHT; y++) {
+                for (let x = 0; x < WIDTH; x++) {
+                    let i = (y * WIDTH + x) * 4; let val = grid[y][x];
+                    if (val === 1) {
+                        let isEdge = false;
+                        if (y > 0 && grid[y-1][x] === 0) isEdge = true; else if (y < HEIGHT-1 && grid[y+1][x] === 0) isEdge = true;
+                        else if (x > 0 && grid[y][x-1] === 0) isEdge = true; else if (x < WIDTH-1 && grid[y][x+1] === 0) isEdge = true;
+
+                        if (isEdge) { 
+                            if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) {
+                                sData[i]=colorPixels[i]; sData[i+1]=colorPixels[i+1]; sData[i+2]=colorPixels[i+2]; sData[i+3]=255; 
+                            } else {
+                                sData[i]=0; sData[i+1]=240; sData[i+2]=255; sData[i+3]=255; 
+                            }
+                        } else { sData[i]=colorPixels[i]; sData[i+1]=colorPixels[i+1]; sData[i+2]=colorPixels[i+2]; sData[i+3]=255; }
+                    } else { sData[i]=bwPixels[i]; sData[i+1]=bwPixels[i+1]; sData[i+2]=bwPixels[i+2]; sData[i+3]=255; }
+                }
+            }
+            ctx.putImageData(screenImageData, 0, 0);
+
+            ctx.save();
+            if (trailPoints.length > 0) {
+                let neonPulse = Math.abs(Math.sin(pulseTime));
+                ctx.beginPath();
+                for(let i=0; i<trailPoints.length; i++) { ctx.rect(trailPoints[i].x - 2, trailPoints[i].y - 2, 5, 5); }
+                ctx.shadowBlur = 15 + neonPulse * 15; ctx.shadowColor = '#00f0ff'; ctx.fillStyle = '#00f0ff'; ctx.fill();
+                
+                ctx.beginPath();
+                for(let i=0; i<trailPoints.length; i++) { ctx.rect(trailPoints[i].x, trailPoints[i].y, 1, 1); }
+                ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
+            ctx.restore();
+
+            for(let s of spheres) {
+                ctx.save(); ctx.beginPath();
+                for(let i=0; i<s.history.length; i++) {
+                    let pt = s.history[i]; let alpha = i / s.history.length;
+                    ctx.arc(pt.x, pt.y, s.radius * alpha * 0.8, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255, 0, 85, ${alpha * 0.5})`; ctx.fill();
+                }
+                ctx.closePath(); ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+                ctx.shadowBlur = 15; ctx.shadowColor = '#ff0055';
+                ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.closePath(); ctx.restore();
+            }
+        }
+    </script>
+</body>
+</html>
