@@ -95,6 +95,20 @@ const UnveilGen = (() => {
     return out;
   }
 
+  /* Stima della difficoltà (diff 3 = percorsi tortuosi senza lettere esca):
+     dipende dalla taglia della griglia, cioè dalle lettere da trovare. */
+  const LEVELS = [
+    { name: 'Facile', minutes: '1 minuto', hint: 20, tip: 'Perfetta anche per chi non gioca mai.' },
+    { name: 'Media', minutes: '2 minuti', hint: 30, tip: 'Una bella sfida, senza esagerare.' },
+    { name: 'Impegnativa', minutes: '3-4 minuti', hint: 40, tip: 'Lascia visibile qualche parola per renderla più facile.' },
+    { name: 'Sfida', minutes: '5 minuti o più', hint: 50, tip: 'Per veri appassionati: lascia visibile qualche parola per alleggerirla.' }
+  ];
+  function estimate(nLetters) {
+    const ti = tierFor(nLetters);
+    if (ti < 0) return null;
+    return { level: ti, ...LEVELS[ti], cols: TIERS[ti].cols, rows: TIERS[ti].rows };
+  }
+
   function countLetters(segs, hide) {
     return hide.reduce((a, i) => a + (segs[i] ? segs[i].norm.length : 0), 0);
   }
@@ -127,7 +141,7 @@ const UnveilGen = (() => {
           const diag = dx !== 0 && dy !== 0;
           let score = deg(nx, ny) + rnd() * 1.5;
           if (diff === 0) score += (turn ? 3 : 0) + (diag ? 0.6 : 0);
-          else if (diff === 2) score += (turn ? 0 : 1.6) + (diag ? 0 : 0.5);
+          else if (diff >= 2) score += (turn ? 0 : 1.6) + (diag ? 0 : 0.5);
           cand.push([score, nx, ny, dx, dy]);
         }
         cand.sort((a, b) => a[0] - b[0]);
@@ -288,6 +302,6 @@ const UnveilGen = (() => {
   }
 
   return { GEN_VERSION, MIN_LETTERS, MAX_LETTERS, MAX_CHARS, TIERS, tokenize, defaultHidden,
-           countLetters, tierFor, generate, conflicts, normalize, keyOf };
+           countLetters, tierFor, generate, conflicts, estimate, LEVELS, normalize, keyOf };
 })();
 if (typeof module !== 'undefined') module.exports = UnveilGen;
