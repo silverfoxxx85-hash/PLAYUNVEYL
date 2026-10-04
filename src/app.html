@@ -47,8 +47,10 @@
   #splash.in .wordmark { opacity: 1; transform: none; }
 
   /* ---------- PULSANTI ---------- */
-  .btn-main { width: 100%; height: 58px; border-radius: 999px; background: var(--accent); color: var(--onaccent); font-family: var(--display); font-size: 15px; font-weight: 700; transition: opacity .2s, transform .1s; }
-  .btn-main:active { transform: scale(.98); }
+  .btn-main { width: 100%; height: 58px; border-radius: 999px; background: var(--accent); color: var(--onaccent); font-family: var(--display); font-size: 15px; font-weight: 700; }
+  /* micro-interazioni a molla: si schiaccia al tocco, rimbalza al rilascio */
+  .btn-main, .btn-ghost, .btn-link, .iconbtn, .shufflebtn, #hintBtn, .wtok, .donebtn { transition: opacity .2s, background .25s, transform .45s cubic-bezier(.3,1.8,.5,1); }
+  .btn-main:active:not(:disabled), .btn-ghost:active, .iconbtn:active, .shufflebtn:active, #hintBtn:active:not(:disabled), .wtok:active, .donebtn:active { transform: scale(.94); transition: transform .08s ease; }
   .btn-main:disabled { opacity: .3; cursor: not-allowed; }
   .btn-ghost { width: 100%; height: 52px; border-radius: 999px; background: var(--card); font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .btn-ghost svg { width: 18px; height: 18px; color: var(--accent); }
@@ -61,14 +63,17 @@
   .dmsg { display: flex; gap: 12px; height: 28px; align-items: center; }
   .dmsg .w { display: flex; gap: 3px; }
   .dmsg .w span { width: 18px; height: 25px; border-radius: 6px; background: var(--box); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 21px; transition: background .3s; }
+  .dmsg .w span.on { background: var(--accent); }
   .dmsg .w.done span { background: transparent; }
   .dgrid { position: relative; width: 180px; height: 180px; border-radius: 24px; overflow: hidden; background: var(--board); }
-  .dgrid .pic { position: absolute; inset: 0; background: var(--accent); display: flex; align-items: center; justify-content: center; filter: grayscale(1) blur(5px) brightness(.85); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
+  .demo.reset, .demo.reset * { transition: none !important; }
+  .dgrid .pic { position: absolute; inset: 0; filter: grayscale(1) blur(5px) brightness(.85); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
   .dgrid .pic.clear { filter: none; transform: none; }
+  .dgrid .pic svg { display: block; width: 100%; height: 100%; }
   .dgrid svg.dboard { position: absolute; inset: 0; }
   .dtiles { position: absolute; inset: 0; padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .dtiles span { border-radius: 13px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 21px; transition: all .3s; }
-  .dtiles span.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.04); }
+  .dtiles span { border-radius: 13px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 21px; transition: background .15s, color .15s, opacity .35s, transform .45s cubic-bezier(.3,1.8,.5,1); }
+  .dtiles span.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.06); }
   .dtiles span.gone { opacity: 0; transform: scale(.6); }
   .finger { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: rgba(246,238,244,.35); border: 2px solid rgba(246,238,244,.85); transform: translate(-50%, -50%); transition: left .4s ease, top .4s ease, opacity .25s, scale .15s; pointer-events: none; opacity: 0; }
   .finger.tap { scale: .75; }
@@ -92,19 +97,24 @@
   .home .brand { display: flex; align-items: center; gap: 12px; }
   .home .brand .wordmark { font-size: 30px; }
   .home h1 { font-size: 26px; max-width: 320px; }
+  .home .lead { max-width: 320px; margin-top: -10px; font-size: 15px; }
   .homebtns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 4px; }
 
   /* passo 1 */
   .mediaframe { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 26px; overflow: hidden; background: var(--board); border: 2px dashed #43394d; touch-action: none; }
   .mediaframe.has { border: 0; background: #000; cursor: grab; }
-  .mediaframe .ghost { position: absolute; inset: 0; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(8, 1fr); gap: 7px; opacity: .55; }
-  .mediaframe .ghost span { border-radius: 10px; background: #251e2b; }
+  .mediaframe .ghost { position: absolute; inset: 0; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(8, 1fr); gap: 7px; opacity: .55; z-index: 2; pointer-events: none; transition: background .3s; }
+  .mediaframe .ghost span { border-radius: 10px; background: #251e2b; transition: opacity .3s ease, transform .3s ease; }
+  .mediaframe .ghost.reveal { opacity: 1; background: var(--board); }
+  .mediaframe .ghost.reveal.go { background: transparent; }
+  .mediaframe .ghost.reveal span { background: var(--tile); }
+  .mediaframe .ghost.reveal span.off { opacity: 0; transform: scale(.7); }
   .mediaframe .pickcta { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;
     background: radial-gradient(circle at 50% 50%, rgba(26,21,30,.96) 0, rgba(26,21,30,.86) 38%, rgba(26,21,30,0) 72%); width: 100%; }
   .pickcta .plus { width: 72px; height: 72px; border-radius: 24px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
   .pickcta b { font-family: var(--display); font-weight: 700; font-size: 16px; }
   .pickcta span.s { font-size: 14px; color: var(--soft); }
-  .mediaframe.has .ghost, .mediaframe.has .pickcta { display: none; }
+  .mediaframe.has .pickcta, .mediaframe.has .ghost:not(.reveal) { display: none; }
   .camrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .croprow { display: flex; justify-content: space-between; align-items: center; color: var(--soft); font-size: 14px; }
   .media { position: absolute; max-width: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
@@ -118,8 +128,11 @@
   .pv svg.pboard { position: absolute; inset: 0; display: block; }
   .pv .ptiles { position: absolute; inset: 0; display: grid; transition: opacity .2s; }
   .pv .ptiles.swap { opacity: 0; }
-  .pv .ptiles span { display: flex; align-items: center; justify-content: center; background: var(--tile); font-family: var(--display); font-weight: 700; transition: opacity .35s ease, transform .35s ease; }
-  .pv .ptiles span.gone { opacity: 0; transform: scale(.65); }
+  .pv .ptiles span { display: flex; align-items: center; justify-content: center; background: var(--tile); font-family: var(--display); font-weight: 700; transition: background .12s, color .12s, opacity .5s ease, transform .45s cubic-bezier(.3,1.8,.5,1); }
+  .pv .ptiles span.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.06); }
+  .pv .ptiles span.gone { opacity: 0; transform: scale(.65); transition: opacity .5s ease, transform .5s ease; }
+  .pv svg.ptrace { position: absolute; inset: 0; pointer-events: none; }
+  .pv svg.ptrace polyline { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; opacity: .4; transition: opacity .3s; }
   .pv .phint { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 14px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink);
     background: linear-gradient(to top, rgba(19,15,22,.85), rgba(19,15,22,0) 55%); }
   .shufflebtn { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; margin-top: -6px; border-radius: 999px; background: var(--card); font-size: 14px; font-weight: 600; }
@@ -142,15 +155,12 @@
   .liveprev .empty { color: var(--soft); font-size: 15px; font-weight: 500; line-height: 1.4; }
   .wtok { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; padding: 0 3px; border-radius: 8px; white-space: nowrap; font-size: 20px; font-weight: 600; transition: background .25s; }
   .wtok.off { text-decoration: underline dotted var(--soft); text-underline-offset: 6px; }
-  .wtok.lit { background: rgba(179,166,255,.22); }
-  .wtok.lit .box { background: var(--accent); }
+  .wtok .box.on { background: var(--accent); }
   .shake { animation: shake .35s; }
   .fixedtxt, .typing { color: var(--soft); }
-  .box { display: inline-block; width: 13px; height: 18px; border-radius: 5px; background: var(--box); transition: background .25s; }
+  .box { display: inline-block; width: 13px; height: 18px; border-radius: 5px; background: var(--box); transition: background .2s, transform .35s cubic-bezier(.3,1.8,.5,1); }
+  .box.on { transform: translateY(-2px); }
   @keyframes shake { 0%,100% { transform: none } 25% { transform: translateX(-4px) } 75% { transform: translateX(4px) } }
-  .ideas { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
-  .ideas::-webkit-scrollbar { display: none; }
-  .idea { flex-shrink: 0; padding: 10px 15px; border-radius: 999px; background: var(--card); font-size: 14px; font-weight: 600; }
   .tawrap { position: relative; }
   textarea.msg { width: 100%; height: 92px; padding: 14px 16px; border-radius: 18px; border: 2px solid var(--line); background: var(--card); font-size: 17px; font-weight: 500; line-height: 1.35; resize: none; }
   textarea.msg:focus { outline: none; border-color: var(--accent); }
@@ -167,7 +177,22 @@
   .s2:not(.writing) .lvl { flex-direction: row; align-items: center; justify-content: space-between; }
   .s2:not(.writing) .pv .phint { font-size: 15px; }
 
-  /* passo 3 */
+  /* pannello di invio */
+  .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(8,6,10,.6); opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .ssheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; background: var(--card); border-radius: 28px 28px 0 0; padding: 10px 20px max(20px, env(safe-area-inset-bottom));
+    transform: translateY(105%); transition: transform .45s cubic-bezier(.2,.9,.25,1.05); }
+  .ssheet.show { transform: none; }
+  .ssheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+  .ssheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); align-self: center; margin-bottom: 4px; }
+  .ssheet h2 { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -.02em; }
+  .ssheet .input { background: var(--bg); }
+  .ssheet .btn-ghost { background: var(--bg); }
+  .ssheet .sendbox { background: var(--bg); padding: 18px 16px; }
+  .ssheet .donebox { display: none; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 6px 0 4px; }
+  .ssheet.sent .donebox { display: flex; }
+  .ssheet.sent .sendform { display: none; }
+  .sendform { display: flex; flex-direction: column; gap: 14px; }
   .field { display: flex; flex-direction: column; gap: 8px; }
   .input { height: 54px; padding: 0 18px; border-radius: 18px; border: 2px solid var(--line); background: var(--card); font-size: 17px; font-weight: 500; }
   .input:focus { outline: none; border-color: var(--accent); }
@@ -203,8 +228,9 @@
   svg.board { position: absolute; inset: 0; display: block; }
   .tiles { position: absolute; inset: 0; display: grid; touch-action: none; }
   .tile { display: flex; align-items: center; justify-content: center; border-radius: var(--tr, 14px); background: var(--tile); color: var(--ink);
-    font-family: var(--display); font-size: var(--fs, 22px); font-weight: 700; user-select: none; transition: transform .3s ease, opacity .3s ease, background .15s; }
-  .tile.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.04); }
+    font-family: var(--display); font-size: var(--fs, 22px); font-weight: 700; user-select: none; transition: transform .45s cubic-bezier(.3,1.8,.5,1), opacity .3s ease, background .12s, color .12s; }
+  .tile.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.07); }
+  .tile.gone { transition: transform .3s ease, opacity .3s ease; }
   .tile.hint { box-shadow: inset 0 0 0 2.5px var(--accent); }
   .tile.gone { opacity: 0; transform: scale(.6); pointer-events: none; }
   .tiles.shake { animation: shake .3s; }
@@ -242,6 +268,9 @@
   .fmsg { font-size: 27px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
   .fstats { font-size: 14px; color: var(--soft); }
   .fbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .confetti { position: fixed; inset: 0; z-index: 54; pointer-events: none; overflow: hidden; }
+  .confetti i { position: absolute; top: -20px; border-radius: 2px; animation: fall var(--d, 2.6s) cubic-bezier(.25,.6,.45,1) var(--w, 0s) forwards; opacity: 0; }
+  @keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0) } 85% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--x, 0), 105vh) rotate(var(--r, 360deg)) } }
   @media (prefers-reduced-motion: reduce) {
     #zoomer.anim, #zoomer.anim .media { transition: filter .6s ease; }
     .step { animation: none; }
@@ -267,7 +296,8 @@
     <!-- 0 · HOME -->
     <div class="step home" data-step="0">
       <div class="brand"><span id="homeLogo"></span><span class="wordmark" aria-label="unveil">unve<span class="i">ı<i></i></span>l</span></div>
-      <h1>Nascondi una foto tra le parole.</h1>
+      <h1>Spoiler: dovrà guadagnarsela.</h1>
+      <p class="lead">Nascondi una foto o un video dietro un messaggio: per vederla dovrà trovare tutte le parole.</p>
       <div class="demo" id="homeDemo" aria-hidden="true"></div>
       <div class="homebtns" id="homeBtns"><button class="btn-main" onclick="newDraft()">Nascondi qualcosa</button></div>
     </div>
@@ -300,6 +330,7 @@
         <div class="pv" id="pv">
           <svg class="pboard" id="pBoard"><defs><mask id="pMask" maskUnits="userSpaceOnUse" x="0" y="0"><rect id="pMaskRect" fill="#fff"/><path id="pHoles" fill="#000"/></mask></defs><rect id="pBoardRect" style="fill:var(--board)" mask="url(#pMask)"/></svg>
           <div class="ptiles" id="pTiles"></div>
+          <svg class="ptrace" id="pTrace"><polyline points=""/></svg>
           <div class="phint" id="pHint">Scrivi il messaggio: le parole copriranno la tua foto</div>
         </div>
         <button class="shufflebtn reviewonly" id="shuffleBtn" onclick="reshuffle()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c4 0 5 8 9 8H17M14 11.5l3 2.5-3 2.5M3 14h3.5c1.4 0 2.4-.9 3.2-2.1M12.4 7.6C13.1 6.6 14 6 15.5 6H17M14 3.5L17 6l-3 2.5"/></svg>Rimescola</button>
@@ -318,7 +349,6 @@
         <div class="liveprev" id="livePrev"></div>
       </div>
       <p class="note" id="msgNote"></p>
-      <div class="ideas" id="ideas"></div>
       <div class="tawrap">
         <label class="sr" for="msgIn">Messaggio segreto</label>
         <textarea id="msgIn" class="msg" maxlength="140" placeholder="Scrivi qui il tuo messaggio…" enterkeyhint="done"></textarea>
@@ -327,14 +357,21 @@
       <button class="btn-ghost reviewonly" onclick="tryLocal()" id="tryBtn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg>Prova a giocare</button>
     </div>
 
-    <!-- 3 · INVIO -->
-    <div class="step" data-step="3">
-      <h1 id="sendTitle">Per chi è?</h1>
+  </main>
+
+  <div class="cfoot" id="cfoot"><button class="btn-main" id="nextBtn" onclick="nextStep()">Avanti</button></div>
+
+  <!-- INVIO: pannello dal basso -->
+  <div class="scrim" id="scrim" onclick="closeSend()"></div>
+  <div class="ssheet" id="sendSheet" role="dialog" aria-modal="true" aria-labelledby="sendTitle"><div class="in">
+    <span class="grab"></span>
+    <div class="sendform">
+      <h2 id="sendTitle">Per chi è?</h2>
       <div class="field">
         <label class="sr" for="nameIn">Il suo nome</label>
         <input class="input" id="nameIn" maxlength="24" placeholder="Il suo nome (facoltativo)" autocomplete="off" enterkeyhint="done">
       </div>
-      <div class="sendbox">
+      <div class="sendbox" id="sendBox">
         <div id="sendLogo"></div>
         <span class="stxt" id="sendTxt">Sto caricando la tua sorpresa</span>
       </div>
@@ -343,11 +380,15 @@
         <button class="btn-ghost" onclick="copyLink(this)">Copia il link</button>
       </div>
       <button class="btn-ghost" id="retryBtn" style="display:none" onclick="makeLink()">Riprova</button>
-      <button class="btn-link" onclick="restart()" style="align-self:center">Nascondi qualcos'altro</button>
     </div>
-  </main>
-
-  <div class="cfoot" id="cfoot"><button class="btn-main" id="nextBtn" onclick="nextStep()">Avanti</button></div>
+    <div class="donebox">
+      <div id="doneLogo"></div>
+      <h2 id="doneTitle">Inviata!</h2>
+      <p class="lead" id="doneTxt"></p>
+      <button class="btn-main" onclick="restart()" style="margin-top:8px">Nascondi qualcos'altro</button>
+      <button class="btn-link" onclick="closeSend()">Chiudi</button>
+    </div>
+  </div></div>
 </section>
 
 <!-- ======================= PARTITA ======================= -->
@@ -411,13 +452,6 @@ const CLOUDINARY_PRESET = "sito_upload";
 const VIDEO_MAX_S = 15;
 const BLUR_PX = 6;           // sfocatura della foto (partita e anteprima)
 const GAME_DIFF = 3;         // percorsi tortuosi, riempimento normale
-const IDEAS = [
-  ['Compleanno', 'Buon compleanno amore mio, stasera ti porto a cena'],
-  ['Anniversario', 'Un anno insieme e ti amo ogni giorno di più'],
-  ['Viaggio', 'Prepara la valigia, venerdì partiamo per Parigi'],
-  ['Annuncio', 'Stiamo aspettando un bambino, diventerai zia'],
-  ['Scuse', 'Scusami per ieri, stasera cucino io'],
-];
 const INTRO_TXT = 'Trascina il dito sulle lettere vicine, anche in diagonale, oppure toccale una per una.';
 const G = UnveilGen;
 const $ = s => document.querySelector(s);
@@ -564,53 +598,81 @@ const SFX = (() => {
 ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => SFX.unlock(), { once: true, capture: true }));
 
 /* ============================================================
-   DEMO: GIOCA trascinata, ORA a tocchi, poi si svela il logo
+   DEMO: GIOCA trascinata, ORA a tocchi, poi si svela il selfie.
+   Un solo orologio (requestAnimationFrame): ogni giro riparte da zero,
+   parte solo quando è visibile e si ferma quando la pagina è nascosta.
    ============================================================ */
-const DEMO_L = 'GIOACOEAR', DEMO_W1 = [0, 1, 2, 4, 3], DEMO_W2 = [5, 8, 7];
+const DEMO_PIC = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><defs><linearGradient id="sfBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc2d1"/><stop offset="1" stop-color="#b3a6ff"/></linearGradient><clipPath id="sfClip"><rect width="180" height="180"/></clipPath></defs><g clip-path="url(#sfClip)"><rect width="180" height="180" fill="url(#sfBg)"/><g fill="#fff" opacity=".45"><circle cx="18" cy="22" r="9"/><circle cx="160" cy="30" r="12"/><circle cx="150" cy="96" r="7"/><circle cx="26" cy="104" r="6"/></g><path d="M0 14 Q45 34 90 12 T180 18" fill="none" stroke="#fff" stroke-width="1.4" opacity=".7"/><g><circle cx="12" cy="18" r="4" fill="#ffd36b"/><circle cx="40" cy="27" r="4" fill="#7fd6c2"/><circle cx="68" cy="22" r="4" fill="#ff8fab"/><circle cx="112" cy="16" r="4" fill="#ffd36b"/><circle cx="140" cy="20" r="4" fill="#7fd6c2"/><circle cx="168" cy="16" r="4" fill="#ff8fab"/></g><g><rect x="22" y="48" width="7" height="4" rx="1" fill="#ffd36b" transform="rotate(25 25 50)"/><rect x="150" y="60" width="7" height="4" rx="1" fill="#fff" transform="rotate(-30 153 62)"/><rect x="138" y="128" width="7" height="4" rx="1" fill="#7fd6c2" transform="rotate(40 141 130)"/><rect x="36" y="78" width="6" height="4" rx="1" fill="#fff" transform="rotate(-15 39 80)"/><rect x="160" y="146" width="7" height="4" rx="1" fill="#ffd36b" transform="rotate(10 163 148)"/><rect x="14" y="132" width="7" height="4" rx="1" fill="#ff8fab" transform="rotate(-40 17 134)"/><rect x="126" y="44" width="6" height="4" rx="1" fill="#ff8fab" transform="rotate(60 129 46)"/></g><!-- capelli dietro --><path d="M52 92 C46 52 70 34 94 34 C122 34 140 54 136 92 C134 118 142 140 138 160 L50 160 C44 140 54 118 52 92Z" fill="#5a3326"/><!-- corpo e braccio teso verso la fotocamera --><path d="M58 150 C42 158 22 170 8 186 L34 194 C44 182 58 172 70 164Z" fill="#eab08c"/><path d="M40 180 C40 152 62 140 94 140 C126 140 148 152 148 180Z" fill="#ffd36b"/><path d="M78 141 Q94 152 110 141" fill="none" stroke="#f0bf4f" stroke-width="3"/><!-- collo e viso --><path d="M84 118 h20 v26 q-10 6 -20 0Z" fill="#e3a682"/><ellipse cx="94" cy="92" rx="31" ry="35" fill="#f2c09e"/><ellipse cx="63" cy="96" rx="5" ry="7" fill="#eab08c"/><ellipse cx="125" cy="96" rx="5" ry="7" fill="#eab08c"/><!-- frangia --><path d="M62 84 C62 58 80 50 96 52 C114 52 128 62 127 84 C118 70 104 64 92 64 C80 66 70 72 62 84Z" fill="#5a3326"/><!-- occhi felici, guance, sorriso --><g fill="none" stroke="#3a2420" stroke-width="3" stroke-linecap="round"><path d="M74 92 q6 -7 12 0"/><path d="M102 92 q6 -7 12 0"/></g><ellipse cx="74" cy="104" rx="6" ry="3.6" fill="#ff8fab" opacity=".6"/><ellipse cx="114" cy="104" rx="6" ry="3.6" fill="#ff8fab" opacity=".6"/><path d="M82 106 Q94 106 106 106 Q104 120 94 120 Q84 120 82 106Z" fill="#8a2f3c"/><path d="M84 107 Q94 108 104 107 L103 110 Q94 111 85 110Z" fill="#fff"/><path d="M88 116 Q94 113 100 116 Q97 119.5 94 119.5 Q91 119.5 88 116Z" fill="#ff8fab"/><!-- cappellino da festa --><g transform="translate(6 -13) rotate(16 104 50)"><path d="M88 56 L106 18 L124 56Z" fill="#b3a6ff"/><path d="M93 43 L119 43 L122 50 L90 50Z M101 31 L111 31 L113.5 37 L98.5 37Z" fill="#fff" opacity=".85"/><rect x="85" y="52" width="42" height="7" rx="3.5" fill="#fff"/><circle cx="106" cy="18" r="5.5" fill="#ff8fab"/></g></g></svg>';
+const DEMO_L = 'GIOACOEAR', DEMO_W1 = [0, 1, 2, 4, 3], DEMO_W2 = [5, 8, 7], DEMO_CYCLE = 9400;
+let splashDone = false;
+const DEMOS = [];
 function mountDemo(root) {
+  const uid = root.id;
   root.innerHTML = `<div class="dmsg"><span class="w" data-w="0">${'<span></span>'.repeat(5)}</span><span class="w" data-w="1">${'<span></span>'.repeat(3)}</span></div>
-    <div class="dgrid"><div class="pic">${logoSVG(118, 'static', 'transparent').replace(/fill="#3a3142"/g, '')}</div>
-      <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${root.id}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${root.id})"/></svg>
+    <div class="dgrid"><div class="pic">${DEMO_PIC.replace(/sfBg/g, 'sfBg' + uid).replace(/sfClip/g, 'sfClip' + uid)}</div>
+      <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
       <div class="dtiles">${[...DEMO_L].map(l => `<span>${l}</span>`).join('')}</div><div class="finger"></div></div>`;
-  // logo dentro la foto finta: caselle scure su fondo lilla, l'ultima bianca
-  root.querySelectorAll('.pic rect.on').forEach(r => r.style.fill = '#130f16');
-  root.querySelectorAll('.pic rect.acc').forEach(r => r.style.fill = '#f6eef4');
   const tiles = [...root.querySelectorAll('.dtiles span')], fg = root.querySelector('.finger'), pic = root.querySelector('.pic');
   const holes = root.querySelector('.dh'), words = [...root.querySelectorAll('.dmsg .w')];
   const geo = { sw: 52, sh: 52, gap: 6, pad: 6, cols: 3, rows: 3, r: 13 };
   const pos = i => [6 + (i % 3) * 58 + 26, 6 + ((i / 3) | 0) * 58 + 26];
-  let T = [], open = new Set();
-  const at = (ms, f) => T.push(setTimeout(f, ms));
+  let open = new Set();
   const move = (i, instant) => { const [x, y] = pos(i); if (instant) fg.style.transition = 'none'; fg.style.left = x + 'px'; fg.style.top = y + 'px'; if (instant) { void fg.offsetWidth; fg.style.transition = ''; } };
+  const drawHoles = () => holes.setAttribute('d', holesPath(open, geo));
   const found = (cells, w, txt) => {
     cells.forEach(c => { tiles[c].classList.remove('sel'); tiles[c].classList.add('gone'); open.add(c); });
-    at(140, () => holes.setAttribute('d', holesPath(open, geo)));
     words[w].classList.add('done'); [...words[w].children].forEach((s, k) => s.textContent = txt[k]);
   };
-  function cycle() {
+  function reset() {
+    root.classList.add('reset');
     open = new Set(); holes.setAttribute('d', ''); pic.classList.remove('clear');
     tiles.forEach(t => t.classList.remove('sel', 'gone'));
     words.forEach(w => { w.classList.remove('done'); [...w.children].forEach(s => s.textContent = ''); });
-    move(0, true); fg.style.opacity = 0;
-    // GIOCA trascinando
-    at(400, () => { fg.style.opacity = 1; tiles[0].classList.add('sel'); });
-    DEMO_W1.slice(1).forEach((c, k) => at(850 + k * 430, () => { move(c); at(220, () => tiles[c].classList.add('sel')); }));
-    at(850 + 4 * 430 + 250, () => { fg.style.opacity = 0; found(DEMO_W1, 0, 'GIOCA'); });
-    // ORA toccando
-    const t2 = 3200;
-    DEMO_W2.forEach((c, k) => at(t2 + k * 480, () => {
-      move(c, k === 0); fg.style.opacity = 1;
-      at(180, () => { fg.classList.add('tap'); tiles[c].classList.add('sel'); });
-      at(330, () => fg.classList.remove('tap'));
-    }));
-    at(t2 + 3 * 480 + 150, () => { fg.style.opacity = 0; found(DEMO_W2, 1, 'ORA'); });
-    // svelamento finale
-    at(t2 + 3 * 480 + 800, () => { tiles[6].classList.add('gone'); open.add(6); holes.setAttribute('d', holesPath(open, geo)); });
-    at(t2 + 3 * 480 + 1100, () => pic.classList.add('clear'));
-    at(t2 + 3 * 480 + 3600, cycle);
+    fg.classList.remove('tap'); fg.style.opacity = 0; move(0, true);
+    void root.offsetWidth; root.classList.remove('reset');
   }
-  return { start() { this.stop(); if (reducedMotion()) { found(DEMO_W1, 0, 'GIOCA'); found(DEMO_W2, 1, 'ORA'); return; } cycle(); }, stop() { T.forEach(clearTimeout); T = []; } };
+  // la sequenza, in millisecondi dall'inizio del giro (la griglia resta piena per 700 ms)
+  const EV = [], at = (t, f) => EV.push([t, f]);
+  at(700, () => { fg.style.opacity = 1; tiles[0].classList.add('sel'); });
+  DEMO_W1.slice(1).forEach((c, k) => { at(1150 + k * 430, () => move(c)); at(1370 + k * 430, () => tiles[c].classList.add('sel')); });
+  const f1 = 1150 + 3 * 430 + 470;
+  at(f1, () => { fg.style.opacity = 0; found(DEMO_W1, 0, 'GIOCA'); });
+  at(f1 + 140, drawHoles);
+  const t2 = f1 + 650;
+  DEMO_W2.forEach((c, k) => {
+    at(t2 + k * 480, () => { move(c, k === 0); fg.style.opacity = 1; });
+    at(t2 + k * 480 + 180, () => { fg.classList.add('tap'); tiles[c].classList.add('sel'); });
+    at(t2 + k * 480 + 330, () => fg.classList.remove('tap'));
+  });
+  const f2 = t2 + 3 * 480 + 150;
+  at(f2, () => { fg.style.opacity = 0; found(DEMO_W2, 1, 'ORA'); });
+  at(f2 + 140, drawHoles);
+  at(f2 + 650, () => { tiles[6].classList.add('gone'); open.add(6); drawHoles(); });
+  at(f2 + 950, () => pic.classList.add('clear'));
+  EV.sort((a, b) => a[0] - b[0]);
+
+  let raf = 0, t0 = 0, idx = 0;
+  const d = { wanted: false, running: false };
+  function frame(now) {
+    if (!d.running) return;
+    let t = now - t0;
+    if (t >= DEMO_CYCLE) { t0 = now; t = 0; idx = 0; reset(); }
+    while (idx < EV.length && EV[idx][0] <= t) EV[idx++][1]();
+    raf = requestAnimationFrame(frame);
+  }
+  d.run = () => {
+    cancelAnimationFrame(raf); reset();
+    if (reducedMotion()) { found(DEMO_W1, 0, 'GIOCA'); found(DEMO_W2, 1, 'ORA'); tiles[6].classList.add('gone'); open.add(6); drawHoles(); pic.classList.add('clear'); return; }
+    d.running = true; idx = 0; t0 = performance.now(); raf = requestAnimationFrame(frame);
+  };
+  d.pause = () => { d.running = false; cancelAnimationFrame(raf); };
+  d.start = () => { d.wanted = true; if (splashDone && !document.hidden) d.run(); };
+  d.stop = () => { d.wanted = false; d.pause(); };
+  DEMOS.push(d);
+  return d;
 }
+function kickDemos() { DEMOS.forEach(d => { if (d.wanted && !d.running) d.run(); }); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) DEMOS.forEach(d => d.pause()); else kickDemos(); });
 const homeDemo = mountDemo($('#homeDemo')), introDemo = mountDemo($('#introDemo'));
 
 /* ============================================================
@@ -618,7 +680,7 @@ const homeDemo = mountDemo($('#homeDemo')), introDemo = mountDemo($('#introDemo'
    ============================================================ */
 const C = { step: 0, kind: null, file: null, blob: null, url: null, natW: 0, natH: 0, cx: .5, cy: .5, z: 1, mediaEl: null, pvMedia: null,
             msg: '', segs: [], hide: new Set(), ovr: new Map(), typing: -1, name: '', seed: randomSeed(), upload: null, grid: null, gridKey: '' };
-const STEPS = 3, DRAFT_KEY = 'unveil:draft';
+const STEPS = 2, DRAFT_KEY = 'unveil:draft';
 $('#cropFrame').querySelector('.ghost').innerHTML = '<span></span>'.repeat(48);
 $('#headLogo').innerHTML = logoSVG(28, 'static', '#1e1823');
 $('#homeLogo').innerHTML = logoSVG(44, 'static', '#1e1823'); $('#homeLogo svg').classList.add('breathe');
@@ -630,11 +692,11 @@ function goStep(n) {
   $('#chead').style.visibility = n === 0 ? 'hidden' : 'visible';
   $('#stepDots').innerHTML = Array.from({ length: STEPS }, (_, i) => `<i class="${i + 1 === n ? 'on' : i + 1 < n ? 'done' : ''}"></i>`).join('');
   $('#steps').scrollTop = 0;
-  $('#cfoot').style.display = n === 0 || n === 3 ? 'none' : 'block';
+  $('#cfoot').style.display = n === 0 ? 'none' : 'block';
+  $('#nextBtn').textContent = n === 2 ? 'Invia' : 'Avanti';
   if (n === 0) homeDemo.start(); else homeDemo.stop();
   if (n === 1) layoutCrop();
   if (n === 2) { setWriting(document.activeElement === $('#msgIn')); recompute(); renderMsg(); refreshPreview(true); } else stopLoop();
-  if (n === 3) { $('#nameIn').value = C.name; makeLink(); }
   validate(); saveDraft();
 }
 function goBack() { goStep(C.step === 1 ? 0 : C.step - 1); }
@@ -647,7 +709,7 @@ function validate() {
 function nextStep() {
   if (C.step === 2) { $('#msgIn').blur(); C.typing = -1; recompute(); renderMsg(); validate(); }
   if ($('#nextBtn').disabled) return;
-  if (C.step === 2 && !ensureSeed()) return;
+  if (C.step === 2) { if (ensureSeed()) openSend(); return; }
   goStep(C.step + 1);
   // passo 2: la tastiera si apre subito (va chiamato dentro il tocco, per iPhone)
   if (C.step === 2 && !C.msg.trim()) $('#msgIn').focus();
@@ -740,7 +802,7 @@ async function loadMedia(file, opts = {}) {
     }
   } catch (e) { return showErr('Non riesco a leggere questo file. Prova con un altro.'); }
   $('#cropFrame').classList.add('has'); $('#cropRow').style.display = 'flex'; $('#camRow').style.display = 'none';
-  layoutCrop(); validate();
+  layoutCrop(); validate(); revealGhost();
   // nuova copia per l'anteprima del passo 2
   if (C.pvMedia) C.pvMedia.remove();
   C.pvMedia = makeMediaEl(C.kind, C.url); $('#pv').insertBefore(C.pvMedia, $('#pv').firstChild); C.gridKey = '';
@@ -748,6 +810,16 @@ async function loadMedia(file, opts = {}) {
   if (opts.uploadUrl) { const job = { url: opts.uploadUrl, progress: 1, error: null }; job.promise = Promise.resolve(opts.uploadUrl); C.upload = job; }
   else startUpload();
   saveDraft();
+}
+/* al caricamento le caselle si dissolvono in ordine casuale e scoprono la foto */
+function revealGhost() {
+  const g = $('#cropFrame .ghost'), sp = [...g.children];
+  clearTimeout(revealGhost._t); g.classList.remove('reveal', 'go'); sp.forEach(x => x.classList.remove('off'));
+  if (reducedMotion() || C.step !== 1) return;
+  g.classList.add('reveal'); void g.offsetWidth;
+  const order = sp.map((_, i) => i).sort(() => Math.random() - .5);
+  requestAnimationFrame(() => { g.classList.add('go'); order.forEach((i, k) => setTimeout(() => sp[i].classList.add('off'), k * 420 / sp.length)); });
+  revealGhost._t = setTimeout(() => g.classList.remove('reveal', 'go'), 950);
 }
 function setCropMedia(el) { if (C.mediaEl) C.mediaEl.remove(); C.mediaEl = el; $('#cropFrame').appendChild(el); }
 function layoutCrop() {
@@ -805,8 +877,6 @@ function startUpload() {
 }
 
 /* --- 2 · messaggio, anteprima dal vivo, difficoltà --- */
-$('#ideas').innerHTML = IDEAS.map(([k], i) => `<button class="idea" data-i="${i}" onmousedown="event.preventDefault()">${k}</button>`).join('');
-$('#ideas').addEventListener('click', e => { const b = e.target.closest('.idea'); if (!b) return; $('#msgIn').value = IDEAS[+b.dataset.i][1]; C.ovr.clear(); $('#msgIn').blur(); onMsg(); });
 $('#msgIn').addEventListener('input', () => onMsg());
 $('#msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#msgIn').blur(); } });
 $('#msgIn').addEventListener('focus', () => { setWriting(true); recompute(); renderMsg(); });
@@ -819,10 +889,13 @@ function setWriting(w) {
 }
 function wordKey(i) { const s = C.segs[i]; let n = 0; for (let j = 0; j < i; j++) if (C.segs[j].type === 'w' && C.segs[j].norm === s.norm) n++; return s.norm + '#' + n; }
 function onMsg(silent) {
+  const before = new Set([...C.hide].map(wordKey));
   C.msg = $('#msgIn').value;
   $('#charCount').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
-  $('#ideas').style.display = C.msg.trim() ? 'none' : 'flex';
-  recompute(); if (!silent) { renderMsg(); refreshPreviewSoon(); } validate(); saveDraft();
+  recompute();
+  // la parola appena completata (se ora è nascosta) si anima una volta nell'anteprima
+  const fresh = [...C.hide].filter(i => !before.has(wordKey(i))).sort((a, b) => b - a)[0];
+  if (!silent) { renderMsg(); refreshPreviewSoon(fresh); } validate(); saveDraft();
 }
 function recompute() {
   C.segs = G.tokenize(C.msg);
@@ -893,7 +966,10 @@ function ensureSeed() {
 
 /* anteprima: la griglia vera sulla foto, rigenerata quando cambiano le parole */
 let pvT = null, PGEO = null, loopT = [];
-function refreshPreviewSoon() { clearTimeout(pvT); pvT = setTimeout(() => refreshPreview(false), 220); }
+function refreshPreviewSoon(focusSeg) {
+  if (focusSeg !== undefined) refreshPreviewSoon.f = focusSeg;
+  clearTimeout(pvT); pvT = setTimeout(() => { const f = refreshPreviewSoon.f; refreshPreviewSoon.f = undefined; refreshPreview(false, f); }, 220);
+}
 function layoutPreview() {
   const pv = $('#pv'); if (!pv || C.step !== 2) return;
   const writing = $('#step2').classList.contains('writing');
@@ -927,33 +1003,57 @@ function drawPreviewGrid() {
   tl.style.padding = PGEO.pad + 'px'; tl.style.gap = PGEO.gap + 'px';
   tl.innerHTML = g.letters.map(l => `<span style="border-radius:${PGEO.r}px;font-size:${Math.round(Math.min(PGEO.sw, PGEO.sh) * .42)}px">${l}</span>`).join('');
   $('#pHoles').setAttribute('d', '');
+  $('#pTrace').setAttribute('viewBox', `0 0 ${w} ${h}`);
+  $('#pTrace polyline').setAttribute('stroke-width', Math.round(Math.min(PGEO.sw, PGEO.sh) * .32));
 }
-/* giro delle parole: ogni parola apre la sua zona (foto in b/n sfocata come in partita), alla fine la foto intera a colori */
+/* giro delle parole: le caselle si accendono una alla volta nell'ordine delle lettere (con la linea),
+   insieme alle caselline del messaggio; poi la parola sparisce e apre la sua zona per un secondo.
+   Alla fine tutta la foto, a colori. Con la tastiera aperta si anima solo la parola appena scritta. */
+const pCenter = i => [PGEO.pad + (i % PGEO.cols) * (PGEO.sw + PGEO.gap) + PGEO.sw / 2, PGEO.pad + ((i / PGEO.cols) | 0) * (PGEO.sh + PGEO.gap) + PGEO.sh / 2];
 function stopLoop() {
   loopT.forEach(clearTimeout); loopT = [];
+  $('#pTrace polyline').setAttribute('points', '');
+  document.querySelectorAll('#livePrev .box.on').forEach(b => b.classList.remove('on'));
   if (!C.grid) return;
   $('#pv').classList.remove('clear'); $('#pHoles').setAttribute('d', '');
-  [...$('#pTiles').children].forEach(t => t.classList.remove('gone'));
-  document.querySelectorAll('#livePrev .wtok.lit').forEach(b => b.classList.remove('lit'));
+  [...$('#pTiles').children].forEach(t => t.classList.remove('gone', 'sel'));
+}
+const LT = { letter: 120, pause: 280, fade: 500, open: 1000, close: 450 };
+function playWord(w, t, at) {
+  const tiles = [...$('#pTiles').children], line = $('#pTrace polyline');
+  const bx = () => [...document.querySelectorAll(`#livePrev .wtok[data-i="${w.seg}"] .box`)];
+  w.cells.forEach((c, k) => at(t + k * LT.letter, () => {
+    tiles[c] && tiles[c].classList.add('sel'); const b = bx()[k]; b && b.classList.add('on');
+    line.style.opacity = ''; line.setAttribute('points', w.cells.slice(0, k + 1).map(i => pCenter(i).map(v => v.toFixed(1)).join(',')).join(' '));
+  }));
+  const tf = t + w.cells.length * LT.letter + LT.pause;
+  at(tf, () => { line.style.opacity = 0; w.cells.forEach(c => tiles[c] && tiles[c].classList.add('gone')); });
+  at(tf + 150, () => $('#pHoles').setAttribute('d', holesPath(new Set(w.cells), PGEO)));
+  const tc = tf + LT.fade + LT.open;
+  at(tc, () => {
+    $('#pHoles').setAttribute('d', ''); line.setAttribute('points', '');
+    w.cells.forEach(c => tiles[c] && tiles[c].classList.remove('gone', 'sel')); bx().forEach(b => b.classList.remove('on'));
+  });
+  return tc + LT.close;
 }
 function restartLoop(focusSeg) {
   stopLoop();
-  if (!C.grid || C.step !== 2 || $('#step2').classList.contains('writing') || reducedMotion()) return;
-  const tiles = [...$('#pTiles').children], words = C.grid.words;
+  if (!C.grid || C.step !== 2 || reducedMotion()) return;
+  const words = C.grid.words, at = (ms, fn) => loopT.push(setTimeout(fn, ms));
+  if ($('#step2').classList.contains('writing')) {
+    const w = words.find(x => x.seg === focusSeg);
+    if (w) playWord(w, 200, at);
+    return;
+  }
   let order = words.map((w, i) => i);
   const f = words.findIndex(w => w.seg === focusSeg); if (f > 0) order = [...order.slice(f), ...order.slice(0, f)];
-  const at = (ms, fn) => loopT.push(setTimeout(fn, ms));
   let t = 450;
-  order.forEach(wi => {
-    const w = words[wi], btn = document.querySelector(`#livePrev .wtok[data-i="${w.seg}"]`);
-    at(t, () => { w.cells.forEach(c => tiles[c] && tiles[c].classList.add('gone')); btn && btn.classList.add('lit');
-      setTimeout(() => $('#pHoles').setAttribute('d', holesPath(new Set(w.cells), PGEO)), 120); });
-    at(t + 1400, () => { $('#pHoles').setAttribute('d', ''); w.cells.forEach(c => tiles[c] && tiles[c].classList.remove('gone')); btn && btn.classList.remove('lit'); });
-    t += 1800;
-  });
-  at(t, () => { tiles.forEach(x => x.classList.add('gone')); $('#pHoles').setAttribute('d', holesPath(new Set(tiles.map((_, i) => i)), PGEO)); });
-  at(t + 300, () => $('#pv').classList.add('clear'));
-  at(t + 2300, () => restartLoop());
+  order.forEach(wi => { t = playWord(words[wi], t, at); });
+  const tiles = [...$('#pTiles').children];
+  at(t, () => { tiles.forEach(x => x.classList.add('gone')); });
+  at(t + 150, () => $('#pHoles').setAttribute('d', holesPath(new Set(tiles.map((_, i) => i)), PGEO)));
+  at(t + 400, () => $('#pv').classList.add('clear'));
+  at(t + 2600, () => restartLoop());
 }
 function reshuffle() { C.seed = randomSeed(); refreshPreview(true); saveDraft(); }
 function cropFractions() {
@@ -967,24 +1067,43 @@ function buildConfig(url) {
 }
 function tryLocal() { if (!ensureSeed()) return; stopLoop(); startGame(buildConfig(C.url), { local: true }); }
 
-/* --- 3 · invio --- */
+/* --- invio: pannello dal basso --- */
 $('#nameIn').addEventListener('input', e => { C.name = e.target.value.trim(); saveDraft(); });
 $('#nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+let sendOpen = false;
+function openSend() {
+  $('#msgIn').blur(); stopLoop();
+  sendOpen = true; $('#nameIn').value = C.name;
+  $('#sendSheet').classList.remove('sent');
+  $('#scrim').classList.add('show'); $('#sendSheet').classList.add('show');
+  makeLink();
+}
+function closeSend() {
+  if (!sendOpen) return;
+  sendOpen = false; $('#scrim').classList.remove('show'); $('#sendSheet').classList.remove('show');
+  if (C.step === 2) refreshPreview(true);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSend(); });
+function markSent(title, txt) {
+  $('#doneTitle').textContent = title; $('#doneTxt').textContent = txt;
+  $('#doneLogo').innerHTML = logoSVG(64, 'static', '#130f16'); $('#doneLogo svg').classList.add('breathe');
+  $('#sendSheet').classList.add('sent');
+}
 function updateSendProgress() {
-  if (C.step !== 3 || !C.upload) return;
+  if (!sendOpen || !C.upload) return;
   const p = C.upload.progress || 0;
   setLoader($('#sendLogo'), p);
   $('#sendTxt').textContent = p < 1 ? `Sto caricando la tua sorpresa · ${Math.round(p * 100)}%` : 'Ci siamo quasi…';
 }
 async function makeLink() {
   $('#sendLogo').innerHTML = ''; setLoader($('#sendLogo'), 0);
-  $('#sendBtns').style.display = 'none'; $('#retryBtn').style.display = 'none';
+  $('#sendBox').style.display = 'flex'; $('#sendBtns').style.display = 'none'; $('#retryBtn').style.display = 'none';
   try {
     if (!C.upload || C.upload.error) startUpload();
     updateSendProgress();
     await C.upload.promise;
-    setLoader($('#sendLogo'), 1);
-    $('#sendTxt').textContent = 'Pronta! Ora mandala a chi vuoi.';
+    // già caricata: niente attesa, si va dritti ai pulsanti
+    $('#sendBox').style.display = 'none';
     $('#sendBtns').style.display = 'flex';
   } catch (e) {
     $('#sendTxt').textContent = navigator.onLine === false ? 'Sei offline: collegati a internet e riprova.' : 'Il caricamento non è riuscito. Riprova tra un attimo.';
@@ -992,15 +1111,18 @@ async function makeLink() {
   }
 }
 const shareUrl = () => `${location.origin}${location.pathname}#g=${b64uEncode(JSON.stringify(buildConfig(C.upload.url)))}`;
+const SENT_TXT = 'Per vedere la sorpresa dovrà trovare tutte le parole.';
 async function shareLink() {
   const url = shareUrl();
   const text = C.name ? `${C.name}, ho nascosto qualcosa per te. Trova le parole per scoprirlo!` : 'Ho nascosto qualcosa per te. Trova le parole per scoprirlo!';
-  if (navigator.share) { try { await navigator.share({ title: 'unveil', text, url }); } catch (e) {} }
-  else copyLink(null, `${text} ${url}`);
+  if (navigator.share) {
+    try { await navigator.share({ title: 'unveil', text, url }); markSent('Inviata!', SENT_TXT); } catch (e) {}
+  } else { await copyText(`${text} ${url}`); markSent('Link copiato!', 'Incollalo in chat a chi vuoi. ' + SENT_TXT); }
 }
-async function copyLink(btn, txt) {
-  try { await navigator.clipboard.writeText(txt || shareUrl()); } catch (e) {}
-  if (btn) { const o = btn.textContent; btn.textContent = 'Copiato!'; setTimeout(() => btn.textContent = o, 1500); }
+async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { return false; } }
+async function copyLink(btn) {
+  await copyText(shareUrl());
+  if (btn) { btn.textContent = 'Copiato!'; setTimeout(() => { btn.textContent = 'Copia il link'; markSent('Link copiato!', 'Incollalo in chat a chi vuoi. ' + SENT_TXT); }, 700); }
 }
 
 /* ============================================================
@@ -1265,14 +1387,34 @@ function showFinal(total, hints, animate) {
     : `<button class="btn-main" onclick="reply(this)">Rispondi</button><button class="btn-ghost" onclick="restart()">Tocca a te</button>`;
   $('#audioBtn').style.display = S.cfg.k === 'v' ? 'flex' : 'none'; if (S.cfg.k === 'v') setAudioIcon();
   setTimeout(() => { $('#fsheet').classList.add('show'); $('#ftools').classList.add('show'); }, go ? 1300 : 100);
+  if (animate) setTimeout(confetti, go ? 1100 : 200);
+}
+/* coriandoli: quadratini lilla e bianchi */
+function confetti() {
+  if (reducedMotion()) return;
+  const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
+  const cols = ['#b3a6ff', '#f6eef4', '#d9d0ff', '#8f7fff'];
+  let h = '';
+  for (let i = 0; i < 70; i++) {
+    const sz = 6 + Math.random() * 6;
+    h += `<i style="left:${(Math.random() * 100).toFixed(1)}%;width:${sz.toFixed(1)}px;height:${sz.toFixed(1)}px;background:${cols[i % cols.length]};--x:${(Math.random() * 160 - 80).toFixed(0)}px;--r:${(Math.random() * 720 - 360).toFixed(0)}deg;--d:${(2.2 + Math.random() * 1.6).toFixed(2)}s;--w:${(Math.random() * .7).toFixed(2)}s"></i>`;
+  }
+  box.innerHTML = h; document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4800);
 }
 function toggleSheet() { $('#fsheet').classList.toggle('show'); }
 function setAudioIcon() { $('#audioWave').setAttribute('opacity', S.media.muted ? '.3' : '1'); }
 function toggleAudio() { S.media.muted = !S.media.muted; setAudioIcon(); }
+/* la cartolina, alla Wordle: niente spoiler, un quadratino per parola (bianco se ci è voluto un aiuto) */
+function postcard() {
+  const h = S.hintsUsed || 0;
+  const sq = S.grid.words.map((w, i) => S.hintLevel[i] ? '⬜' : '🟪').join('');
+  return `unveil · svelata in ${fmtTime(S.total || 0)}\n${sq} · ${h ? `${h} ${h === 1 ? 'aiuto' : 'aiuti'}` : 'senza aiuti'}\n${location.origin}${location.pathname}`;
+}
 async function reply(btn) {
-  const text = `L'ho scoperta! Ci ho messo ${fmtTime(S.total || 0)}.`;
+  const text = postcard();
   if (navigator.share) { try { await navigator.share({ text }); } catch (e) {} return; }
-  try { await navigator.clipboard.writeText(text); const o = btn.textContent; btn.textContent = 'Messaggio copiato!'; setTimeout(() => btn.textContent = o, 1600); } catch (e) {}
+  if (await copyText(text)) { const o = btn.textContent; btn.textContent = 'Copiato: incollalo in chat!'; setTimeout(() => btn.textContent = o, 1800); }
 }
 function exitGame() {
   introDemo.stop();
@@ -1288,7 +1430,7 @@ function exitGame() {
    ============================================================ */
 window.addEventListener('load', () => {
   const sp = $('#splash');
-  const finish = () => { sp.style.opacity = 0; setTimeout(() => sp.remove(), 500); };
+  const finish = () => { sp.style.opacity = 0; setTimeout(() => { sp.remove(); splashDone = true; kickDemos(); }, 450); };
   if (reducedMotion()) { $('#splashLogo').innerHTML = logoSVG(96); sp.classList.add('in'); setTimeout(finish, 600); }
   else animateLogo($('#splashLogo'), () => { sp.classList.add('in'); setTimeout(finish, 700); });
   if (location.hash.startsWith('#g=')) {
