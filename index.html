@@ -1,1168 +1,900 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>UNVEIL - Photo Challenge</title>
-    <style>
-        :root {
-            --cyan: #00f0ff;
-            --red: #ff0055;
-            --bg-color: #080808; 
-            --text-color: #ffffff;
-            --glass-bg: rgba(20, 20, 20, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.08);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
-        body, html { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-            background-color: var(--bg-color); overflow: hidden; touch-action: none;
-            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
-        }
-        
-        .app-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-color); display: flex; flex-direction: column; overflow: hidden;
-            transition: background 0.5s;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<title>UNVEIL — Word Challenge</title>
+<style>
+  :root {
+    --cyan: #00f0ff; --red: #ff0055; --bg: #07080b; --panel: rgba(20,22,28,.78);
+    --border: rgba(255,255,255,.08); --text: #fff; --muted: #8a8f98; --tile: #11141b; --tile2: #191d26;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { overflow: hidden; }
+  button { font: inherit; color: inherit; border: none; background: none; cursor: pointer; }
+  .screen { position: fixed; inset: 0; display: none; }
+  .screen.active { display: block; }
 
-        #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-            background: #000; z-index: 999; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; transition: opacity 0.5s ease;
-        }
+  /* ---------- BRAND ---------- */
+  .logo { font-size: 52px; font-weight: 900; text-transform: uppercase; letter-spacing: -3px; position: relative;
+    display: inline-block; line-height: 1; text-shadow: 0 0 20px rgba(0,240,255,.55); }
+  .logo::after { content: ''; position: absolute; left: -10%; top: 52%; width: 120%; height: 4px; background: var(--cyan);
+    transform: rotate(-6deg); box-shadow: 0 0 14px var(--cyan); }
+  .sub { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 5px; text-transform: uppercase; margin-top: 12px; }
+  #splash { position: fixed; inset: 0; background: #000; z-index: 999; display: flex; align-items: center; justify-content: center; transition: opacity .5s; }
 
-        .brand-logo { 
-            font-size: 64px; font-weight: 900; text-transform: uppercase; letter-spacing: -3px; 
-            position: relative; display: inline-block; color: #fff; line-height: 1; 
-            text-shadow: 0 0 20px rgba(0,240,255,0.6);
-        }
-        .brand-logo::after { 
-            content: ''; position: absolute; left: -10%; top: 52%; width: 120%; height: 5px; 
-            background: var(--cyan); transform: rotate(-6deg); box-shadow: 0 0 15px var(--cyan); 
-        }
-        .brand-subtitle { font-size: 12px; font-weight: 800; color: #888; letter-spacing: 5px; text-transform: uppercase; margin-top: 12px; }
-        
-        .brand-logo.splash-logo {
-            color: #ffffff !important;
-            animation: cyberGlitch 4s infinite; 
-            text-align: center; line-height: 1.1;
-        }
-        @keyframes cyberGlitch {
-            0%, 20%, 40%, 60%, 80%, 100% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
-            21% { text-shadow: -3px 0 var(--red), 3px 0 var(--cyan); transform: translate(-2px, 1px) skewX(5deg); }
-            22% { text-shadow: 3px 0 var(--red), -3px 0 var(--cyan); transform: translate(2px, -1px) skewX(-5deg); }
-            23% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
-            61% { text-shadow: -2px 2px var(--red), 2px -2px var(--cyan); transform: translate(1px, 2px); }
-            62% { text-shadow: 0 0 15px rgba(0,240,255,0.8); transform: none; }
-            81% { text-shadow: 2px 0 var(--red), -2px 0 var(--cyan); opacity: 0.8; }
-            82% { opacity: 1; }
-        }
+  /* ---------- REGIA ---------- */
+  #screenCreate { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: max(28px, env(safe-area-inset-top)) 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+  header.brand { text-align: center; padding: 8px 0 6px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; backdrop-filter: blur(14px); transition: opacity .3s, filter .3s; }
+  .panel.off { opacity: .3; pointer-events: none; filter: grayscale(.8); }
+  .ptitle { font-size: 12px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #ddd; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ptitle small { color: var(--muted); font-weight: 700; letter-spacing: 0; text-transform: none; font-size: 12px; }
+  .step { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--cyan); color: #000; font-size: 11px; align-items: center; justify-content: center; margin-right: 8px; }
+  .row { display: flex; gap: 8px; }
+  .btn-up { flex: 1; padding: 14px 6px; background: #1a1d24; border: 1px solid #2c303a; border-radius: 12px; font-weight: 800; font-size: 12px;
+    text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .btn-up svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-up:active { transform: scale(.97); }
+  .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; font-weight: 600; }
+  .err { color: var(--red); font-size: 13px; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
 
-        .app-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            filter: blur(5px); opacity: 0; transition: opacity 0.6s ease; z-index: 0;
-        }
-        .bg-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75); z-index: 0; display: none;
-        }
+  .cropframe { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; background: #000;
+    border: 1px solid rgba(0,240,255,.5); touch-action: none; cursor: grab; }
+  .cropframe .media, .frame .media { position: absolute; max-width: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+  .gridlines { position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background-image: linear-gradient(to right, rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.35) 1px, transparent 1px); }
+  .croptools { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .croptools input[type=range] { flex: 1; accent-color: var(--cyan); }
+  .linkbtn { color: var(--cyan); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; padding: 6px 0; }
+  .vwarn { font-size: 11px; color: #ffb3c8; font-weight: 700; margin-top: 8px; display: none; text-align: center; }
 
-        .screen { display: none; width: 100%; height: 100%; flex-direction: column; position: relative; z-index: 1; }
-        .screen.active { display: flex; }
-        
-        .header { padding: 30px 20px 20px; text-align: center; background: transparent; z-index: 2;}
-        
-        .scroll-content { padding: 30px 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; position: relative; scroll-behavior: smooth; }
-        
-        .brand-zone { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  textarea.msg { width: 100%; min-height: 84px; padding: 14px; border-radius: 12px; border: 1px solid #2c303a; background: #0e1015; color: #fff;
+    font: 600 15px/1.4 inherit; font-family: inherit; resize: none; }
+  textarea.msg:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,.2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .chip { padding: 7px 11px; border-radius: 999px; font-size: 13px; font-weight: 800; border: 1px solid #333844; color: #9aa0aa; background: #12151b; }
+  .chip.on { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,.08); box-shadow: 0 0 8px rgba(0,240,255,.15); }
+  .chip.locked { opacity: .45; border-style: dashed; cursor: default; }
+  .chip.shake { animation: shake .35s; }
+  @keyframes shake { 0%,100% { transform: none } 25% { transform: translateX(-4px) } 75% { transform: translateX(4px) } }
+  .previewline { margin-top: 14px; font-size: 14px; line-height: 1.7; color: #ddd; font-weight: 600; word-break: break-word; }
+  .previewline .dash { color: var(--cyan); letter-spacing: 2px; font-family: ui-monospace, Menlo, monospace; }
+  .counter { margin-top: 12px; font-size: 12px; font-weight: 800; display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+  .counter .ok { color: var(--cyan); } .counter .bad { color: var(--red); }
 
-        .glass-panel { 
-            background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 16px; 
-            padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); 
-            transition: all 0.5s ease; 
-        }
+  .seg { display: flex; background: #0e1015; border: 1px solid #2c303a; border-radius: 12px; padding: 4px; gap: 4px; }
+  .seg button { flex: 1; padding: 11px 0; border-radius: 9px; font-weight: 800; font-size: 13px; color: var(--muted); }
+  .seg button.on { background: rgba(0,240,255,.12); color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); }
+  .diffdesc { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; font-weight: 600; }
 
-        /* STATO DISABILITATO */
-        .disabled-state {
-            opacity: 0.3;
-            pointer-events: none;
-            filter: grayscale(0.8);
-        }
+  .btn-main { width: 100%; padding: 18px; border-radius: 12px; background: var(--cyan); color: #000; font-weight: 900; font-size: 15px;
+    text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 8px 22px rgba(0,240,255,.25); }
+  .btn-ghost { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--cyan); color: var(--cyan); font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  .btn-main:disabled, .btn-ghost:disabled { opacity: .35; box-shadow: none; cursor: not-allowed; }
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+  .sharebox { display: none; flex-direction: column; gap: 10px; }
+  .linkfield { width: 100%; padding: 12px; border-radius: 10px; background: #0e1015; border: 1px solid #2c303a; color: #9ee; font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
 
-        .upload-buttons-row { display: flex; gap: 8px; width: 100%; }
-        .upload-btn { 
-            flex: 1; padding: 12px 6px; background: #1a1a1a; color: #fff; border: 1px solid #333;
-            text-align: center; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; 
-            text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
-        }
-        .upload-btn:active { transform: scale(0.96); }
-        .upload-btn svg { width: 22px; height: 22px; stroke: #fff; fill: none; transition: stroke 0.2s; }
-        .upload-btn.secondary { background: transparent; color: #ccc; border-color: #444; }
-        .upload-btn.secondary svg { stroke: #ccc; }
+  /* ---------- GIOCO ---------- */
+  #screenPlay { display: none; flex-direction: column; background: radial-gradient(ellipse at top, #0c1420 0%, var(--bg) 60%); }
+  #screenPlay.active { display: flex; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: max(12px, env(safe-area-inset-top)) 16px 6px; gap: 10px; }
+  .pill { padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.07); border: 1px solid #2a2e38; font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+  .timer { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 15px; }
+  #hintBtn { color: var(--cyan); border-color: rgba(0,240,255,.4); min-width: 92px; }
+  #hintBtn:disabled { color: #666; border-color: #2a2e38; }
+  .msgbar { padding: 6px 16px 10px; text-align: center; font-size: 17px; line-height: 1.9; font-weight: 700; min-height: 40px; }
+  .msgbar .slot { display: inline-flex; gap: 3px; vertical-align: middle; white-space: nowrap; }
+  .msgbar .ch { display: inline-block; width: .62em; height: 1.2em; border-bottom: 2px solid rgba(0,240,255,.55); }
+  .msgbar .slot:not(.done) { margin: 0 .2em; }
+  .msgbar .slot.done { color: var(--cyan); text-shadow: 0 0 12px rgba(0,240,255,.6); animation: pop .4s; }
+  .msgbar .fixed { color: #cfd3da; }
+  @keyframes pop { 0% { transform: scale(.7); opacity: 0 } 70% { transform: scale(1.12) } 100% { transform: none; opacity: 1 } }
+  .progress { font-size: 11px; color: var(--muted); font-weight: 800; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
+  .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 0; padding: 6px 16px max(16px, env(safe-area-inset-bottom)); }
+  .frame { position: relative; overflow: hidden; border-radius: 14px; background: #000; box-shadow: 0 0 0 1px rgba(0,240,255,.45), 0 0 24px rgba(0,240,255,.15); }
+  .tiles { position: absolute; inset: 0; display: grid; touch-action: none; }
+  .tile { position: relative; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--tile2), var(--tile));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); font-weight: 900; font-size: var(--fs, 24px); color: #e9ecf1;
+    transition: background .45s ease, box-shadow .45s ease; user-select: none; }
+  .tile span { transition: transform .35s ease, opacity .35s ease; }
+  .tile.sel { background: linear-gradient(160deg, #0b3a44, #072a33); color: #fff; box-shadow: inset 0 0 0 2px var(--cyan); }
+  .tile.hint1 span { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); animation: pulse 1.2s infinite; }
+  .tile.hint2 { box-shadow: inset 0 0 0 2px rgba(0,240,255,.45); }
+  @keyframes pulse { 50% { opacity: .45 } }
+  .tile.found { background: transparent; box-shadow: none; pointer-events: none; }
+  .tile.found span { transform: scale(1.6); opacity: 0; }
+  .tile.flash { animation: flash .5s; }
+  @keyframes flash { 0% { background: rgba(0,240,255,.6) } 100% { background: transparent } }
+  .tiles.shake { animation: shake .3s; }
+  svg.trace { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  svg.trace polyline { fill: none; stroke: var(--cyan); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; opacity: .55; filter: drop-shadow(0 0 6px var(--cyan)); }
+  .bubble { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 6px 14px; border-radius: 999px; background: #000c; border: 1px solid var(--cyan);
+    font-weight: 900; letter-spacing: 3px; font-size: 16px; opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 5; white-space: nowrap; }
+  .bubble.show { opacity: 1; }
+  .toastmsg { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 8px 14px; border-radius: 10px; background: #000d;
+    border: 1px solid #333; font-size: 12px; font-weight: 800; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 6; white-space: nowrap; }
+  .toastmsg.show { opacity: 1; }
 
-        .media-preview-box {
-            display: none; width: 100%; aspect-ratio: 9/16; max-height: 60vh; 
-            border-radius: 12px; overflow: hidden; position: relative; margin-top: 15px; border: 1px solid var(--cyan);
-            box-shadow: 0 0 15px rgba(0,240,255,0.15); background: #000;
-        }
-        .preview-content { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .video-warning {
-            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255,0,85,0.9);
-            color: white; font-size: 11px; padding: 8px; text-align: center; font-weight: 800;
-            display: none; text-transform: uppercase; letter-spacing: 1px;
-        }
-        
-        .upload-status { 
-            text-align: center; font-size: 14px; font-weight: 800; color: var(--cyan); 
-            display: none; padding: 15px; border-radius: 10px; background: rgba(0,240,255,0.1); 
-            border: 1px solid rgba(0,240,255,0.3); text-transform: uppercase; transition: all 0.3s ease;
-        }
-        
-        /* PULSANTE "PERSONALIZZA" ATTIVO */
-        .btn-personalize {
-            background: var(--cyan) !important;
-            color: #000 !important;
-            cursor: pointer !important;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-        }
-        .btn-personalize:active { transform: scale(0.97); }
+  .overlay { position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    padding: 30px 24px; background: rgba(0,0,0,.86); backdrop-filter: blur(6px); }
+  .overlay.active { display: flex; }
+  .overlay h2 { font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: -.5px; margin-bottom: 10px; }
+  .overlay p { color: #c9ced6; font-size: 14px; line-height: 1.6; font-weight: 600; max-width: 320px; }
+  .rules { list-style: none; text-align: left; max-width: 320px; margin: 22px 0 28px; display: flex; flex-direction: column; gap: 14px; font-size: 14px; color: #c9ced6; font-weight: 600; line-height: 1.5; }
+  .rules b { color: #fff; } .rules li::before { content: '▸ '; color: var(--cyan); }
+  .overlay .btn-main { max-width: 280px; }
 
-        .upload-desc { text-align: center; font-size: 11px; color: #777; margin-top: 15px; font-weight: 600; text-transform: uppercase; }
-        .error-msg { color: var(--red); font-size: 13px; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
-
-        .section-title { font-size: 13px; font-weight: 800; color: #eee; letter-spacing: 0.5px; margin-bottom: 12px; text-transform: uppercase; }
-        .range-slider { width: 100%; accent-color: var(--cyan); cursor: pointer; }
-        .slider-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; font-weight: 800; color: #555; }
-        .slider-labels span.active { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
-
-        .attempts-row { display: flex; gap: 8px; }
-        .btn-attempt { 
-            flex: 1; padding: 14px 0; border: 1px solid #333; background: #111; 
-            border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; color: #666; 
-        }
-        .btn-attempt.active { border-color: var(--cyan); background: rgba(0,240,255,0.1); color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
-
-        .secret-input { 
-            width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #111; 
-            color: #fff; font-size: 14px; font-weight: 600; margin-top: 15px; font-family: inherit; 
-            resize: none; transition: all 0.2s; 
-        }
-        .secret-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
-        .secret-input::placeholder { color: #555; }
-
-        .btn-submit { 
-            background: #000; color: var(--cyan); border: 1px solid var(--cyan); padding: 20px; 
-            font-weight: 900; font-size: 16px; border-radius: 12px; cursor: pointer; text-transform: uppercase; 
-            letter-spacing: 1px; width: 100%; margin-top: 10px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); 
-            transition: all 0.5s ease; display: flex; align-items: center; justify-content: center; gap: 10px; 
-        }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #333; color: #666; }
-        
-        .share-container { display: none; margin-top: 10px; }
-        .btn-share { 
-            background: var(--cyan); color: #000; border: none; padding: 20px; font-weight: 900; 
-            font-size: 16px; border-radius: 12px; cursor: pointer; text-transform: uppercase; width: 100%; 
-            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.2); display: flex; align-items: center; 
-            justify-content: center; gap: 10px; 
-        }
-
-        /* ---------------------------------------------------- */
-        /* HUD & GAMEPLAY */
-        /* ---------------------------------------------------- */
-        #screenGame { background: #050505; }
-        .game-hud { 
-            width: 100%; padding-top: max(20px, env(safe-area-inset-top)); padding-left: 20px; padding-right: 20px; padding-bottom: 10px;
-            background: transparent; color: white; display: flex; justify-content: space-between; align-items: center; 
-            font-size: 14px; font-weight: 800; z-index: 10; flex-shrink: 0; transition: opacity 0.5s ease;
-        }
-        .hud-btn-exit { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
-        .hud-btn-exit:active { background: var(--red); color: white; border-color: var(--red); }
-        .hud-stats { display: flex; gap: 15px; }
-
-        .game-area { flex: 1; padding: 35px 25px 30px 25px; position: relative; display: flex; justify-content: center; align-items: center; }
-        .game-box-wrapper { width: 100%; height: 100%; position: relative; }
-        .game-glow-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--cyan);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15); pointer-events: none; z-index: 6; transition: opacity 0.5s ease, box-shadow 0.2s ease-out;
-        }
-        
-        .game-box { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; 
-            overflow: hidden; background: #000; touch-action: none; cursor: crosshair; z-index: 1; 
-        }
-        
-        /* Object-Fit: cover previene lo stretching in fase di Zoom */
-        #gameCanvas { display: block; width: 100%; height: 100%; object-fit: cover; touch-action: none; position: absolute; top:0; left:0; }
-        .vignette-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; background: radial-gradient(circle at center, transparent 50%, rgba(0, 240, 255, 0.1) 100%); }
-
-        .player-cursor { position: absolute; width: 14px; height: 14px; background: #fff; border: 2px solid var(--cyan); border-radius: 50%; box-shadow: 0 0 15px var(--cyan); pointer-events: none; transform: translate(-50%, -50%); z-index: 10; display: none; }
-
-        /* ---------------------------------------------------- */
-        /* UI TOAST & SEQUENZA VITTORIA */
-        /* ---------------------------------------------------- */
-        .toast-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 30px; text-align: center; z-index: 100; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(5px);
-        }
-        .toast-overlay.active { opacity: 1; pointer-events: all; }
-        .toast-title { font-size: 32px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; color: white; letter-spacing: -1px; display:none;}
-        .toast-title.error { color: var(--red); display:block;}
-        .toast-title.success { color: #fff; text-shadow: 0 0 15px var(--cyan); display:block;}
-        .toast-desc { font-size: 14px; color: #ccc; font-weight: 600; margin-bottom: 25px; line-height: 1.5; display:none;}
-        .btn-toast { background: white; color: black; border: none; padding: 16px 32px; font-weight: 900; font-size: 14px; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; max-width: 200px; }
-        .btn-toast.primary { background: var(--cyan); }
-
-        .tutorial-list { color: #ccc; text-align: left; font-size: 14px; line-height: 1.6; list-style: none; padding: 0; font-weight: 600; width: 100%; max-width: 300px; margin-top: 40px; }
-        .tutorial-list li { margin-bottom: 20px; display: flex; align-items: flex-start; gap: 15px; }
-        .tutorial-list svg { flex-shrink: 0; margin-top: 2px;}
-        .tutorial-list b { color: white; }
-
-        .cinematic-text-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 410; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
-        .cinematic-text-overlay.active { opacity: 1; }
-        .cinematic-text-overlay .splash-logo { font-size: 32px; line-height: 1.2; letter-spacing: -1px; }
-
-        .secret-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; padding: 30px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; z-index: 420;}
-        .secret-overlay.active { opacity: 1; }
-        .secret-text { color: white; font-size: 24px; font-weight: 900; text-shadow: 0 0 15px rgba(0,240,255,0.8); line-height: 1.4; font-style: italic; text-transform: uppercase; }
-
-        .tap-indicator { position: fixed; bottom: max(40px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 450; animation: pulseAlpha 2s infinite; display: none; }
-        @keyframes pulseAlpha { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-        .victory-tap-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: 490; display: none; cursor: pointer; }
-
-        /* Player Video Vittoria */
-        .video-player-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000; z-index: 500; display: none; opacity: 0; transition: opacity 0.5s ease;}
-        .video-player-overlay.active { display: block; opacity: 1; }
-        #rewardVideo { width: 100%; height: 100%; object-fit: cover; }
-        .btn-skip-video { position: absolute; bottom: max(40px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--cyan); color: #000; border: none; padding: 12px 24px; font-weight: 900; font-size: 14px; border-radius: 8px; cursor: pointer; text-transform: uppercase; z-index: 510; box-shadow: 0 0 15px rgba(0,240,255,0.4); }
-
-    </style>
+  #finalOv { background: #000; padding: 0; justify-content: flex-start; }
+  .finalmedia { position: absolute; inset: 0; opacity: 0; transform: scale(.94); transition: opacity .8s ease, transform 1s cubic-bezier(.2,1,.3,1); }
+  .finalmedia.in { opacity: 1; transform: none; }
+  .finalmedia img, .finalmedia video { width: 100%; height: 100%; object-fit: contain; }
+  .finalinfo { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 22px max(24px, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,.92) 40%, transparent); display: flex; flex-direction: column; align-items: center; gap: 12px;
+    opacity: 0; transform: translateY(20px); transition: all .6s ease .6s; }
+  .finalinfo.in { opacity: 1; transform: none; }
+  .finalmsg { font-size: 21px; font-weight: 900; line-height: 1.4; text-shadow: 0 0 14px rgba(0,240,255,.7); font-style: italic; max-width: 440px; }
+  .finalstats { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+  .finalbtns { display: flex; gap: 8px; width: 100%; max-width: 440px; }
+  .finalbtns button { flex: 1; padding: 14px 8px; }
+  .hidebtn { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 3; }
+</style>
 </head>
 <body>
 
-    <div id="splashScreen">
-        <div class="brand-zone">
-            <div class="brand-logo splash-logo">Unveil</div>
+<div id="splash"><div class="logo">Unveil</div></div>
+
+<!-- ======================= REGIA ======================= -->
+<section id="screenCreate" class="screen active">
+  <div class="wrap">
+    <header class="brand"><div class="logo">Unveil</div><div class="sub">Word Challenge</div></header>
+
+    <div class="panel" id="pMedia">
+      <div class="ptitle"><span><span class="step">1</span>Foto o video</span><small id="mediaInfo"></small></div>
+      <div id="pickRow" class="row">
+        <button class="btn-up" onclick="$('#inImg').click()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Foto</button>
+        <button class="btn-up" onclick="$('#inVid').click()"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Video</button>
+        <button class="btn-up" onclick="$('#inGal').click()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Galleria</button>
+      </div>
+      <div id="pickHint" class="hint">Video: verranno usati i primi 15 secondi · max 50 MB</div>
+      <input type="file" id="inImg" accept="image/*" capture="environment" hidden>
+      <input type="file" id="inVid" accept="video/*" capture="environment" hidden>
+      <input type="file" id="inGal" accept="image/*,video/*" hidden>
+      <div id="cropBox" style="display:none">
+        <div class="cropframe" id="cropFrame"><div class="gridlines" id="gridLines"></div></div>
+        <div class="croptools">
+          <span class="hint" style="margin:0">Zoom</span>
+          <input type="range" id="zoom" min="1" max="3" step="0.01" value="1">
+          <button class="linkbtn" onclick="changeMedia()">Cambia</button>
         </div>
+        <div class="hint" style="margin-top:4px">Trascina per inquadrare · la griglia mostra le caselle</div>
+        <div class="vwarn" id="vwarn">Video più lungo di 15s: verrà tagliato</div>
+      </div>
+      <div class="err" id="mediaErr"></div>
     </div>
 
-    <div class="app-container">
-        <div id="appBg" class="app-bg"></div>
-        <div id="bgOverlay" class="bg-overlay"></div>
-
-        <!-- SCHERMATA REGIA -->
-        <div id="screenRegia" class="screen active">
-            <div id="mainHeader" class="header">
-                <div class="brand-zone">
-                    <div class="brand-logo">Unveil</div>
-                    <div class="brand-subtitle">Photo Challenge</div>
-                </div>
-            </div>
-            <div class="scroll-content">
-                <div class="glass-panel">
-                    <div id="uploadActionGroup">
-                        <div class="upload-buttons-row">
-                            <div class="upload-btn" onclick="document.getElementById('cameraInputImg').click()">
-                                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                Foto
-                            </div>
-                            <div class="upload-btn" onclick="document.getElementById('cameraInputVid').click()">
-                                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                                Video
-                            </div>
-                            <div class="upload-btn secondary" onclick="document.getElementById('galleryInput').click()">
-                                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                Galleria
-                            </div>
-                        </div>
-                        <div class="upload-desc">Video limitati ai primi 15s</div>
-                    </div>
-                    
-                    <div id="mediaPreviewBox" class="media-preview-box">
-                        <img id="previewImg" class="preview-content">
-                        <video id="previewVid" class="preview-content" muted playsinline autoplay></video>
-                        <div id="videoWarning" class="video-warning">Anteprima - Verranno mantenuti solo i primi 15 secondi</div>
-                    </div>
-
-                    <div id="uploadStatusUI" class="upload-status" style="margin-top: 15px;">Media Pronto ✓</div>
-                    
-                    <input type="file" id="cameraInputImg" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelect(this)">
-                    <input type="file" id="cameraInputVid" accept="video/*" capture="environment" style="display:none;" onchange="handleFileSelect(this)">
-                    <input type="file" id="galleryInput" accept="image/*,video/*" style="display:none;" onchange="handleFileSelect(this)">
-                    
-                    <div id="uploadError" class="error-msg">Errore file. Max 50MB.</div>
-                </div>
-
-                <!-- PROGRESSIVE DISCLOSURE: Disabilitato inizialmente -->
-                <div class="glass-panel disabled-state" id="diffSection">
-                    <div>
-                        <div class="section-title">Difficoltà</div>
-                        <input type="range" id="diffSlider" class="range-slider" min="1" max="5" value="3" oninput="updateDiffLabels(this.value)">
-                        <div class="slider-labels">
-                            <span id="lbl1">1</span><span id="lbl2">2</span><span id="lbl3" class="active">3</span><span id="lbl4">4</span><span id="lbl5">5</span>
-                        </div>
-                    </div>
-                    <div style="margin-top: 25px;">
-                        <div class="section-title">Tentativi Massimi</div>
-                        <div class="attempts-row">
-                            <button class="btn-attempt" onclick="setAttempts(1, this)">1</button>
-                            <button class="btn-attempt" onclick="setAttempts(3, this)">3</button>
-                            <button class="btn-attempt" onclick="setAttempts(5, this)">5</button>
-                            <button class="btn-attempt btn-max active" onclick="setAttempts(Infinity, this)">∞</button>
-                        </div>
-                    </div>
-                    <div style="margin-top: 25px;">
-                        <div class="section-title">Messaggio Segreto</div>
-                        <input type="text" id="secretMsgInput" class="secret-input" maxlength="140" placeholder="Aggiungi un messaggio opzionale...">
-                    </div>
-                </div>
-
-                <button id="btnSubmit" class="btn-submit disabled-state" onclick="generateChallengeLink()">Genera Sfida</button>
-                <div id="shareContainer" class="share-container">
-                    <button class="btn-share" onclick="triggerNativeShare()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        Condividi Link
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SCHERMATA GIOCO -->
-        <div id="screenGame" class="screen">
-            <div class="game-hud" id="gameHud">
-                <button class="hud-btn-exit" onclick="resetToHome()">✕ ESCI</button>
-                <div class="hud-stats">
-                    <span id="hudProgress">AREA: 0%</span>
-                    <span id="hudAttempts">VITE: ∞</span>
-                </div>
-            </div>
-            
-            <div class="game-area" id="gameArea">
-                <div class="game-box-wrapper" id="gameBoxWrapper">
-                    <div class="game-glow-overlay" id="glowOverlay"></div>
-                    <div class="game-box" id="mainGameBox">
-                        <div class="vignette-overlay" id="vignetteOverlay"></div>
-                        <canvas id="gameCanvas"></canvas>
-                    </div>
-                    <div id="playerCursor" class="player-cursor"></div>
-                </div>
-            </div>
-
-            <div id="toastContainer" class="toast-overlay">
-                <div id="toastTitle" class="toast-title">Titolo</div>
-                <div id="toastDesc" class="toast-desc">Descrizione</div>
-                <button id="toastBtn" class="btn-toast primary" onclick="handleToastAction()">INIZIA A GIOCARE</button>
-                
-                <ul class="tutorial-list" id="tutorialRules" style="display:none;">
-                    <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-7 7 7"/><path d="M12 5v14"/></svg><span>Trascina per isolare e decodificare le zone nascoste dell'immagine.</span></li>
-                    <li><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Evita le comete rosse: ogni impatto interromperà il tracciamento.</span></li>
-                    <li><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--cyan)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span id="tutTarget">Raggiungi il <b>X%</b> di decodifica per sbloccare l'intero file.</span></li>
-                </ul>
-            </div>
-            
-            <div id="victoryOverlay" class="cinematic-text-overlay">
-                <div class="brand-logo splash-logo">FILE<br>DECODIFICATO</div>
-            </div>
-            
-            <div id="secretMessageOverlay" class="secret-overlay">
-                <div id="secretMessageText" class="secret-text"></div>
-            </div>
-            <div id="tapIndicator" class="tap-indicator">Tocca per continuare</div>
-            <div id="victoryTapLayer" class="victory-tap-layer" onclick="advanceVictory()"></div>
-            
-            <div id="videoPlayerOverlay" class="video-player-overlay">
-                <video id="rewardVideo" playsinline></video>
-                <button class="btn-skip-video" onclick="goToCTA()">CONTINUA ➔</button>
-            </div>
-        </div>
-        
-        <!-- SCHERMATA CTA FINALE -->
-        <div id="screenCTA" class="screen">
-            <div class="scroll-content" style="justify-content: center; align-items: center; text-align: center; height:100%;">
-                <div class="brand-logo splash-logo" style="font-size: 48px; margin-bottom: 30px;">UNVEIL</div>
-                <h2 style="color:var(--cyan); font-weight: 900; text-transform: uppercase; font-size: 28px; margin-bottom: 15px;">Codifica il tuo file</h2>
-                <p style="color:#aaa; font-size:16px; font-weight: 600; margin-bottom: 40px; line-height: 1.5; max-width: 280px;">
-                    Ora tocca a te.<br>Nascondi una foto o un video, imposta la difficoltà e lancia la tua sfida.
-                </p>
-                <button class="btn-submit" onclick="resetToHome()">CREA LA TUA SFIDA</button>
-            </div>
-        </div>
+    <div class="panel off" id="pMsg">
+      <div class="ptitle"><span><span class="step">2</span>Messaggio segreto</span><small id="charCount">0/140</small></div>
+      <textarea id="msgIn" class="msg" maxlength="140" placeholder="Es. Buon compleanno amore mio, ti aspetto stasera"></textarea>
+      <div class="chips" id="chips"></div>
+      <div class="previewline" id="previewLine"></div>
+      <div class="counter"><span id="cnt"></span><span id="tierLbl"></span></div>
+      <div class="hint" style="text-align:left">Tocca una parola per nasconderla o lasciarla visibile.</div>
     </div>
 
-    <script>
-        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/up98kcff/auto/upload";
-        const CLOUDINARY_PRESET = "sito_upload";
-        
-        let challenge = { rawFile: null, isVideo: false, diff: 3, tries: Infinity, msg: "", pid: "", rt: "" };
-        let currentAttempts = 0;
-        let loadedImage = new Image(); loadedImage.crossOrigin = "Anonymous";
-        let finalShareUrl = "";
-        let victoryState = 0; 
+    <div class="panel off" id="pDiff">
+      <div class="ptitle"><span><span class="step">3</span>Difficoltà</span></div>
+      <div class="seg" id="diffSeg">
+        <button data-d="0">Facile</button><button data-d="1" class="on">Medio</button><button data-d="2">Difficile</button>
+      </div>
+      <div class="diffdesc" id="diffDesc"></div>
+    </div>
 
-        window.onload = () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                splash.style.opacity = '0';
-                setTimeout(() => { splash.style.display = 'none'; }, 500);
-            }, 1200);
-            checkUrlAndRouting();
-        };
+    <div class="actions" id="actions">
+      <button class="btn-ghost" id="btnTry" disabled onclick="tryLocal()">Prova tu</button>
+      <button class="btn-main" id="btnGen" disabled onclick="generateLink()">Genera link</button>
+      <button class="linkbtn" id="btnReshuffle" style="display:none" onclick="reshuffle()">↻ Rimescola la griglia</button>
+    </div>
+    <div class="sharebox" id="shareBox">
+      <input class="linkfield" id="linkField" readonly onclick="this.select()">
+      <button class="btn-main" onclick="shareLink()">Condividi</button>
+      <button class="btn-ghost" onclick="copyLink(this)">Copia link</button>
+      <button class="linkbtn" onclick="location.href=location.pathname">Crea un'altra sfida</button>
+    </div>
+  </div>
+</section>
 
-        function handleFileSelect(input) {
-            const file = input.files[0];
-            const errorEl = document.getElementById('uploadError');
-            if (!file) return;
-            
-            const isVid = file.type.startsWith('video/');
-            const isImg = file.type.startsWith('image/');
-            if (!isImg && !isVid) { errorEl.innerText = "Formato non valido."; errorEl.style.display = 'block'; return; }
-            if (file.size > 52428800) { errorEl.innerText = "Massimo 50 MB consentiti."; errorEl.style.display = 'block'; return; }
+<!-- ======================= GIOCO ======================= -->
+<section id="screenPlay" class="screen">
+  <div class="topbar">
+    <button class="pill" onclick="exitGame()">✕</button>
+    <span class="timer" id="timer">0:00</span>
+    <button class="pill" id="hintBtn" disabled onclick="useHint()">Aiuto</button>
+  </div>
+  <div class="msgbar" id="msgBar"></div>
+  <div class="progress" id="progress"></div>
+  <div class="stage" id="stage">
+    <div class="frame" id="frame">
+      <div class="tiles" id="tiles"></div>
+      <svg class="trace" id="trace"><polyline id="traceLine" points=""/></svg>
+      <div class="toastmsg" id="toastMsg"></div>
+    </div>
+    <div class="bubble" id="bubble"></div>
+  </div>
 
-            errorEl.style.display = 'none';
-            challenge.rawFile = file;
-            challenge.isVideo = isVid;
-            
-            document.getElementById('uploadActionGroup').style.display = 'none';
-            document.getElementById('bgOverlay').style.display = 'block'; 
-            document.getElementById('mainHeader').classList.add('dark-mode');
-            
-            const previewBox = document.getElementById('mediaPreviewBox');
-            const previewImg = document.getElementById('previewImg');
-            const previewVid = document.getElementById('previewVid');
-            const warningEl = document.getElementById('videoWarning');
-            const statusUI = document.getElementById('uploadStatusUI');
-            
-            previewBox.style.display = 'block';
-            
-            // Ripristina l'aspetto del box di stato per sicurezza
-            statusUI.innerHTML = "MEDIA PRONTO ✓";
-            statusUI.className = "upload-status";
-            statusUI.style.display = 'block';
-            statusUI.onclick = null;
+  <div class="overlay" id="introOv">
+    <div class="logo" style="font-size:40px">Unveil</div>
+    <ul class="rules">
+      <li><b>Trascina il dito</b> sulle lettere vicine (anche in diagonale) per comporre le parole nascoste.</li>
+      <li>Ogni parola trovata <b>svela un pezzo</b> della foto o del video.</li>
+      <li>In alto c'è il messaggio: i trattini ti dicono <b>quante lettere</b> ha ogni parola.</li>
+      <li>Bloccato? Il tasto <b>Aiuto</b> si ricarica col tempo.</li>
+    </ul>
+    <button class="btn-main" id="btnStart" onclick="beginPlay()">Inizia</button>
+  </div>
+  <div class="overlay" id="errOv"><h2 style="color:var(--red)">Ops</h2><p id="errText"></p><br><button class="btn-main" onclick="location.href=location.pathname">Crea una sfida</button></div>
+  <div class="overlay" id="finalOv">
+    <div class="finalmedia" id="finalMedia"></div>
+    <button class="pill hidebtn" id="audioBtn" style="display:none" onclick="toggleAudio()">🔇 Audio</button>
+    <div class="finalinfo" id="finalInfo">
+      <div class="finalmsg" id="finalMsg"></div>
+      <div class="finalstats" id="finalStats"></div>
+      <div class="finalbtns" id="finalBtns"></div>
+    </div>
+  </div>
+</section>
 
-            let localUrl = URL.createObjectURL(file);
-            document.getElementById('appBg').style.backgroundImage = `url(${localUrl})`; 
-            document.getElementById('appBg').style.opacity = '1';
+<script>
+/* ============================================================
+   UNVEIL WORDS — Generatore griglia (puro, deterministico)
+   Stesso input (msg, hide, seed, diff, versione) => stessa griglia.
+   NON modificare il comportamento senza aumentare GEN_VERSION.
+   ============================================================ */
+const UnveilGen = (() => {
+  const GEN_VERSION = 1;
+  const MIN_LETTERS = 10;
+  const MAX_LETTERS = 50;
+  const MAX_CHARS = 140;
+  // cornice 3:4, riempimento max ~80%
+  const TIERS = [
+    { cols: 4, rows: 5, max: 15 },
+    { cols: 5, rows: 7, max: 27 },
+    { cols: 6, rows: 8, max: 38 },
+    { cols: 7, rows: 9, max: 50 },
+  ];
+  // parole funzionali tenute visibili di default (≥3 lettere)
+  const STOP = new Set(('che per con una uno del dei dal nel sul gli non sei hai era ero ' +
+    'alla alle allo agli dalla dalle dallo dagli nella nelle nello negli sulla sulle sullo sugli ' +
+    'della delle dello degli dai nei sui tra fra come anche piu sono cui chi gia poi mai ' +
+    'the and you for are').split(' '));
+  // frequenze lettere italiano (approssimate, per il riempimento)
+  const IT_FREQ = 'AAAAAAAAAAAEEEEEEEEEEEIIIIIIIIIIOOOOOOOOONNNNNNNLLLLLLRRRRRRRTTTTTTTSSSSSSCCCCCDDDDPPPUUUMMMVVGGHFBZQ';
+  const DIRS = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
 
-            if(isImg) {
-                previewImg.src = localUrl;
-                previewImg.style.display = 'block';
-                previewVid.style.display = 'none';
-                warningEl.style.display = 'none';
-            } else {
-                previewImg.style.display = 'none';
-                previewVid.src = localUrl;
-                previewVid.style.display = 'block';
-                
-                previewVid.onloadedmetadata = function() {
-                    if(this.duration > 15) {
-                        warningEl.style.display = 'block';
-                    }
-                };
-                
-                previewVid.ontimeupdate = function() {
-                    if(this.currentTime >= 15) {
-                        this.currentTime = 0;
-                        this.play();
-                    }
-                };
-            }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hash(...nums) {
+    let h = 2166136261 >>> 0;
+    for (const n of nums) { h ^= (n >>> 0); h = Math.imul(h, 16777619) >>> 0; h ^= h >>> 13; }
+    return h >>> 0;
+  }
+  function normalize(s) {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+  }
 
-            // PROGRESSIVE DISCLOSURE - Dopo 2 secondi trasforma in pulsante per abilitare le opzioni
-            setTimeout(() => {
-                statusUI.innerHTML = "PERSONALIZZA LA SFIDA ➔";
-                statusUI.classList.add('btn-personalize');
-                
-                statusUI.onclick = function() {
-                    // Sblocca le opzioni
-                    const diffSection = document.getElementById('diffSection');
-                    const btnSubmit = document.getElementById('btnSubmit');
-                    diffSection.classList.remove('disabled-state');
-                    btnSubmit.classList.remove('disabled-state');
-                    
-                    // Scroll fluido giù
-                    diffSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    
-                    // Nasconde il pulsante per evitare click multipli
-                    this.style.display = 'none';
-                };
-            }, 2000);
+  /* Spezza il messaggio in segmenti: parole (lettere) e separatori (tutto il resto).
+     "l'amore," => [w:"l"] [p:"'"] [w:"amore"] [p:","] */
+  function tokenize(msg) {
+    const segs = [];
+    const re = /[\p{L}\p{M}]+|[^\p{L}\p{M}]+/gu;
+    let m;
+    while ((m = re.exec(msg)) !== null) {
+      const text = m[0];
+      if (/^[\p{L}\p{M}]/u.test(text)) {
+        const norm = normalize(text);
+        const hideable = norm.length >= 3 && /^[A-Z]+$/.test(norm);
+        segs.push({ type: 'w', text, norm, hideable });
+      } else {
+        segs.push({ type: 'p', text });
+      }
+    }
+    return segs;
+  }
+
+  /* Selezione automatica: tutte le parole nascondibili tranne le funzionali;
+     se si superano MAX_LETTERS si scoprono prima le più corte. */
+  function defaultHidden(segs) {
+    let idx = [];
+    segs.forEach((s, i) => {
+      if (s.type === 'w' && s.hideable && !STOP.has(s.norm.toLowerCase())) idx.push(i);
+    });
+    let total = idx.reduce((a, i) => a + segs[i].norm.length, 0);
+    if (total > MAX_LETTERS) {
+      const byLen = [...idx].sort((a, b) => segs[a].norm.length - segs[b].norm.length || b - a);
+      const drop = new Set();
+      for (const i of byLen) {
+        if (total <= MAX_LETTERS) break;
+        drop.add(i); total -= segs[i].norm.length;
+      }
+      idx = idx.filter(i => !drop.has(i));
+    }
+    return idx;
+  }
+
+  function countLetters(segs, hide) {
+    return hide.reduce((a, i) => a + (segs[i] ? segs[i].norm.length : 0), 0);
+  }
+  function tierFor(n) {
+    const i = TIERS.findIndex(t => n <= t.max);
+    return i < 0 ? -1 : i;
+  }
+
+  /* Piazza le parole come percorsi in 8 direzioni senza sovrapposizioni.
+     diff 0 = percorsi dritti, 1 = liberi, 2 = tortuosi */
+  function placeAll(cols, rows, lens, rnd, diff, budget) {
+    const N = cols * rows;
+    const g = new Int16Array(N).fill(-1);
+    let steps = 0;
+    const free = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows && g[y * cols + x] < 0;
+    const deg = (x, y) => { let d = 0; for (const [dx, dy] of DIRS) if (free(x + dx, y + dy)) d++; return d; };
+    const paths = lens.map(() => []);
+
+    function word(i, x, y, k, pdx, pdy) {
+      if (++steps > budget) return false;
+      g[y * cols + x] = i; paths[i].push(y * cols + x);
+      if (k === lens[i] - 1) {
+        if (placeWord(i + 1)) return true;
+      } else {
+        const cand = [];
+        for (const [dx, dy] of DIRS) {
+          const nx = x + dx, ny = y + dy;
+          if (!free(nx, ny)) continue;
+          const turn = k > 0 && (dx !== pdx || dy !== pdy);
+          const diag = dx !== 0 && dy !== 0;
+          let score = deg(nx, ny) + rnd() * 1.5;
+          if (diff === 0) score += (turn ? 3 : 0) + (diag ? 0.6 : 0);
+          else if (diff === 2) score += (turn ? 0 : 1.6) + (diag ? 0 : 0.5);
+          cand.push([score, nx, ny, dx, dy]);
         }
-
-        function updateDiffLabels(val) { challenge.diff = parseInt(val); for(let i=1; i<=5; i++) document.getElementById('lbl'+i).className = (i == val) ? 'active' : ''; }
-        function setAttempts(val, btn) { challenge.tries = val; document.querySelectorAll('.btn-attempt').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
-
-        async function triggerNativeShare() {
-            if (navigator.share) {
-                try { await navigator.share({ title: 'Sfida Unveil', text: 'Ho creato una sfida nascosta per te!', url: finalShareUrl }); } catch (err) {}
-            } else { navigator.clipboard.writeText(finalShareUrl); alert("Link copiato!"); }
+        cand.sort((a, b) => a[0] - b[0]);
+        for (const [, nx, ny, dx, dy] of cand) {
+          if (word(i, nx, ny, k + 1, dx, dy)) return true;
+          if (steps > budget) break;
         }
+      }
+      g[y * cols + x] = -1; paths[i].pop();
+      return false;
+    }
+    function placeWord(i) {
+      if (i === lens.length) return true;
+      const starts = [];
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++)
+        if (free(x, y)) starts.push([deg(x, y) + rnd() * 2.5, x, y]);
+      starts.sort((a, b) => a[0] - b[0]);
+      for (const [, x, y] of starts.slice(0, 12)) {
+        if (word(i, x, y, 0, 0, 0)) return true;
+        if (steps > budget) return false;
+      }
+      return false;
+    }
+    return placeWord(0) ? paths : null;
+  }
 
-        async function generateChallengeLink() {
-            if(!challenge.rawFile) { showToast("Errore", "Seleziona un media!", "OK", "error", hideToast); return; }
-            const btn = document.getElementById('btnSubmit'); const originalText = btn.innerHTML;
-            btn.innerHTML = "Elaborazione..."; btn.disabled = true;
-            
-            challenge.msg = document.getElementById('secretMsgInput').value.trim();
-
-            try {
-                const formData = new FormData(); 
-                formData.append("file", challenge.rawFile);
-                formData.append("upload_preset", CLOUDINARY_PRESET);
-
-                const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                const data = await response.json();
-
-                if(data.public_id) {
-                    const pid = encodeURIComponent(data.public_id);
-                    const rt = data.resource_type; 
-                    
-                    const baseUrl = window.location.href.split('?')[0];
-                    let paramsStr = `?d=${challenge.diff}&t=${challenge.tries}&pid=${pid}&rt=${rt}`;
-                    if(challenge.msg) paramsStr += `&m=${encodeURIComponent(challenge.msg)}`;
-                    
-                    finalShareUrl = `${baseUrl}${paramsStr}`;
-                    btn.style.display = 'none'; document.getElementById('shareContainer').style.display = 'block';
-                } else { throw new Error("Upload fallito"); }
-            } catch (error) { 
-                showToast("Errore", "Connessione Cloudinary interrotta", "OK", "error", hideToast); 
-                btn.innerHTML = originalText; btn.disabled = false; 
-            }
+  /* Trova tutti i percorsi che compongono `w` (si ferma a `limit`). */
+  function findPaths(letters, cols, rows, w, limit) {
+    const out = [];
+    const used = new Uint8Array(cols * rows);
+    const path = [];
+    function dfs(idx, k) {
+      if (out.length >= limit) return;
+      if (letters[idx] !== w[k]) return;
+      used[idx] = 1; path.push(idx);
+      if (k === w.length - 1) out.push([...path]);
+      else {
+        const x = idx % cols, y = (idx / cols) | 0;
+        for (const [dx, dy] of DIRS) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+          const ni = ny * cols + nx;
+          if (!used[ni]) dfs(ni, k + 1);
         }
+      }
+      used[idx] = 0; path.pop();
+    }
+    for (let i = 0; i < letters.length && out.length < limit; i++) dfs(i, 0);
+    return out;
+  }
+  const keyOf = cells => [...cells].sort((a, b) => a - b).join(',');
 
-        // --- ENGINE DI GIOCO ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        const gameBoxWrapper = document.getElementById('gameBoxWrapper');
-        const glowOverlay = document.getElementById('glowOverlay');
-        const playerCursorDom = document.getElementById('playerCursor');
+  /* Entry point.
+     opts: { msg, hide:[indici segmenti], seed, diff:0|1|2 }
+     ritorna { version, cols, rows, letters:[], words:[{seg, norm, text, cells}], filler:[] } o null */
+  function generate({ msg, hide, seed, diff }) {
+    const segs = tokenize(msg);
+    const hidden = (hide || []).filter(i => segs[i] && segs[i].type === 'w' && segs[i].hideable);
+    const n = countLetters(segs, hidden);
+    const t0 = tierFor(n);
+    if (n === 0 || t0 < 0) return null;
+    // ordine di piazzamento: più lunghe prima (stabile)
+    const order = hidden.map((seg, k) => ({ seg, k, norm: segs[seg].norm }))
+      .sort((a, b) => b.norm.length - a.norm.length || a.k - b.k);
+    const lens = order.map(o => o.norm.length);
 
-        let WIDTH = 0; let HEIGHT = 0;
-        let grid = []; let spheres = [];
-        let isDrawing = false, gameInterval = null, targetPercentage = 80;
-        let isGameWon = false, pulseTime = 0, isPlaying = false; 
-        
-        let player = { x: 0, y: 0 }; 
-        let currentPos = { x: 0, y: 0 }; 
-        let targetPos = { x: null, y: null }; 
-        let isPointerDown = false;
-        let playerSpeed = 2.6; 
-        let isRewinding = false; 
-        
-        let isImmune = true; 
-        const IMMUNITY_THRESHOLD = 30; 
-        const SNAP_WALL = 12;          
-        const SNAP_TRAIL = 6;          
+    for (let ti = t0; ti < TIERS.length; ti++) {
+      const { cols, rows } = TIERS[ti];
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const rnd = mulberry32(hash(seed, ti, attempt, GEN_VERSION));
+        const paths = placeAll(cols, rows, lens, rnd, diff, 25000);
+        if (!paths) continue;
 
-        let cropData = { x: 0, y: 0, w: 0, h: 0 };
-        let colorPixels = null, bwPixels = null, screenImageData = null;
-        let trailPoints = []; 
-        let currentToastAction = null;
+        const N = cols * rows;
+        const letters = new Array(N).fill(null);
+        const words = order.map((o, j) => {
+          paths[j].forEach((c, k) => { letters[c] = o.norm[k]; });
+          return { seg: o.seg, norm: o.norm, text: segs[o.seg].text, cells: paths[j] };
+        });
+        const filler = [];
+        for (let i = 0; i < N; i++) if (letters[i] === null) filler.push(i);
+        const pool = diff === 2 ? order.map(o => o.norm).join('') : IT_FREQ;
 
-        function showToast(title, desc, btnText, type, callback, isTutorial = false) {
-            const tc = document.getElementById('toastContainer');
-            tc.className = 'toast-overlay active';
-            
-            document.getElementById('toastTitle').innerText = title;
-            document.getElementById('toastTitle').className = `toast-title ${type}`;
-            document.getElementById('toastDesc').innerText = desc;
-            document.getElementById('toastDesc').style.display = desc ? 'block' : 'none';
-            document.getElementById('toastBtn').innerText = btnText;
-            document.getElementById('tutorialRules').style.display = isTutorial ? 'block' : 'none';
-            
-            if (title === "" && desc === "") document.getElementById('toastTitle').style.display = 'none';
-            
-            currentToastAction = callback;
+        // riempimento + controllo anti-ambiguità (fino a 30 rimescolamenti)
+        const valid = {};
+        for (const w of words) (valid[w.norm] = valid[w.norm] || new Set()).add(keyOf(w.cells));
+        let best = null;
+        for (let r = 0; r < 30; r++) {
+          for (const i of filler) letters[i] = pool[Math.floor(rnd() * pool.length)];
+          let clean = true;
+          for (const w of Object.keys(valid)) {
+            const found = findPaths(letters, cols, rows, w, 50);
+            if (found.some(p => !valid[w].has(keyOf(p)))) { clean = false; break; }
+          }
+          if (clean || r === 29) { best = [...letters]; break; }
         }
-        function hideToast() { document.getElementById('toastContainer').className = 'toast-overlay'; }
-        function handleToastAction() { if(currentToastAction) currentToastAction(); else hideToast(); }
+        words.sort((a, b) => a.seg - b.seg); // ordine del messaggio
+        return { version: GEN_VERSION, cols, rows, letters: best, words, filler, tier: ti };
+      }
+    }
+    return null;
+  }
 
-        function checkUrlAndRouting() {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('pid') && params.has('rt')) {
-                document.getElementById('screenRegia').classList.remove('active');
-                document.getElementById('screenGame').classList.add('active');
-                
-                challenge.diff = parseInt(params.get('d')) || 3;
-                challenge.tries = params.get('t') === 'Infinity' ? Infinity : parseInt(params.get('t'));
-                challenge.msg = params.get('m') ? decodeURIComponent(params.get('m')) : "";
-                challenge.pid = decodeURIComponent(params.get('pid'));
-                challenge.rt = params.get('rt'); 
-                currentAttempts = challenge.tries;
-                
-                let posterUrl = "";
-                if(challenge.rt === 'video') {
-                    posterUrl = `https://res.cloudinary.com/up98kcff/video/upload/so_0/${challenge.pid}.jpg`;
-                } else {
-                    posterUrl = `https://res.cloudinary.com/up98kcff/image/upload/${challenge.pid}.jpg`;
-                }
+  return { GEN_VERSION, MIN_LETTERS, MAX_LETTERS, MAX_CHARS, TIERS, tokenize, defaultHidden,
+           countLetters, tierFor, generate, normalize, keyOf };
+})();
+if (typeof module !== 'undefined') module.exports = UnveilGen;
 
-                loadedImage.onload = function() { initGameData(); };
-                loadedImage.src = posterUrl;
-                
-            } else { document.getElementById('screenRegia').classList.add('active'); }
-        }
+</script>
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/up98kcff/auto/upload";
+const CLOUDINARY_PRESET = "sito_upload";
+const VIDEO_MAX_S = 15;
+const HINT_COOLDOWN = [20, 45, 90];       // secondi per difficoltà
+const WRONG_PENALTY = [0, 0, 5];          // secondi aggiunti per parola sbagliata
+const DIFF_DESC = [
+  'Percorsi quasi dritti, aiuto ogni 20 secondi. Per chi non gioca mai.',
+  'Percorsi liberi, aiuto ogni 45 secondi. La scelta giusta per quasi tutti.',
+  'Percorsi tortuosi, lettere esca prese dal messaggio, aiuto ogni 90 secondi e +5s per ogni parola sbagliata.'
+];
+const G = UnveilGen;
+const $ = s => document.querySelector(s);
 
-        function initGameData() {
-            const targets = [0, 60, 70, 80, 85, 90]; targetPercentage = targets[challenge.diff];
-            isDrawing = false; isGameWon = false; isPlaying = false; isRewinding = false; trailPoints = [];
-            targetPos = { x: null, y: null }; isPointerDown = false; isImmune = true; victoryState = 0;
+/* ============================================================
+   UTIL
+   ============================================================ */
+function b64uEncode(str) {
+  const bytes = new TextEncoder().encode(str); let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uDecode(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  const bin = atob(s); const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+const randomSeed = () => (Math.random() * 2 ** 31) >>> 0;
+function esc(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
-            document.getElementById('hudProgress').innerText = `AREA: 0% / ${targetPercentage}%`;
-            document.getElementById('hudAttempts').innerText = `VITE: ${challenge.tries === Infinity ? '∞' : currentAttempts}`;
-            
-            document.getElementById('tutTarget').innerHTML = `Raggiungi il <b>${targetPercentage}%</b> di decodifica per sbloccare l'intero file.`;
-            
-            showToast("", "", "INIZIA A GIOCARE", "success", requestStartGameplay, true);
-        }
+/* Rettangolo di ritaglio 3:4 in pixel del sorgente, da centro (0..1) e zoom */
+function cropRect(natW, natH, cx, cy, z) {
+  let w, h;
+  if (natW / natH > 0.75) { h = natH; w = natH * 0.75; } else { w = natW; h = natW / 0.75; }
+  w /= z; h /= z;
+  let x = cx * natW - w / 2, y = cy * natH - h / 2;
+  x = Math.max(0, Math.min(natW - w, x)); y = Math.max(0, Math.min(natH - h, y));
+  return { x, y, w, h };
+}
+/* Posiziona il media dentro una cornice in modo che mostri esattamente il rettangolo r */
+function placeMedia(el, frameW, natW, natH, r) {
+  const s = frameW / r.w;
+  el.style.width = natW * s + 'px'; el.style.height = natH * s + 'px';
+  el.style.left = -r.x * s + 'px'; el.style.top = -r.y * s + 'px';
+}
 
-        function requestStartGameplay() {
-            hideToast();
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen().then(setupGameCanvas).catch(setupGameCanvas); } 
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); setupGameCanvas(); } 
-            else { setupGameCanvas(); }
-        }
+/* ============================================================
+   REGIA
+   ============================================================ */
+const C = { kind: null, file: null, blob: null, url: null, natW: 0, natH: 0, cx: .5, cy: .5, z: 1,
+            mediaEl: null, msg: '', segs: [], hide: new Set(), diff: 1, seed: randomSeed(), shareUrl: '' };
 
-        function setupGameCanvas() {
-            setTimeout(() => {
-                const boxWrapper = document.getElementById('mainGameBox');
-                const rect = boxWrapper.getBoundingClientRect();
-                WIDTH = Math.floor(rect.width); HEIGHT = Math.floor(rect.height);
-                canvas.width = WIDTH; canvas.height = HEIGHT;
+['#inImg', '#inVid', '#inGal'].forEach(id => $(id).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) loadMedia(f); }));
 
-                let imgRatio = loadedImage.width / loadedImage.height; let canvasRatio = WIDTH / HEIGHT;
-                cropData = { x: 0, y: 0, w: loadedImage.width, h: loadedImage.height };
-                if (imgRatio > canvasRatio) { cropData.w = Math.floor(loadedImage.height * canvasRatio); cropData.x = Math.floor((loadedImage.width - cropData.w) / 2); } 
-                else { cropData.h = Math.floor(loadedImage.width / canvasRatio); cropData.y = Math.floor((loadedImage.height - cropData.h) / 2); }
+async function loadMedia(file) {
+  const err = $('#mediaErr'); err.style.display = 'none';
+  const isV = file.type.startsWith('video/'), isI = file.type.startsWith('image/');
+  if (!isV && !isI) return showErr('Formato non supportato.');
+  if (file.size > 50 * 1024 * 1024) return showErr('File troppo grande (max 50 MB).');
+  if (C.url) URL.revokeObjectURL(C.url);
+  C.kind = isV ? 'v' : 'i'; C.file = file; C.cx = .5; C.cy = .5; C.z = 1; $('#zoom').value = 1;
+  try {
+    if (isI) {
+      // ricodifica: rimuove EXIF/GPS e limita a 2048px
+      const src = URL.createObjectURL(file);
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+      const sc = Math.min(1, 2048 / Math.max(img.naturalWidth, img.naturalHeight));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.naturalWidth * sc); cv.height = Math.round(img.naturalHeight * sc);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(src);
+      C.blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.88));
+      C.url = URL.createObjectURL(C.blob); C.natW = cv.width; C.natH = cv.height;
+      const el = new Image(); el.className = 'media'; el.src = C.url; await el.decode().catch(() => {});
+      setCropMedia(el);
+      $('#vwarn').style.display = 'none';
+      $('#mediaInfo').textContent = 'Foto';
+    } else {
+      C.blob = file; C.url = URL.createObjectURL(file);
+      const v = document.createElement('video'); v.className = 'media'; v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+      v.setAttribute('playsinline', ''); v.src = C.url;
+      await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; });
+      C.natW = v.videoWidth; C.natH = v.videoHeight;
+      v.addEventListener('timeupdate', () => { if (v.currentTime >= VIDEO_MAX_S) v.currentTime = 0; });
+      v.play().catch(() => {});
+      setCropMedia(v);
+      $('#vwarn').style.display = v.duration > VIDEO_MAX_S ? 'block' : 'none';
+      $('#mediaInfo').textContent = `Video · ${Math.min(VIDEO_MAX_S, Math.round(v.duration))}s`;
+    }
+  } catch (e) { return showErr('Impossibile leggere il file.'); }
+  $('#pickRow').style.display = 'none'; $('#pickHint').style.display = 'none'; $('#cropBox').style.display = 'block'; layoutCrop();
+  $('#pMsg').classList.remove('off'); $('#pDiff').classList.remove('off');
+  resetShare(); updateMsg();
+}
+function showErr(t) { const e = $('#mediaErr'); e.textContent = t; e.style.display = 'block'; }
+function changeMedia() { $('#inGal').click(); }
+function setCropMedia(el) {
+  const f = $('#cropFrame'); $('#cropBox').style.display = 'block';
+  if (C.mediaEl) C.mediaEl.remove();
+  C.mediaEl = el; f.insertBefore(el, f.firstChild); layoutCrop();
+}
+function layoutCrop() {
+  if (!C.mediaEl) return;
+  const f = $('#cropFrame'); const r = cropRect(C.natW, C.natH, C.cx, C.cy, C.z);
+  C.cx = (r.x + r.w / 2) / C.natW; C.cy = (r.y + r.h / 2) / C.natH; // normalizza dopo il clamp
+  placeMedia(C.mediaEl, f.clientWidth, C.natW, C.natH, r);
+}
+$('#zoom').addEventListener('input', e => { C.z = +e.target.value; layoutCrop(); resetShare(); });
+(() => { // trascinamento per inquadrare
+  const f = $('#cropFrame'); let drag = null;
+  f.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; f.setPointerCapture(e.pointerId); });
+  f.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const r = cropRect(C.natW, C.natH, C.cx, C.cy, C.z); const s = f.clientWidth / r.w;
+    C.cx -= (e.clientX - drag.x) / s / C.natW; C.cy -= (e.clientY - drag.y) / s / C.natH;
+    drag = { x: e.clientX, y: e.clientY }; layoutCrop();
+  });
+  const end = () => { if (drag) resetShare(); drag = null; };
+  f.addEventListener('pointerup', end); f.addEventListener('pointercancel', end);
+  window.addEventListener('resize', layoutCrop);
+})();
 
-                grid = Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0));
-                for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) grid[y][x] = 1; } }
-                
-                player.x = Math.floor(WIDTH / 2); player.y = 0;
-                currentPos.x = player.x; currentPos.y = player.y;
+/* --- messaggio e scelta parole --- */
+$('#msgIn').addEventListener('input', () => { C.msg = $('#msgIn').value; C.segs = G.tokenize(C.msg); C.hide = new Set(G.defaultHidden(C.segs)); resetShare(); updateMsg(); });
+function toggleWord(i, el) {
+  const s = C.segs[i]; if (!s.hideable) return;
+  if (C.hide.has(i)) C.hide.delete(i);
+  else {
+    if (G.countLetters(C.segs, [...C.hide, i]) > G.MAX_LETTERS) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); vibrate(40); return; }
+    C.hide.add(i);
+  }
+  resetShare(); updateMsg();
+}
+function updateMsg() {
+  $('#charCount').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
+  const chips = $('#chips'); chips.innerHTML = '';
+  C.segs.forEach((s, i) => {
+    if (s.type !== 'w') return;
+    const b = document.createElement('button');
+    b.className = 'chip' + (C.hide.has(i) ? ' on' : '') + (s.hideable ? '' : ' locked');
+    b.textContent = s.text;
+    if (s.hideable) b.onclick = () => toggleWord(i, b); else b.title = 'Troppo corta per essere nascosta';
+    chips.appendChild(b);
+  });
+  $('#previewLine').innerHTML = C.segs.map((s, i) => C.hide.has(i)
+    ? `<span class="dash">${'_'.repeat(s.norm.length)}</span>` : esc(s.text)).join('');
+  const n = G.countLetters(C.segs, [...C.hide]); const ti = G.tierFor(n);
+  const ok = n >= G.MIN_LETTERS && n <= G.MAX_LETTERS;
+  $('#cnt').innerHTML = `<span class="${ok ? 'ok' : 'bad'}">${n}/${G.MAX_LETTERS} lettere</span> · ${C.hide.size} parole`;
+  $('#tierLbl').textContent = !C.msg.trim() ? '' : n < G.MIN_LETTERS ? `Nascondi almeno ${G.MIN_LETTERS} lettere` : ti >= 0 ? `griglia ${G.TIERS[ti].cols}×${G.TIERS[ti].rows}` : '';
+  const t = G.TIERS[Math.max(0, ti)];
+  $('#gridLines').style.backgroundSize = `calc(100% / ${t.cols}) calc(100% / ${t.rows})`;
+  $('#gridLines').style.display = ok ? 'block' : 'none';
+  const ready = ok && !!C.mediaEl;
+  $('#btnTry').disabled = !ready; $('#btnGen').disabled = !ready;
+}
+$('#diffSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  C.diff = +b.dataset.d; [...$('#diffSeg').children].forEach(x => x.classList.toggle('on', x === b));
+  $('#diffDesc').textContent = DIFF_DESC[C.diff]; resetShare();
+});
+$('#diffDesc').textContent = DIFF_DESC[1];
 
-                let tempCanvas = document.createElement('canvas'); tempCanvas.width = 60; tempCanvas.height = Math.floor(60 / canvasRatio);
-                tempCanvas.getContext('2d').drawImage(loadedImage, cropData.x, cropData.y, cropData.w, cropData.h, 0, 0, tempCanvas.width, tempCanvas.height);
-                let colorCanvas = document.createElement('canvas'); colorCanvas.width = WIDTH; colorCanvas.height = HEIGHT;
-                let cCtx = colorCanvas.getContext('2d'); cCtx.imageSmoothingEnabled = false;
-                cCtx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, WIDTH, HEIGHT);
-                colorPixels = cCtx.getImageData(0, 0, WIDTH, HEIGHT).data;
+function cropFractions() {
+  const r = cropRect(C.natW, C.natH, C.cx, C.cy, C.z);
+  return [r.x / C.natW, r.y / C.natH, r.w / C.natW, r.h / C.natH].map(v => +v.toFixed(5));
+}
+function buildConfig(url) {
+  return { v: G.GEN_VERSION, m: C.msg, h: [...C.hide].sort((a, b) => a - b), s: C.seed, d: C.diff, k: C.kind, u: url, c: cropFractions() };
+}
+function tryLocal() {
+  history.replaceState(null, '', location.pathname);
+  startGame(buildConfig(C.url), { local: true });
+  $('#btnReshuffle').style.display = 'block';
+}
+function reshuffle() { C.seed = randomSeed(); resetShare(); tryLocal(); }
+function resetShare() {
+  C.shareUrl = ''; $('#shareBox').style.display = 'none'; $('#actions').style.display = 'flex';
+  const b = $('#btnGen'); b.textContent = 'Genera link';
+}
+async function generateLink() {
+  const b = $('#btnGen'); b.disabled = true; b.textContent = 'Caricamento…';
+  try {
+    const fd = new FormData();
+    fd.append('file', C.blob, C.kind === 'i' ? 'unveil.jpg' : (C.file.name || 'unveil.mp4'));
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!data.secure_url) throw new Error('upload');
+    let url = data.secure_url;
+    if (C.kind === 'v') url = url.replace('/upload/', `/upload/eo_${VIDEO_MAX_S}/`);
+    C.shareUrl = `${location.origin}${location.pathname}#g=${b64uEncode(JSON.stringify(buildConfig(url)))}`;
+    $('#linkField').value = C.shareUrl;
+    $('#actions').style.display = 'none'; $('#shareBox').style.display = 'flex';
+  } catch (e) {
+    b.textContent = 'Errore di caricamento · riprova';
+  }
+  b.disabled = false;
+}
+async function shareLink() {
+  if (navigator.share) { try { await navigator.share({ title: 'Unveil', text: 'Ho nascosto qualcosa per te. Trova le parole per scoprirlo 👀', url: C.shareUrl }); } catch (e) {} }
+  else copyLink();
+}
+async function copyLink(btn) {
+  try { await navigator.clipboard.writeText(C.shareUrl); } catch (e) { $('#linkField').select(); document.execCommand('copy'); }
+  const b = btn || $('#linkField'); if (!btn) return; const t = b.textContent; b.textContent = 'Copiato ✓'; setTimeout(() => b.textContent = t, 1500);
+}
 
-                bwPixels = new Uint8ClampedArray(colorPixels.length);
-                for(let i=0; i<colorPixels.length; i+=4) {
-                    let r = colorPixels[i], g = colorPixels[i+1], b = colorPixels[i+2], a = colorPixels[i+3];
-                    let gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                    bwPixels[i] = gray * 0.75; bwPixels[i+1] = gray * 0.75; bwPixels[i+2] = gray * 0.75; bwPixels[i+3] = a; 
-                }
+/* ============================================================
+   GIOCO
+   ============================================================ */
+let S = null; // stato partita
 
-                screenImageData = new ImageData(WIDTH, HEIGHT); spheres = [];
-                
-                let numSpheres = [0, 3, 6, 9, 13, 18][challenge.diff];
-                let sSpeed = 1.4 + (challenge.diff * 0.5);
-                
-                for(let i=0; i<numSpheres; i++) { 
-                    spheres.push({ x: WIDTH / 2, y: HEIGHT / 2, vx: (Math.random() > 0.5 ? 1 : -1) * sSpeed, vy: (Math.random() > 0.5 ? 1 : -1) * sSpeed, radius: 6, history: [] }); 
-                }
+function startGame(cfg, opts = {}) {
+  const segs = G.tokenize(cfg.m || '');
+  const grid = G.generate({ msg: cfg.m, hide: cfg.h, seed: cfg.s, diff: cfg.d });
+  showScreen('play');
+  if (!grid) return gameError('Questa sfida non è valida.');
+  if (cfg.v !== G.GEN_VERSION) console.warn('Versione generatore diversa', cfg.v);
+  S = { cfg, opts, segs, grid, found: new Set(), tiles: [], sel: [], hintsUsed: 0, hintLevel: {}, penalty: 0,
+        startT: 0, timerId: null, hintReadyAt: 0, done: false, natW: 0, natH: 0, media: null };
+  window.__game = S;
 
-                setupFluidControls();
-                if(gameInterval) clearInterval(gameInterval);
-                gameInterval = setInterval(updateGame, 1000 / 60);
+  // messaggio a trattini
+  const bar = $('#msgBar'); bar.innerHTML = '';
+  const hidden = new Set(grid.words.map(w => w.seg));
+  segs.forEach((s, i) => {
+    if (hidden.has(i)) {
+      const sl = document.createElement('span'); sl.className = 'slot'; sl.dataset.seg = i;
+      sl.innerHTML = '<span class="ch"></span>'.repeat(s.norm.length); bar.appendChild(sl);
+    } else { const t = document.createElement('span'); t.className = 'fixed'; t.textContent = s.text; bar.appendChild(t); }
+  });
+  updateProgress();
 
-                isPlaying = true; trailPoints = []; isImmune = true; playerCursorDom.style.display = 'block';
-            }, 300); 
-        }
+  // caselle
+  const tiles = $('#tiles'); tiles.innerHTML = '';
+  tiles.style.gridTemplateColumns = `repeat(${grid.cols}, 1fr)`; tiles.style.gridTemplateRows = `repeat(${grid.rows}, 1fr)`;
+  grid.letters.forEach(L => { const d = document.createElement('div'); d.className = 'tile'; d.innerHTML = `<span>${L}</span>`; tiles.appendChild(d); S.tiles.push(d); });
 
-        function setupFluidControls() {
-            const boxWrapper = document.getElementById('mainGameBox');
-            function updateTarget(e) {
-                let rect = boxWrapper.getBoundingClientRect();
-                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                targetPos.x = clientX - rect.left; targetPos.y = clientY - rect.top;
-            }
-            boxWrapper.addEventListener('pointerdown', (e) => { e.preventDefault(); if(!isRewinding && isPlaying) { isPointerDown = true; updateTarget(e); } });
-            boxWrapper.addEventListener('pointermove', (e) => { e.preventDefault(); if (isPointerDown) updateTarget(e); });
-            
-            const handlePointerUp = () => {
-                isPointerDown = false; targetPos.x = null; targetPos.y = null;
-                if (isDrawing && !isRewinding) { isRewinding = true; } 
-            };
-            boxWrapper.addEventListener('pointerup', handlePointerUp);
-            boxWrapper.addEventListener('pointercancel', handlePointerUp);
-        }
+  // media sotto la griglia
+  const frame = $('#frame'); frame.querySelectorAll('.media').forEach(m => m.remove());
+  const el = cfg.k === 'v' ? document.createElement('video') : new Image();
+  el.className = 'media';
+  if (cfg.k === 'v') { el.muted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
+    el.addEventListener('timeupdate', () => { if (el.currentTime >= VIDEO_MAX_S) el.currentTime = 0; }); }
+  const onReady = () => { S.natW = el.videoWidth || el.naturalWidth; S.natH = el.videoHeight || el.naturalHeight; layoutGame(); };
+  el.addEventListener(cfg.k === 'v' ? 'loadedmetadata' : 'load', onReady, { once: true });
+  el.addEventListener('error', () => gameError('Il contenuto non è più disponibile.'), { once: true });
+  el.src = cfg.u; frame.insertBefore(el, frame.firstChild); S.media = el;
 
-        function getBresenhamPoints(x0, y0, x1, y1) {
-            let pts = []; let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1; let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-            let err = dx + dy, e2;
-            while (true) {
-                pts.push({x: x0, y: y0}); if (x0 === x1 && y0 === y1) break;
-                e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; }
-            }
-            return pts;
-        }
+  $('#introOv').classList.add('active'); $('#finalOv').classList.remove('active'); $('#errOv').classList.remove('active');
+  $('#timer').textContent = '0:00'; $('#hintBtn').disabled = true; $('#hintBtn').textContent = 'Aiuto';
+  layoutGame();
+}
+function gameError(t) { $('#errText').textContent = t; $('#introOv').classList.remove('active'); $('#errOv').classList.add('active'); }
+function showScreen(n) {
+  $('#screenCreate').classList.toggle('active', n === 'create');
+  $('#screenPlay').classList.toggle('active', n === 'play');
+}
+function layoutGame() {
+  if (!S) return;
+  const st = $('#stage'); const cs = getComputedStyle(st);
+  const aw = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const ah = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const w = Math.floor(Math.min(aw, ah * 0.75, 560)); const h = Math.floor(w / 0.75);
+  const fr = $('#frame'); fr.style.width = w + 'px'; fr.style.height = h + 'px';
+  fr.style.setProperty('--fs', Math.round(Math.min(w / S.grid.cols, h / S.grid.rows) * 0.46) + 'px');
+  $('#trace').setAttribute('viewBox', `0 0 ${w} ${h}`);
+  if (S.natW) {
+    const c = S.cfg.c || [0, 0, 1, 1];
+    placeMedia(S.media, w, S.natW, S.natH, { x: c[0] * S.natW, y: c[1] * S.natH, w: c[2] * S.natW, h: c[3] * S.natH });
+  }
+}
+window.addEventListener('resize', layoutGame);
 
-        function applyGapFill(startX, startY, endX, endY) {
-            let pts = getBresenhamPoints(startX, startY, endX, endY);
-            for(let p of pts) {
-                let br = 3; 
-                for(let dy=-br; dy<=br; dy++) {
-                    for(let dx=-br; dx<=br; dx++) {
-                        let cx = p.x + dx; let cy = p.y + dy;
-                        if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx] === 0) grid[cy][cx] = 2;
-                    }
-                }
-            }
-        }
+function beginPlay() {
+  $('#introOv').classList.remove('active');
+  if (S.cfg.k === 'v') S.media.play().catch(() => {});
+  S.startT = performance.now(); S.hintReadyAt = HINT_COOLDOWN[S.cfg.d] || 45;
+  S.timerId = setInterval(tick, 250); tick();
+}
+const elapsed = () => (performance.now() - S.startT) / 1000 + S.penalty;
+function tick() {
+  if (!S || S.done) return;
+  const e = elapsed(); $('#timer').textContent = fmtTime(e);
+  const left = S.hintReadyAt - (performance.now() - S.startT) / 1000;
+  const hb = $('#hintBtn');
+  if (left > 0) { hb.disabled = true; hb.textContent = `Aiuto ${Math.ceil(left)}s`; }
+  else { hb.disabled = false; hb.textContent = 'Aiuto'; }
+}
+function updateProgress() {
+  $('#progress').textContent = `${S.found.size}/${S.grid.words.length} parole trovate`;
+}
 
-        function processPixel(nx, ny) {
-            if (nx < 0) nx = 0; if (nx >= WIDTH) nx = WIDTH - 1;
-            if (ny < 0) ny = 0; if (ny >= HEIGHT) ny = HEIGHT - 1;
-            let target = grid[ny][nx];
+/* --- input: trascinamento sulle caselle --- */
+(() => {
+  const tl = $('#tiles'); let active = false;
+  function cellAt(e, loose) {
+    const r = tl.getBoundingClientRect(); const cw = r.width / S.grid.cols, ch = r.height / S.grid.rows;
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const c = Math.floor(x / cw), rw = Math.floor(y / ch);
+    if (c < 0 || rw < 0 || c >= S.grid.cols || rw >= S.grid.rows) return -1;
+    const dx = x - (c + .5) * cw, dy = y - (rw + .5) * ch;
+    if (!loose && Math.hypot(dx, dy) > Math.min(cw, ch) * 0.4) return -1; // centro sensibile: diagonali pulite
+    return rw * S.grid.cols + c;
+  }
+  const isFound = i => S.tiles[i].classList.contains('found');
+  const adjacent = (a, b) => { const C2 = S.grid.cols; return Math.abs(a % C2 - b % C2) <= 1 && Math.abs(((a / C2) | 0) - ((b / C2) | 0)) <= 1 && a !== b; };
+  tl.addEventListener('pointerdown', e => {
+    if (!S || S.done || !S.startT) return;
+    const i = cellAt(e, true); if (i < 0 || isFound(i)) return;
+    active = true; tl.setPointerCapture(e.pointerId); S.sel = [i]; renderSel(); vibrate(8);
+  });
+  tl.addEventListener('pointermove', e => {
+    if (!active) return;
+    const i = cellAt(e, false); if (i < 0) return;
+    const sel = S.sel, last = sel[sel.length - 1];
+    if (i === last) return;
+    if (sel.length > 1 && i === sel[sel.length - 2]) { sel.pop(); renderSel(); return; }
+    if (sel.includes(i) || isFound(i) || !adjacent(i, last)) return;
+    sel.push(i); renderSel(); vibrate(5);
+  });
+  const up = () => { if (!active) return; active = false; submitSel(); };
+  tl.addEventListener('pointerup', up); tl.addEventListener('pointercancel', up);
+})();
 
-            if (target === 1) { 
-                if (isDrawing) { 
-                    if (trailPoints.length < 15) { isDrawing = false; trailPoints = []; player.x = nx; player.y = ny; return true; }
-                    isDrawing = false; applyGapFill(player.x, player.y, nx, ny); player.x = nx; player.y = ny; finalizeConquest(); return true; 
-                }
-                player.x = nx; player.y = ny;
-            } else { 
-                if (!isDrawing && target === 0) { isDrawing = true; trailPoints = []; }
-                if (isDrawing) {
-                    if (target === 2) {
-                        let isRecent = trailPoints.some(p => Math.abs(p.x - nx) <= 4 && Math.abs(p.y - ny) <= 4 && trailPoints.indexOf(p) > trailPoints.length - 15);
-                        if (!isRecent) { handleHit("Incrocio scia fatale"); return true; }
-                    } else {
-                        let br = 1;
-                        for(let dy=-br; dy<=br; dy++) {
-                            for(let dx=-br; dx<=br; dx++) {
-                                let cx = nx+dx; let cy = ny+dy;
-                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx]===0) { grid[cy][cx] = 2; }
-                            }
-                        }
-                        trailPoints.push({x: nx, y: ny}); player.x = nx; player.y = ny;
-                    }
-                }
-            }
-            return false;
-        }
+function renderSel() {
+  S.tiles.forEach((t, i) => t.classList.toggle('sel', S.sel.includes(i)));
+  const fr = $('#frame'); const cw = fr.clientWidth / S.grid.cols, ch = fr.clientHeight / S.grid.rows;
+  $('#traceLine').setAttribute('points', S.sel.map(i => `${(i % S.grid.cols + .5) * cw},${(((i / S.grid.cols) | 0) + .5) * ch}`).join(' '));
+  const b = $('#bubble'); const word = S.sel.map(i => S.grid.letters[i]).join('');
+  b.textContent = word; b.classList.toggle('show', S.sel.length > 0);
+  const fr2 = fr.getBoundingClientRect(), st = $('#stage').getBoundingClientRect();
+  b.style.top = (fr2.top - st.top) + 'px';
+}
+function submitSel() {
+  const sel = S.sel; S.sel = [];
+  if (sel.length < 2) { renderSel(); return; }
+  const key = G.keyOf(sel), word = sel.map(i => S.grid.letters[i]).join('');
+  const hit = S.grid.words.find((w, wi) => !S.found.has(wi) && G.keyOf(w.cells) === key);
+  renderSel();
+  if (hit) return foundWord(S.grid.words.indexOf(hit));
+  const sameWord = S.grid.words.some((w, wi) => !S.found.has(wi) && (w.norm === word || w.norm === [...word].reverse().join('')));
+  if (sameWord) { toast('Parola giusta, ma prova un altro percorso'); return; }
+  if (S.grid.words.some((w, wi) => S.found.has(wi) && w.norm === word)) { toast('Già trovata'); return; }
+  const tl = $('#tiles'); tl.classList.remove('shake'); void tl.offsetWidth; tl.classList.add('shake'); vibrate([20, 40, 20]);
+  const p = WRONG_PENALTY[S.cfg.d]; if (p) { S.penalty += p; toast(`+${p}s`); }
+}
+function toast(t) {
+  const m = $('#toastMsg'); m.textContent = t; m.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => m.classList.remove('show'), 1400);
+}
+function foundWord(wi) {
+  const w = S.grid.words[wi]; S.found.add(wi);
+  w.cells.forEach((c, k) => setTimeout(() => { S.tiles[c].classList.remove('hint1', 'hint2'); S.tiles[c].classList.add('found', 'flash'); }, k * 45));
+  const slot = document.querySelector(`.slot[data-seg="${w.seg}"]`);
+  if (slot) { slot.textContent = w.text; slot.classList.add('done'); }
+  vibrate([15, 30, 15]); updateProgress();
+  if (S.found.size === S.grid.words.length) win();
+}
 
-        function checkImmunityDeactivation(cx, cy) {
-            if (!isImmune) return;
-            let isNearSafeElement = false; let step = 2; 
-            for (let dy = -IMMUNITY_THRESHOLD; dy <= IMMUNITY_THRESHOLD; dy += step) {
-                for (let dx = -IMMUNITY_THRESHOLD; dx <= IMMUNITY_THRESHOLD; dx += step) {
-                    let testX = Math.floor(cx + dx); let testY = Math.floor(cy + dy);
-                    if (testX >= 0 && testX < WIDTH && testY >= 0 && testY < HEIGHT && grid[testY][testX] === 1 && Math.hypot(dx, dy) < IMMUNITY_THRESHOLD) { 
-                        isNearSafeElement = true; break; 
-                    }
-                }
-                if (isNearSafeElement) break;
-            }
-            if (!isNearSafeElement) { isImmune = false; }
-        }
+/* --- aiuti progressivi: 1ª lettera → ultima lettera → intero percorso --- */
+function useHint() {
+  if (!S || S.done) return;
+  const wi = S.grid.words.findIndex((w, i) => !S.found.has(i) && (S.hintLevel[i] || 0) < 3);
+  if (wi < 0) return;
+  const lvl = (S.hintLevel[wi] || 0) + 1; S.hintLevel[wi] = lvl; S.hintsUsed++;
+  const cells = S.grid.words[wi].cells;
+  if (lvl === 1) S.tiles[cells[0]].classList.add('hint1');
+  if (lvl === 2) S.tiles[cells[cells.length - 1]].classList.add('hint1');
+  if (lvl === 3) cells.forEach(c => S.tiles[c].classList.add('hint2'));
+  S.hintReadyAt = (performance.now() - S.startT) / 1000 + (HINT_COOLDOWN[S.cfg.d] || 45); tick();
+}
 
-        function updateGame() {
-            if (isGameWon) return; pulseTime += 0.15;
-            let currentSpeed = 0;
+/* --- vittoria --- */
+function win() {
+  S.done = true; clearInterval(S.timerId);
+  const total = elapsed(); $('#timer').textContent = fmtTime(total); $('#hintBtn').disabled = true;
+  const order = [...S.grid.filler].sort((a, b) => ((a * 7919 + S.cfg.s) % 97) - ((b * 7919 + S.cfg.s) % 97));
+  order.forEach((c, k) => setTimeout(() => S.tiles[c].classList.add('found', 'flash'), 500 + k * 70));
+  setTimeout(() => showFinal(total), 500 + order.length * 70 + 900);
+}
+function showFinal(total) {
+  const ov = $('#finalOv'); const fm = $('#finalMedia'); fm.innerHTML = '';
+  const m = S.media; m.removeAttribute('style'); m.className = ''; fm.appendChild(m); // media originale, intero
+  if (S.cfg.k === 'v') { m.currentTime = 0; m.play().catch(() => {}); $('#audioBtn').style.display = 'block'; $('#audioBtn').textContent = '🔇 Audio'; }
+  else $('#audioBtn').style.display = 'none';
+  $('#finalMsg').textContent = S.cfg.m;
+  $('#finalStats').textContent = `Svelato in ${fmtTime(total)}` + (S.hintsUsed ? ` · ${S.hintsUsed} ${S.hintsUsed === 1 ? 'aiuto' : 'aiuti'}` : ' · senza aiuti');
+  const btns = $('#finalBtns');
+  btns.innerHTML = S.opts.local
+    ? `<button class="btn-ghost" onclick="exitGame()">Torna alla regia</button>`
+    : `<button class="btn-main" onclick="location.href=location.pathname">Crea la tua sfida</button>`;
+  ov.classList.add('active'); vibrate([30, 60, 30, 60, 80]);
+  requestAnimationFrame(() => requestAnimationFrame(() => { fm.classList.add('in'); $('#finalInfo').classList.add('in'); }));
+}
+function toggleAudio() { const m = S.media; m.muted = !m.muted; $('#audioBtn').textContent = m.muted ? '🔇 Audio' : '🔊 Audio'; }
 
-            if (isPlaying && isRewinding) {
-                let rewindSpeed = 20; currentSpeed = rewindSpeed;
-                for (let i = 0; i < rewindSpeed; i++) {
-                    if (trailPoints.length > 0) {
-                        let pt = trailPoints.pop();
-                        let br = 1;
-                        for(let dy=-br; dy<=br; dy++) {
-                            for(let dx=-br; dx<=br; dx++) {
-                                let cx = pt.x+dx; let cy = pt.y+dy;
-                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT && grid[cy][cx]===2) grid[cy][cx] = 0;
-                            }
-                        }
-                        if (trailPoints.length > 0) {
-                            let newHead = trailPoints[trailPoints.length - 1];
-                            player.x = newHead.x; player.y = newHead.y; currentPos.x = player.x; currentPos.y = player.y;
-                        } else {
-                            isRewinding = false; isDrawing = false; isImmune = true; break;
-                        }
-                    }
-                }
-            }
+function exitGame() {
+  if (S) { clearInterval(S.timerId); if (S.cfg.k === 'v') try { S.media.pause(); } catch (e) {} }
+  $('#finalMedia').classList.remove('in'); $('#finalInfo').classList.remove('in'); $('#finalOv').classList.remove('active');
+  if (S && S.opts.local) { S = null; showScreen('create'); layoutCrop(); if (C.kind === 'v' && C.mediaEl) C.mediaEl.play().catch(() => {}); }
+  else location.href = location.pathname;
+}
 
-            if (isPlaying && isPointerDown && targetPos.x !== null && !isRewinding) {
-                let dx = targetPos.x - currentPos.x; let dy = targetPos.y - currentPos.y; let dist = Math.hypot(dx, dy);
-                if (dist > 1) {
-                    let moveDist = Math.min(playerSpeed, dist); currentSpeed = moveDist;
-                    let newX = currentPos.x + (dx / dist) * moveDist; let newY = currentPos.y + (dy / dist) * moveDist;
-
-                    if (isImmune) checkImmunityDeactivation(newX, newY); 
-
-                    if (!isImmune && isDrawing && trailPoints.length > 15) {
-                        let forcedSnap = false; let snapX = Math.floor(newX); let snapY = Math.floor(newY);
-                        if (snapX < SNAP_WALL) { snapX = 0; forcedSnap = true; } 
-                        else if (snapX > WIDTH - 1 - SNAP_WALL) { snapX = WIDTH - 1; forcedSnap = true; }
-                        if (snapY < SNAP_WALL) { snapY = 0; forcedSnap = true; } 
-                        else if (snapY > HEIGHT - 1 - SNAP_WALL) { snapY = HEIGHT - 1; forcedSnap = true; }
-
-                        if (!forcedSnap) {
-                            let closestSafe = null; let minDist = SNAP_TRAIL;
-                            let intX = Math.floor(newX); let intY = Math.floor(newY);
-                            for (let sdy = -SNAP_TRAIL; sdy <= SNAP_TRAIL; sdy++) {
-                                for (let sdx = -SNAP_TRAIL; sdx <= SNAP_TRAIL; sdx++) {
-                                    let cx = intX + sdx; let cy = intY + sdy;
-                                    if (cx >= 0 && cx < WIDTH && cy >= 0 && cy < HEIGHT && grid[cy][cx] === 1) {
-                                        let d = Math.hypot(sdx, sdy);
-                                        if (d < minDist) {
-                                            let isTooCloseToStart = trailPoints.slice(0, 15).some(p => Math.abs(p.x - cx) <= 5 && Math.abs(p.y - cy) <= 5);
-                                            if (!isTooCloseToStart) { minDist = d; closestSafe = { x: cx, y: cy }; }
-                                        }
-                                    }
-                                }
-                            }
-                            if (closestSafe) { snapX = closestSafe.x; snapY = closestSafe.y; forcedSnap = true; }
-                        }
-
-                        if (forcedSnap) {
-                            isDrawing = false; applyGapFill(player.x, player.y, snapX, snapY);
-                            player.x = snapX; player.y = snapY; currentPos.x = snapX; currentPos.y = snapY;
-                            targetPos.x = null; targetPos.y = null; isPointerDown = false;
-                            finalizeConquest(); return;
-                        }
-                    }
-
-                    let p0 = { x: Math.floor(currentPos.x), y: Math.floor(currentPos.y) };
-                    let p1 = { x: Math.floor(newX), y: Math.floor(newY) };
-                    let pts = getBresenhamPoints(p0.x, p0.y, p1.x, p1.y);
-                    for(let p of pts) { if (processPixel(p.x, p.y)) break; } 
-                    if (isPlaying && !isDrawing) { currentPos.x = player.x; currentPos.y = player.y; } 
-                    else if (isPlaying) { currentPos.x = newX; currentPos.y = newY; } 
-                }
-            }
-
-            let baseGlow = isImmune ? 10 : 25;
-            let dynamicGlow = isImmune ? (Math.sin(pulseTime * 0.5) * 5) : (currentSpeed * 4 + Math.sin(pulseTime) * 10);
-            glowOverlay.style.boxShadow = `0 0 ${Math.max(10, baseGlow + dynamicGlow)}px rgba(0, 240, 255, ${isImmune ? 0.15 : 0.4})`;
-
-            if (isPlaying) {
-                let pulseScale = 1 + Math.abs(Math.sin(pulseTime)) * 0.3;
-                playerCursorDom.style.left = currentPos.x + 'px';
-                playerCursorDom.style.top = currentPos.y + 'px';
-                playerCursorDom.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
-            }
-
-            if (isPlaying) {
-                for(let s of spheres) {
-                    s.history.push({x: s.x, y: s.y}); if (s.history.length > 15) s.history.shift();
-                    let r = s.radius; let hitTrail = false; let tolerance = 0.4; 
-                    
-                    let oldX = s.x; s.x += s.vx; let hitX = false;
-                    let minY = Math.floor(s.y - r * tolerance); let maxY = Math.floor(s.y + r * tolerance);
-                    let c1 = Math.min(Math.floor(oldX + (s.vx > 0 ? r : -r)), Math.floor(s.x + (s.vx > 0 ? r : -r)));
-                    let c2 = Math.max(Math.floor(oldX + (s.vx > 0 ? r : -r)), Math.floor(s.x + (s.vx > 0 ? r : -r)));
-                    if (c1 < 0 || c2 >= WIDTH) { hitX = true; } else {
-                        for (let y = Math.max(minY,0); y <= Math.min(maxY, HEIGHT-1); y++) {
-                            for (let x = Math.max(c1,0); x <= Math.min(c2, WIDTH-1); x++) {
-                                if (grid[y][x] === 1) hitX = true; if (grid[y][x] === 2) hitTrail = true;
-                            }
-                        }
-                    }
-                    if (hitTrail) { handleHit("Impatto Cometa"); return; }
-                    if (hitX) { s.x = oldX; s.vx *= -1; }
-
-                    let oldY = s.y; s.y += s.vy; let hitY = false;
-                    let minX = Math.floor(s.x - r * tolerance); let maxX = Math.floor(s.x + r * tolerance);
-                    let r1 = Math.min(Math.floor(oldY + (s.vy > 0 ? r : -r)), Math.floor(s.y + (s.vy > 0 ? r : -r)));
-                    let r2 = Math.max(Math.floor(oldY + (s.vy > 0 ? r : -r)), Math.floor(s.y + (s.vy > 0 ? r : -r)));
-                    if (r1 < 0 || r2 >= HEIGHT) { hitY = true; } else {
-                        for (let x = Math.max(minX,0); x <= Math.min(maxX, WIDTH-1); x++) {
-                            for (let y = Math.max(r1,0); y <= Math.min(r2, HEIGHT-1); y++) {
-                                if (grid[y][x] === 1) hitY = true; if (grid[y][x] === 2) hitTrail = true;
-                            }
-                        }
-                    }
-                    if (hitTrail) { handleHit("Impatto Cometa"); return; }
-                    if (hitY) { s.y = oldY; s.vy *= -1; }
-                }
-            }
-            draw();
-        }
-
-        function finalizeConquest() {
-            let tempGrid = Array(HEIGHT).fill().map(() => new Uint8Array(WIDTH));
-            for(let y=0; y<HEIGHT; y++) {
-                for(let x=0; x<WIDTH; x++) {
-                    if(grid[y][x] === 2) {
-                        for(let dy=-1; dy<=1; dy++) {
-                            for(let dx=-1; dx<=1; dx++) {
-                                let cx = x+dx; let cy = y+dy;
-                                if(cx>=0 && cx<WIDTH && cy>=0 && cy<HEIGHT) tempGrid[cy][cx] = 2;
-                            }
-                        }
-                    }
-                }
-            }
-            for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if(tempGrid[y][x] === 2) grid[y][x] = 2; } }
-            for(let y=0; y<HEIGHT; y++) { for(let x=0; x<WIDTH; x++) { if(grid[y][x] === 2) grid[y][x] = 1; } }
-            trailPoints = []; 
-
-            let sphereCenters = spheres.map(s => ({ cx: Math.floor(s.x), cy: Math.floor(s.y) }));
-            let fillMap = Array(HEIGHT).fill().map(() => new Uint8Array(WIDTH));
-            let queue = [{x: player.x, y: player.y}]; fillMap[player.y][player.x] = 1; let head = 0;
-
-            while(head < queue.length) {
-                let curr = queue[head++];
-                let neighbors = [{x: curr.x, y: curr.y-1}, {x: curr.x, y: curr.y+1}, {x: curr.x-1, y: curr.y}, {x: curr.x+1, y: curr.y}];
-                for(let n of neighbors) {
-                    if(n.x >= 0 && n.x < WIDTH && n.y >= 0 && n.y < HEIGHT) {
-                        if(fillMap[n.y][n.x] === 0 && grid[n.y][n.x] === 1) { fillMap[n.y][n.x] = 1; queue.push(n); }
-                    }
-                }
-            }
-
-            let visitedDark = new Uint8Array(WIDTH * HEIGHT); let components = [];
-            for (let y = 0; y < HEIGHT; y++) {
-                for (let x = 0; x < WIDTH; x++) {
-                    let idx = y * WIDTH + x;
-                    if (grid[y][x] === 0 && visitedDark[idx] === 0) {
-                        let darkCells = []; let darkQueue = [idx]; visitedDark[idx] = 1; let hasSphere = false; let dHead = 0;
-                        while (dHead < darkQueue.length) {
-                            let currIdx = darkQueue[dHead++]; darkCells.push(currIdx);
-                            let cy = Math.floor(currIdx / WIDTH); let cx = currIdx % WIDTH;
-                            for(let sc of sphereCenters) { if (sc.cx === cx && sc.cy === cy) hasSphere = true; }
-                            if (cy > 0 && grid[cy-1][cx] === 0 && visitedDark[currIdx - WIDTH] === 0) { visitedDark[currIdx - WIDTH] = 1; darkQueue.push(currIdx - WIDTH); }
-                            if (cy < HEIGHT-1 && grid[cy+1][cx] === 0 && visitedDark[currIdx + WIDTH] === 0) { visitedDark[currIdx + WIDTH] = 1; darkQueue.push(currIdx + WIDTH); }
-                            if (cx > 0 && grid[cy][cx-1] === 0 && visitedDark[currIdx - 1] === 0) { visitedDark[currIdx - 1] = 1; darkQueue.push(currIdx - 1); }
-                            if (cx < WIDTH-1 && grid[cy][cx+1] === 0 && visitedDark[currIdx + 1] === 0) { visitedDark[currIdx + 1] = 1; darkQueue.push(currIdx + 1); }
-                        }
-                        components.push({ cells: darkCells, hasSphere: hasSphere });
-                    }
-                }
-            }
-            for (let comp of components) { if (!comp.hasSphere) { for (let dIdx of comp.cells) { grid[Math.floor(dIdx / WIDTH)][dIdx % WIDTH] = 1; } } }
-            
-            glowOverlay.style.boxShadow = `0 0 60px rgba(0, 240, 255, 1)`;
-            isImmune = true; 
-            checkWin();
-        }
-
-        function handleHit(msg) {
-            isPlaying = false; isPointerDown = false; isRewinding = false; targetPos.x = null; targetPos.y = null; isDrawing = false;
-            
-            for(let y=0; y<HEIGHT; y++) { 
-                for(let x=0; x<WIDTH; x++) { 
-                    if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) grid[y][x] = 1;
-                    else grid[y][x] = 0; 
-                } 
-            }
-            
-            player.x = Math.floor(WIDTH / 2); player.y = 0;
-            currentPos.x = player.x; currentPos.y = player.y;
-            spheres.forEach(s => { s.x = WIDTH / 2; s.y = HEIGHT / 2; s.history = []; });
-
-            trailPoints = []; isImmune = true; 
-            glowOverlay.style.boxShadow = `0 0 50px rgba(255, 0, 85, 1)`; 
-            document.getElementById('hudProgress').innerText = `AREA: 0% / ${targetPercentage}%`;
-            
-            if(challenge.tries !== Infinity) currentAttempts--;
-            document.getElementById('hudAttempts').innerText = `VITE: ${challenge.tries === Infinity ? '∞' : currentAttempts}`;
-
-            draw(); 
-
-            if(currentAttempts <= 0 && challenge.tries !== Infinity) { 
-                playerCursorDom.style.display = 'none';
-                showToast("GAME OVER", "Segnale perso. Tentativi esauriti.", "MENU PRINCIPALE", "error", resetToHome);
-            } else { 
-                showToast("IMPATTO", "Livello resettato. La tua scia è stata interrotta.", "RIPROVA", "error", () => { hideToast(); isPlaying = true; }); 
-            }
-        }
-
-        function advanceVictory() {
-            if (victoryState === 1) {
-                document.getElementById('secretMessageOverlay').classList.remove('active');
-                
-                if (challenge.rt === 'video') {
-                    // Flusso immediato verso il video, bypassando l'immagine fissa
-                    document.getElementById('tapIndicator').style.display = 'none';
-                    document.getElementById('victoryTapLayer').style.display = 'none';
-                    const videoOverlay = document.getElementById('videoPlayerOverlay');
-                    const rewardVideo = document.getElementById('rewardVideo');
-                    videoOverlay.classList.add('active');
-                    rewardVideo.play();
-                } else {
-                    victoryState = 2;
-                }
-            } else if (victoryState === 2) {
-                document.getElementById('tapIndicator').style.display = 'none';
-                document.getElementById('victoryTapLayer').style.display = 'none';
-                
-                if(challenge.rt === 'video') {
-                    const videoOverlay = document.getElementById('videoPlayerOverlay');
-                    const rewardVideo = document.getElementById('rewardVideo');
-                    videoOverlay.classList.add('active');
-                    rewardVideo.play();
-                } else {
-                    goToCTA();
-                }
-            }
-        }
-
-        function checkWin() {
-            let disc = 0, tot = 0;
-            for(let y=0; y < HEIGHT; y++) { for(let x=0; x < WIDTH; x++) { tot++; if(grid[y][x] === 1) disc++; } }
-            let p = Math.floor((disc / tot) * 100); p = Math.min(p, 100);
-            document.getElementById('hudProgress').innerText = `AREA: ${p}% / ${targetPercentage}%`;
-            
-            if(p >= targetPercentage) {
-                clearInterval(gameInterval); isGameWon = true; isPlaying = false;
-                playerCursorDom.style.display = 'none';
-
-                // PRE-LOAD SILENZIOSO DEL VIDEO
-                if (challenge.rt === 'video') {
-                    const rewardVideo = document.getElementById('rewardVideo');
-                    rewardVideo.src = `https://res.cloudinary.com/up98kcff/video/upload/eo_15/${challenge.pid}.mp4`;
-                    rewardVideo.load();
-                }
-                
-                ctx.clearRect(0,0,WIDTH,HEIGHT);
-                ctx.drawImage(loadedImage, cropData.x, cropData.y, cropData.w, cropData.h, 0, 0, WIDTH, HEIGHT);
-                glowOverlay.style.boxShadow = `0 0 50px rgba(0, 240, 255, 1)`;
-                document.getElementById('vignetteOverlay').style.display = 'none';
-                
-                const vo = document.getElementById('victoryOverlay');
-                vo.classList.add('active'); 
-                
-                setTimeout(() => {
-                    vo.classList.remove('active'); 
-                    
-                    setTimeout(() => {
-                        document.getElementById('gameHud').style.opacity = '0';
-                        glowOverlay.style.opacity = '0';
-                        
-                        const gameBox = document.getElementById('mainGameBox');
-                        const rect = gameBox.getBoundingClientRect();
-                        
-                        gameBox.style.position = 'fixed';
-                        gameBox.style.top = rect.top + 'px';
-                        gameBox.style.left = rect.left + 'px';
-                        gameBox.style.width = rect.width + 'px';
-                        gameBox.style.height = rect.height + 'px';
-                        gameBox.style.zIndex = '400';
-                        
-                        void gameBox.offsetWidth;
-                        
-                        gameBox.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-                        gameBox.style.top = '0px';
-                        gameBox.style.left = '0px';
-                        gameBox.style.width = '100vw';
-                        gameBox.style.height = '100dvh';
-                        gameBox.style.borderRadius = '0px';
-
-                        setTimeout(() => {
-                            if (challenge.msg && challenge.msg.trim() !== "") {
-                                document.getElementById('victoryTapLayer').style.display = 'block';
-                                document.getElementById('tapIndicator').style.display = 'block';
-                                document.getElementById('secretMessageText').innerText = challenge.msg;
-                                document.getElementById('secretMessageOverlay').classList.add('active');
-                                victoryState = 1; 
-                            } else {
-                                if (challenge.rt === 'video') {
-                                    // AUTOPLAY: Se è video senza messaggio: attesa 1.5s poi autoplay
-                                    setTimeout(() => {
-                                        const videoOverlay = document.getElementById('videoPlayerOverlay');
-                                        const rewardVideo = document.getElementById('rewardVideo');
-                                        videoOverlay.classList.add('active');
-                                        rewardVideo.play();
-                                    }, 1500);
-                                } else {
-                                    // Se è foto senza messaggio: richiede tap per chiudere
-                                    document.getElementById('victoryTapLayer').style.display = 'block';
-                                    document.getElementById('tapIndicator').style.display = 'block';
-                                    victoryState = 2; 
-                                }
-                            }
-                        }, 800);
-                    }, 800);
-                }, 2500);
-            }
-        }
-
-        function goToCTA() {
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                if (document.exitFullscreen) document.exitFullscreen(); 
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-            
-            const rewardVideo = document.getElementById('rewardVideo');
-            if(rewardVideo) { rewardVideo.pause(); rewardVideo.src = ""; }
-            
-            const gameBox = document.getElementById('mainGameBox');
-            gameBox.style = "";
-            
-            document.getElementById('screenGame').classList.remove('active');
-            document.getElementById('videoPlayerOverlay').classList.remove('active');
-            document.querySelector('.app-container').style.background = '#000';
-            document.getElementById('appBg').style.opacity = '0';
-            document.getElementById('screenCTA').classList.add('active');
-        }
-
-        function resetToHome() { 
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-            window.location.href = window.location.href.split('?')[0]; 
-        }
-
-        function draw() {
-            if (isGameWon) return;
-            let sData = screenImageData.data;
-            for (let y = 0; y < HEIGHT; y++) {
-                for (let x = 0; x < WIDTH; x++) {
-                    let i = (y * WIDTH + x) * 4; let val = grid[y][x];
-                    if (val === 1) {
-                        let isEdge = false;
-                        if (y > 0 && grid[y-1][x] === 0) isEdge = true; else if (y < HEIGHT-1 && grid[y+1][x] === 0) isEdge = true;
-                        else if (x > 0 && grid[y][x-1] === 0) isEdge = true; else if (x < WIDTH-1 && grid[y][x+1] === 0) isEdge = true;
-
-                        if (isEdge) { 
-                            if (x === 0 || x === WIDTH - 1 || y === 0 || y === HEIGHT - 1) {
-                                sData[i]=colorPixels[i]; sData[i+1]=colorPixels[i+1]; sData[i+2]=colorPixels[i+2]; sData[i+3]=255; 
-                            } else {
-                                sData[i]=0; sData[i+1]=240; sData[i+2]=255; sData[i+3]=255; 
-                            }
-                        } else { sData[i]=colorPixels[i]; sData[i+1]=colorPixels[i+1]; sData[i+2]=colorPixels[i+2]; sData[i+3]=255; }
-                    } else { sData[i]=bwPixels[i]; sData[i+1]=bwPixels[i+1]; sData[i+2]=bwPixels[i+2]; sData[i+3]=255; }
-                }
-            }
-            ctx.putImageData(screenImageData, 0, 0);
-
-            ctx.save();
-            if (trailPoints.length > 0) {
-                let neonPulse = Math.abs(Math.sin(pulseTime));
-                ctx.beginPath();
-                for(let i=0; i<trailPoints.length; i++) { ctx.rect(trailPoints[i].x - 2, trailPoints[i].y - 2, 5, 5); }
-                ctx.shadowBlur = 15 + neonPulse * 15; ctx.shadowColor = '#00f0ff'; ctx.fillStyle = '#00f0ff'; ctx.fill();
-                
-                ctx.beginPath();
-                for(let i=0; i<trailPoints.length; i++) { ctx.rect(trailPoints[i].x, trailPoints[i].y, 1, 1); }
-                ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff'; ctx.fill();
-            }
-            ctx.restore();
-
-            for(let s of spheres) {
-                ctx.save(); ctx.beginPath();
-                for(let i=0; i<s.history.length; i++) {
-                    let pt = s.history[i]; let alpha = i / s.history.length;
-                    ctx.arc(pt.x, pt.y, s.radius * alpha * 0.8, 0, Math.PI*2);
-                    ctx.fillStyle = `rgba(255, 0, 85, ${alpha * 0.5})`; ctx.fill();
-                }
-                ctx.closePath(); ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
-                ctx.shadowBlur = 15; ctx.shadowColor = '#ff0055';
-                ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.closePath(); ctx.restore();
-            }
-        }
-    </script>
+/* ============================================================
+   AVVIO / ROUTING
+   ============================================================ */
+window.addEventListener('load', () => {
+  setTimeout(() => { const s = $('#splash'); s.style.opacity = 0; setTimeout(() => s.remove(), 500); }, 900);
+  if (location.hash.startsWith('#g=')) {
+    try { startGame(JSON.parse(b64uDecode(location.hash.slice(3)))); }
+    catch (e) { showScreen('play'); gameError('Link non valido o incompleto.'); }
+  } else updateMsg();
+});
+</script>
 </body>
 </html>
