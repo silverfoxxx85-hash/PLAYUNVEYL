@@ -184,7 +184,7 @@
       <div class="chips" id="chips"></div>
       <div class="previewline" id="previewLine"></div>
       <div class="counter"><span id="cnt"></span><span id="tierLbl"></span></div>
-      <div class="hint" style="text-align:left">Tocca una parola per nasconderla o lasciarla visibile.</div>
+      <div class="hint" id="msgNote" style="text-align:left">Tocca una parola per nasconderla o lasciarla visibile.</div>
     </div>
 
     <div class="panel off" id="pDiff">
@@ -386,10 +386,27 @@ function toggleWord(i, el) {
   const s = C.segs[i]; if (!s.hideable) return;
   if (C.hide.has(i)) C.hide.delete(i);
   else {
-    if (G.countLetters(C.segs, [...C.hide, i]) > G.MAX_LETTERS) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); vibrate(40); return; }
+    const deny = txt => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); vibrate(40); note(txt, true); };
+    if (G.countLetters(C.segs, [...C.hide, i]) > G.MAX_LETTERS) return deny(`Limite di ${G.MAX_LETTERS} lettere raggiunto: scopri un'altra parola.`);
+    const cf = G.conflicts(C.segs, [...C.hide, i]).find(p => p.includes(i));
+    if (cf) return deny(`«${C.segs[cf[0]].text}» è contenuta in «${C.segs[cf[1]].text}»: puoi nasconderne solo una.`);
     C.hide.add(i);
   }
   resetShare(); updateMsg();
+}
+const NOTE_DEFAULT = 'Tocca una parola per nasconderla o lasciarla visibile.';
+function note(txt, warn) {
+  const n = $('#msgNote'); n.textContent = txt; n.style.color = warn ? 'var(--red)' : '';
+  clearTimeout(note._t); if (warn) note._t = setTimeout(() => note(NOTE_DEFAULT), 3500);
+}
+/* Trova un seed che genera una griglia valida (di solito il primo) */
+function ensureSeed() {
+  for (let k = 0; k < 6; k++) {
+    if (G.generate({ msg: C.msg, hide: [...C.hide], seed: C.seed, diff: C.diff })) return true;
+    C.seed = randomSeed();
+  }
+  note('Messaggio troppo ripetitivo per costruire una griglia: scopri una parola o cambia il testo.', true);
+  return false;
 }
 function updateMsg() {
   $('#charCount').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
@@ -429,6 +446,7 @@ function buildConfig(url) {
   return { v: G.GEN_VERSION, m: C.msg, h: [...C.hide].sort((a, b) => a - b), s: C.seed, d: C.diff, k: C.kind, u: url, c: cropFractions() };
 }
 function tryLocal() {
+  if (!ensureSeed()) return;
   history.replaceState(null, '', location.pathname);
   startGame(buildConfig(C.url), { local: true });
   $('#btnReshuffle').style.display = 'block';
@@ -439,6 +457,7 @@ function resetShare() {
   const b = $('#btnGen'); b.textContent = 'Genera link';
 }
 async function generateLink() {
+  if (!ensureSeed()) return;
   const b = $('#btnGen'); b.disabled = true; b.textContent = 'Caricamento…';
   try {
     const fd = new FormData();
@@ -600,8 +619,6 @@ function submitSel() {
   const hit = S.grid.words.find((w, wi) => !S.found.has(wi) && G.keyOf(w.cells) === key);
   renderSel();
   if (hit) return foundWord(S.grid.words.indexOf(hit));
-  const sameWord = S.grid.words.some((w, wi) => !S.found.has(wi) && (w.norm === word || w.norm === [...word].reverse().join('')));
-  if (sameWord) { toast('Parola giusta, ma prova un altro percorso'); return; }
   if (S.grid.words.some((w, wi) => S.found.has(wi) && w.norm === word)) { toast('Già trovata'); return; }
   const tl = $('#tiles'); tl.classList.remove('shake'); void tl.offsetWidth; tl.classList.add('shake'); vibrate([20, 40, 20]);
   const p = WRONG_PENALTY[S.cfg.d]; if (p) { S.penalty += p; toast(`+${p}s`); }

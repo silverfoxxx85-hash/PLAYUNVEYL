@@ -4,7 +4,7 @@
    NON modificare il comportamento senza aumentare GEN_VERSION.
    ============================================================ */
 const UnveilGen = (() => {
-  const GEN_VERSION = 1;
+  const GEN_VERSION = 2;
   const MIN_LETTERS = 10;
   const MAX_LETTERS = 50;
   const MAX_CHARS = 140;
@@ -67,6 +67,8 @@ const UnveilGen = (() => {
     segs.forEach((s, i) => {
       if (s.type === 'w' && s.hideable && !STOP.has(s.norm.toLowerCase())) idx.push(i);
     });
+    const drop0 = new Set(conflicts(segs, idx).map(([short]) => short));
+    idx = idx.filter(i => !drop0.has(i));
     let total = idx.reduce((a, i) => a + segs[i].norm.length, 0);
     if (total > MAX_LETTERS) {
       const byLen = [...idx].sort((a, b) => segs[a].norm.length - segs[b].norm.length || b - a);
@@ -78,6 +80,19 @@ const UnveilGen = (() => {
       idx = idx.filter(i => !drop.has(i));
     }
     return idx;
+  }
+
+  /* Una parola contenuta in un'altra (anche al contrario) si potrebbe sempre comporre
+     sulle caselle della più lunga: le due non possono essere nascoste insieme.
+     Ritorna le coppie [corta, lunga] di indici in conflitto. */
+  function conflicts(segs, hide) {
+    const out = []; const h = [...hide];
+    for (const a of h) for (const b of h) {
+      const A = segs[a].norm, B = segs[b].norm;
+      if (a === b || A.length >= B.length) continue;
+      if (B.includes(A) || B.includes([...A].reverse().join(''))) out.push([a, b]);
+    }
+    return out;
   }
 
   function countLetters(segs, hide) {
@@ -139,8 +154,32 @@ const UnveilGen = (() => {
     return placeWord(0) ? paths : null;
   }
 
+  /* Piazza una singola parola sulle caselle libere (owner < 0). */
+  function placeOne(cols, rows, owner, len, rnd, diff) {
+    const free = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows && owner[y * cols + x] < 0;
+    const used = new Uint8Array(cols * rows); const path = []; let steps = 0;
+    function dfs(x, y) {
+      if (++steps > 4000) return false;
+      const i = y * cols + x; used[i] = 1; path.push(i);
+      if (path.length === len) return true;
+      const cand = [];
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx, ny = y + dy;
+        if (free(nx, ny) && !used[ny * cols + nx]) cand.push([rnd(), nx, ny]);
+      }
+      cand.sort((a, b) => a[0] - b[0]);
+      for (const [, nx, ny] of cand) if (dfs(nx, ny)) return true;
+      used[i] = 0; path.pop(); return false;
+    }
+    const starts = [];
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (free(x, y)) starts.push([rnd(), x, y]);
+    starts.sort((a, b) => a[0] - b[0]);
+    for (const [, x, y] of starts) { if (dfs(x, y)) return [...path]; if (steps > 4000) break; }
+    return null;
+  }
+
   /* Trova tutti i percorsi che compongono `w` (si ferma a `limit`). */
-  function findPaths(letters, cols, rows, w, limit) {
+  function findPaths(letters, cols, rows, w, limit, accept) {
     const out = [];
     const used = new Uint8Array(cols * rows);
     const path = [];
@@ -148,7 +187,7 @@ const UnveilGen = (() => {
       if (out.length >= limit) return;
       if (letters[idx] !== w[k]) return;
       used[idx] = 1; path.push(idx);
-      if (k === w.length - 1) out.push([...path]);
+      if (k === w.length - 1) { if (!accept || accept(path)) out.push([...path]); }
       else {
         const x = idx % cols, y = (idx / cols) | 0;
         for (const [dx, dy] of DIRS) {
@@ -173,7 +212,7 @@ const UnveilGen = (() => {
     const hidden = (hide || []).filter(i => segs[i] && segs[i].type === 'w' && segs[i].hideable);
     const n = countLetters(segs, hidden);
     const t0 = tierFor(n);
-    if (n === 0 || t0 < 0) return null;
+    if (n === 0 || t0 < 0 || conflicts(segs, hidden).length) return null;
     // ordine di piazzamento: più lunghe prima (stabile)
     const order = hidden.map((seg, k) => ({ seg, k, norm: segs[seg].norm }))
       .sort((a, b) => b.norm.length - a.norm.length || a.k - b.k);
@@ -192,23 +231,55 @@ const UnveilGen = (() => {
           paths[j].forEach((c, k) => { letters[c] = o.norm[k]; });
           return { seg: o.seg, norm: o.norm, text: segs[o.seg].text, cells: paths[j] };
         });
-        const filler = [];
-        for (let i = 0; i < N; i++) if (letters[i] === null) filler.push(i);
         const pool = diff === 2 ? order.map(o => o.norm).join('') : IT_FREQ;
+        const owner = new Int16Array(N).fill(-1);
+        words.forEach((w, j) => w.cells.forEach(c => { owner[c] = j; }));
+        for (let i = 0; i < N; i++) if (owner[i] < 0) letters[i] = pool[Math.floor(rnd() * pool.length)];
 
-        // riempimento + controllo anti-ambiguità (fino a 30 rimescolamenti)
-        const valid = {};
-        for (const w of words) (valid[w.norm] = valid[w.norm] || new Set()).add(keyOf(w.cells));
-        let best = null;
-        for (let r = 0; r < 30; r++) {
-          for (const i of filler) letters[i] = pool[Math.floor(rnd() * pool.length)];
-          let clean = true;
+        // Garanzia di unicità: ogni parola deve poter essere composta SOLO sulle sue caselle
+        // (in entrambi i versi: findPaths(w) trova anche i percorsi letti al contrario,
+        // perché sono lo stesso insieme di caselle percorso all'indietro).
+        // Riparazioni, dalla più leggera: cambiare una lettera di riempimento sul percorso
+        // abusivo; invertire il verso di una parola coinvolta; spostare una parola coinvolta.
+        const isPal = s => s === [...s].reverse().join('');
+        let clean = false;
+        for (let it = 0; it < 500; it++) {
+          const valid = {};
+          for (const w of words) (valid[w.norm] = valid[w.norm] || new Set()).add(keyOf(w.cells));
+          let bad = null, badWord = null;
           for (const w of Object.keys(valid)) {
-            const found = findPaths(letters, cols, rows, w, 50);
-            if (found.some(p => !valid[w].has(keyOf(p)))) { clean = false; break; }
+            const p = findPaths(letters, cols, rows, w, 1, p => !valid[w].has(keyOf(p)))[0];
+            if (p) { bad = p; badWord = w; break; }
           }
-          if (clean || r === 29) { best = [...letters]; break; }
+          if (!bad) { clean = true; break; }
+          const fix = bad.filter(i => owner[i] < 0);
+          if (fix.length) {
+            const cell = fix[Math.floor(rnd() * fix.length)];
+            let allowed = [...pool].filter(ch => !badWord.includes(ch));
+            if (!allowed.length) allowed = [...IT_FREQ].filter(ch => !badWord.includes(ch));
+            letters[cell] = allowed[Math.floor(rnd() * allowed.length)];
+            continue;
+          }
+          const involved = [...new Set(bad.map(c => owner[c]))];
+          const j = involved[Math.floor(rnd() * involved.length)];
+          const w = words[j];
+          if (!isPal(w.norm) && rnd() < 0.5) { // inverti il verso
+            w.cells.reverse(); w.cells.forEach((c, k) => { letters[c] = w.norm[k]; });
+            continue;
+          }
+          // sposta la parola in un altro punto libero (o sulle sue stesse caselle, con altra forma)
+          w.cells.forEach(c => { owner[c] = -1; });
+          const np = placeOne(cols, rows, owner, w.norm.length, rnd, diff);
+          if (np) {
+            w.cells.forEach(c => { letters[c] = pool[Math.floor(rnd() * pool.length)]; });
+            w.cells = np;
+          }
+          w.cells.forEach((c, k) => { owner[c] = j; letters[c] = w.norm[k]; });
         }
+        if (!clean) continue; // ancora ambiguo: si riprova con un altro piazzamento
+        const filler = [];
+        for (let i = 0; i < N; i++) if (owner[i] < 0) filler.push(i);
+        const best = [...letters];
         words.sort((a, b) => a.seg - b.seg); // ordine del messaggio
         return { version: GEN_VERSION, cols, rows, letters: best, words, filler, tier: ti };
       }
@@ -217,6 +288,6 @@ const UnveilGen = (() => {
   }
 
   return { GEN_VERSION, MIN_LETTERS, MAX_LETTERS, MAX_CHARS, TIERS, tokenize, defaultHidden,
-           countLetters, tierFor, generate, normalize, keyOf };
+           countLetters, tierFor, generate, conflicts, normalize, keyOf };
 })();
 if (typeof module !== 'undefined') module.exports = UnveilGen;
