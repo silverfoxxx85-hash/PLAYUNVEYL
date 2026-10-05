@@ -59,7 +59,12 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
   - **Home su iPhone SE (375×553):** il pulsante "Nascondi qualcosa" finisce sotto il bordo (90 px da scorrere). Soluzione decisa: la demo (griglietta) si rimpicciolisce in base all'altezza disponibile, finché tutto entra.
   - **Intro di chi riceve su iPhone SE:** il pulsante "Inizia" viene schiacciato a 19 px di altezza (normale 58). Stessa causa del pannello: gli elementi si comprimono invece di adattarsi. Soluzione decisa: anche qui la demo si rimpicciolisce in base all'altezza; i pulsanti non si comprimono mai.
   - Tutto il resto entra: scelta foto (7 px, trascurabile), invio, partita (anche con messaggio di 50 caratteri e griglia grande), vittoria.
-- **Timer della partita:** via il cronometro dalla barra in alto durante il gioco. Il tempo si misura comunque e si vede solo alla fine ("Svelata in 0:42"). Da decidere se l'avanzamento ("0 di 4" con i pallini) sale al suo posto nella barra.
+- **Timer della partita:** via il cronometro dalla barra in alto durante il gioco. Il tempo si misura comunque e si vede solo alla fine ("Svelata in 0:42"). Al suo posto, al centro della barra, sale l'avanzamento ("0 di 4" con i pallini), che oggi sta sotto il messaggio: la griglia guadagna una riga di spazio.
+
+## Scelte di prodotto (ottobre 2026)
+- **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
+- **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).
+- **Foto e video non si salvano:** scelta voluta, coerente con la privacy. Già oggi il media non si trascina e non si tiene premuto per salvarlo. Limiti noti (screenshot, indirizzo Cloudinary leggibile nel link).
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
