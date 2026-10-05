@@ -36,6 +36,7 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 
 ## Deciso, da fare (branch word-challenge)
 - **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa una terza pillola "Rimescola" nella pagina dell'anteprima, accanto a "Modifica" e "Parole e difficoltà". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata". Da verificare che le tre pillole stiano in una riga sui telefoni stretti.
+- **Pulsante grande nella scrittura:** a tastiera aperta resta tutto com'è (la pillola fa da stato: "Aggiungi parole" → "Fatto", più il tasto Invio). A tastiera chiusa la stessa logica passa al pulsante grande in basso, come negli altri passi: dice "Aggiungi parole", attenuato, finché il messaggio non basta, e diventa "Avanti" quando è pronto. La pillola si nasconde. Nessun messaggio d'errore. A tastiera aperta il pulsante in basso resta nascosto su tutti i telefoni (su iPhone finirebbe sotto la tastiera).
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
