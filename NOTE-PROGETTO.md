@@ -55,6 +55,10 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
   - la frase va a capo dopo "parola": "Tocca una parola / per nasconderla o mostrarla";
   - via "Rimescola la griglia" (va nell'anteprima);
   - "Fatto" sempre visibile in fondo (sticky); correggere i pulsanti schiacciati: il contenuto del pannello deve scorrere, non comprimersi (flex-shrink:0 sugli elementi).
+- **Altri problemi di spazio (controllo su 375×553, 360×640, 390×664, 390×844):**
+  - **Home su iPhone SE (375×553):** il pulsante "Nascondi qualcosa" finisce sotto il bordo (90 px da scorrere). La home deve entrare sempre: ridurre la demo o gli spazi in base all'altezza.
+  - **Intro di chi riceve su iPhone SE:** il pulsante "Inizia" viene schiacciato a 19 px di altezza (normale 58). Stessa causa del pannello: gli elementi si comprimono invece di adattarsi.
+  - Tutto il resto entra: scelta foto (7 px, trascurabile), invio, partita (anche con messaggio di 50 caratteri e griglia grande), vittoria.
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
