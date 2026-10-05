@@ -48,6 +48,10 @@
   .flood { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: var(--accent);
     clip-path: inset(var(--ft, 50%) var(--fr, 50%) var(--fb, 50%) var(--fl, 50%) round var(--frad, 0px)); transition: clip-path .85s cubic-bezier(.65,0,.25,1); }
   .flood.noanim { transition: none; }
+  /* variante con rotazione: la cartolina ruota di un quarto di giro mentre cresce */
+  .flood.spin { inset: auto; left: var(--sl, 0); top: var(--st, 0); width: var(--sw, 0); height: var(--sh, 0); border-radius: var(--frad, 0); clip-path: none;
+    transform: rotate(0deg) scale(1); transition: transform .95s cubic-bezier(.65,0,.25,1); }
+  .lit > .flood.spin { clip-path: none; transform: rotate(90deg) scale(var(--ss, 8)); }
   .lit > .flood { clip-path: inset(0px 0px 0px 0px round 0px); }
   .lit { --ink: #130f16; --soft: #3f3560; color: var(--ink); }
   .home h1, .home .lead, .home .wordmark, #introOv h2, .introbig, .introtxt, .dmsg .w span { transition: color .6s ease, background .6s ease; }
@@ -109,15 +113,16 @@
   /* filo del colore del tavolo sul bordo arrotondato: niente alone dell'immagine sotto */
   .dgrid::after, .pv::after, .frame::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--board); pointer-events: none; z-index: 6; }
   .demo.reset, .demo.reset * { transition: none !important; }
-  .dgrid .pic { position: absolute; inset: 0; filter: grayscale(1) blur(3px); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
-  .dgrid .pic.clear { filter: none; transform: none; }
-  .dgrid .pic svg { display: block; width: 100%; height: 100%; }
+  .dgrid .pic { position: absolute; inset: 3px; border-radius: 21px; overflow: hidden; }   /* rientrata di 3px: il lilla non arriva al bordo antialiasato della cartolina */
+  .dgrid .pic svg { display: block; position: absolute; left: -3px; top: -3px; width: 180px; height: 180px; filter: grayscale(1) blur(3px); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
+  .dgrid .pic.clear svg { filter: none; transform: none; }
   /* duotono di precisione: b/n → (moltiplica per luci-ombre) + ombre = ombre #2a2140, luci #e9e4ff. Sparisce allo svelamento */
   .dgrid, .pv, .frame, #zoomer { isolation: isolate; }
   .duo-a, .duo-b { position: absolute; inset: 0; pointer-events: none; transition: opacity 1s ease; }
   .duo-a { background: #bfc3bf; mix-blend-mode: multiply; }
   .duo-b { background: #2a2140; mix-blend-mode: plus-lighter; }
   @supports not (mix-blend-mode: plus-lighter) { .duo-b { mix-blend-mode: screen; } }
+  .dgrid .duo-a, .dgrid .duo-b { inset: 3px; border-radius: 21px; }
   .dgrid .pic.clear ~ .duo-a, .dgrid .pic.clear ~ .duo-b, .pv.clear .duo-a, .pv.clear .duo-b { opacity: 0; }
   /* demo ridimensionabile: dentro resta 180 px, fuori si scala allo spazio disponibile (lo zoom finale ha già il suo spazio) */
   .demo { position: relative; flex-shrink: 0; width: calc(206px * var(--s, 1)); height: calc(236px * var(--s, 1)); }
@@ -153,7 +158,7 @@
   .home .brand { display: flex; align-items: center; gap: 12px; }
   .home .brand .wordmark { font-size: 30px; }
   .home h1 { font-size: 27px; max-width: 330px; }
-  .home .lead { max-width: 330px; font-size: 18px; line-height: 1.4; font-weight: 500; }
+  .home .lead { max-width: 340px; font-size: 22px; line-height: 1.32; font-weight: 500; letter-spacing: -.005em; }
   .homebtns { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 
   /* passo 1 */
@@ -1155,9 +1160,24 @@ function mountDemo(root) {
   return d;
 }
 /* il lilla parte dal centro di un elemento (la demo quando si allarga, il pulsante quando si ritira) */
+const FLOOD_MODE = 'spin';   // 'grow': la cartolina cresce fino ai bordi · 'spin': cresce ruotando
 function setLit(host, on, from) {
   if (!host) return;
   const f = host.querySelector(':scope > .flood');
+  if (f && FLOOD_MODE === 'spin') {
+    f.classList.add('spin');
+    if (on && from) {   // parte dalla cartolina: stessa posizione, misura e angoli
+      const r = from.getBoundingClientRect(), h = host.getBoundingClientRect(), rad = 24 * r.width / 180;
+      f.classList.add('noanim');
+      [['--sl', r.left - h.left], ['--st', r.top - h.top], ['--sw', r.width], ['--sh', r.height], ['--frad', rad]].forEach(([k, v]) => f.style.setProperty(k, Math.round(v) + 'px'));
+      f.style.setProperty('--ss', (2 * Math.hypot(h.width, h.height) / Math.min(r.width, r.height)).toFixed(2));
+      void f.offsetWidth; f.classList.remove('noanim');
+    }
+    host.classList.toggle('lit', on);
+    if (!on) { clearTimeout(f._t); f._t = setTimeout(() => { if (!host.classList.contains('lit')) f.style.setProperty('--sw', '0px'); }, 1000); }
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', document.querySelector('.lit') ? '#b3a6ff' : '#130f16');
+    return;
+  }
   if (f) f.classList.toggle('fast', !on && !!from && from.classList.contains('btn-main'));   // uscendo dalla home il lilla rientra più in fretta
   if (f && from) {   // forma di partenza (o di arrivo) = il rettangolo arrotondato dell'elemento: la cartolina della demo o il pulsante
     const r = from.getBoundingClientRect(), h = host.getBoundingClientRect();
