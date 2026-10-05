@@ -34,6 +34,9 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 - **Vittoria:** resta il ritaglio 3:4 scelto da chi crea, il più grande possibile, con il messaggio sotto. Sugli schermi bassi o su desktop il messaggio scorre sopra l'immagine.
 - **Anteprima del link:** "Ti ho nascosto qualcosa", con l'immagine `og.png` che ha le caselle e l'icona.
 
+## Deciso, da fare (branch word-challenge)
+- **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa una terza pillola "Rimescola" nella pagina dell'anteprima, accanto a "Modifica" e "Parole e difficoltà". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata". Da verificare che le tre pillole stiano in una riga sui telefoni stretti.
+
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
 - **Cornice:** 5:8 invece di 3:4, nell'inquadratura, nell'anteprima e nella partita.
