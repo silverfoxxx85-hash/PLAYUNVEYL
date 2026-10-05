@@ -1,110 +1,139 @@
-"""Converte l'animazione Lottie dell'icona in un SVG animato con SMIL (nessuna libreria).
-Supporta solo ciò che usa questo file: forme con morph, tratti, rettangoli, trim path, matte alfa invertito."""
+"""Converte un'animazione Lottie (icona a tratti) in un SVG animato con SMIL, senza librerie.
+Gestisce: livelli forma e precomposizioni, genitori, trasformazioni animate (posizione/rotazione),
+forme con morph, rettangoli, tratti/riempimenti, gruppi annidati, trim path, matte alfa (normale e invertito).
+Uso: python3 lottie2svg.py animazione.json uscita.svg"""
 import json, sys
 SRC, OUT = sys.argv[1], sys.argv[2]
 d = json.load(open(SRC))
 FR, OP = d['fr'], d['op']
 DUR = OP / FR
-INK, ACC = '#130f16', '#ffffff'           # tratti scuri, accenti (turchese originale) in bianco
+INK, ACC = '#130f16', '#ffffff'          # tratti scuri; il turchese dell'originale diventa bianco
+ASSETS = {a['id']: a for a in d.get('assets', [])}
+uid = [0]
+def nid(p): uid[0] += 1; return '%s%d' % (p, uid[0])
+def fmt(x): return ('%.2f' % x).rstrip('0').rstrip('.') if abs(x) > 1e-9 else '0'
 def color(c):
     r, g, b = c[:3]
     return ACC if (r < .5 and g > .5) else INK
-def fmt(x): return ('%.2f' % x).rstrip('0').rstrip('.')
+def first(x): return x[0] if isinstance(x, list) else x
+def splines_of(kfs):
+    sp = []
+    for a, b in zip(kfs, kfs[1:]):
+        o, i = a.get('o'), a.get('i')
+        if a.get('h') == 1: sp.append(None)
+        elif o and i: sp.append('%s %s %s %s' % (fmt(first(o['x'])), fmt(first(o['y'])), fmt(first(i['x'])), fmt(first(i['y']))))
+        else: sp.append('0 0 1 1')
+    return sp
+def smil(attr, kfs, conv, tag='animate', extra=''):
+    """keyframe -> animazione SMIL con keyTimes/keySplines, su tutta la durata della composizione"""
+    pts = [k for k in kfs if 's' in k]
+    vals = [conv(k['s']) for k in pts]
+    # l'ultimo keyframe spesso non ha 's' ma solo 't' (fine del segmento precedente): in quel caso vale 'e' del penultimo
+    if len(pts) < len(kfs) and 'e' in pts[-1]:
+        vals.append(conv(pts[-1]['e'])); pts = pts + [kfs[len(pts)]]
+    times = [k['t'] / OP for k in pts]
+    sp = splines_of(pts)
+    if times[0] > 0: vals.insert(0, vals[0]); times.insert(0, 0); sp.insert(0, '0 0 1 1')
+    if times[-1] < 1: vals.append(vals[-1]); times.append(1); sp.append('0 0 1 1')
+    sp = [s or '0 0 1 1' for s in sp]
+    return '<%s attributeName="%s" %sdur="%ss" repeatCount="indefinite" calcMode="spline" values="%s" keyTimes="%s" keySplines="%s"/>' % (
+        tag, attr, extra, fmt(DUR), ';'.join(vals), ';'.join(fmt(t) for t in times), ';'.join(sp))
 def pathd(sh):
     v, i, o, c = sh['v'], sh['i'], sh['o'], sh.get('c', False)
     if not v: return 'M0 0'
     s = 'M%s %s' % (fmt(v[0][0]), fmt(v[0][1]))
-    n = len(v); segs = n if c else n - 1
-    for k in range(segs):
+    n = len(v)
+    for k in range(n if c else n - 1):
         a, b = v[k], v[(k + 1) % n]
         s += 'C%s %s %s %s %s %s' % (fmt(a[0] + o[k][0]), fmt(a[1] + o[k][1]), fmt(b[0] + i[(k + 1) % n][0]), fmt(b[1] + i[(k + 1) % n][1]), fmt(b[0]), fmt(b[1]))
     return s + ('Z' if c else '')
-def anim(attr, kfs, conv, offset=0):
-    """keyframe Lottie -> <animate> con keyTimes e keySplines (tempi in fotogrammi della composizione)"""
-    pts = []
-    for k in kfs:
-        if 's' in k: pts.append((k['t'] + offset, conv(k['s']), k))
-    vals, times, splines = [], [], []
-    sp_prev = '0 0 1 1'
-    t0 = pts[0][0]
-    if t0 > 0: vals.append(pts[0][1]); times.append(0)
-    for idx, (t, v, k) in enumerate(pts):
-        if times and t / OP == times[-1] and vals: vals[-1] = v; continue
-        if times: splines.append(sp_prev)
-        vals.append(v); times.append(t / OP)
-        o, nxt = k.get('o'), (pts[idx + 1][2] if idx + 1 < len(pts) else None)
-        if o and nxt and nxt.get('i'):
-            ox, oy = (o['x'][0] if isinstance(o['x'], list) else o['x']), (o['y'][0] if isinstance(o['y'], list) else o['y'])
-            ix, iy = (nxt['i']['x'][0] if isinstance(nxt['i']['x'], list) else nxt['i']['x']), (nxt['i']['y'][0] if isinstance(nxt['i']['y'], list) else nxt['i']['y'])
-            sp_prev = '%s %s %s %s' % (fmt(ox), fmt(oy), fmt(ix), fmt(iy))
-        else: sp_prev = '0 0 1 1'
-    if times[-1] < 1: splines.append('0 0 1 1'); vals.append(vals[-1]); times.append(1)
-    if times[0] > 0: pass
-    return '<animate attributeName="%s" dur="%ss" repeatCount="indefinite" calcMode="spline" values="%s" keyTimes="%s" keySplines="%s"/>' % (
-        attr, fmt(DUR), ';'.join(vals), ';'.join(fmt(t) for t in times), ';'.join(splines))
-def ltr(ks):
-    p, a, r, s = ks['p']['k'], ks['a']['k'], ks.get('r', {'k': 0})['k'], ks['s']['k']
-    t = 'translate(%s %s)' % (fmt(p[0]), fmt(p[1]))
-    if r: t += ' rotate(%s)' % fmt(r)
-    if s[0] != 100 or s[1] != 100: t += ' scale(%s %s)' % (fmt(s[0] / 100), fmt(s[1] / 100))
-    if a[0] or a[1]: t += ' translate(%s %s)' % (fmt(-a[0]), fmt(-a[1]))
-    return t
-def shapes(items, offset, fill_override=None):
-    out = []
-    trim = next((x for x in items if x['ty'] == 'tm'), None)
-    for g in items:
-        if g['ty'] != 'gr': continue
-        it = g['it']; tr = next(x for x in it if x['ty'] == 'tr')
-        st = next((x for x in it if x['ty'] == 'st'), None); fl = next((x for x in it if x['ty'] == 'fl'), None)
-        if st and st['o']['k'] == 0: continue                      # tratto invisibile (rettangolo guida)
-        if fill_override: paint = 'fill="%s"' % fill_override
-        elif st: paint = 'fill="none" stroke="%s" stroke-width="%s" stroke-linecap="%s" stroke-linejoin="round"' % (color(st['c']['k']), fmt(st['w']['k']), {1: 'butt', 2: 'round', 3: 'square'}[st['lc']])
-        else: paint = 'fill="%s"' % color(fl['c']['k'])
-        for sh in it:
-            if sh['ty'] == 'sh':
-                ks = sh['ks']
-                extra = ''
-                if trim and not fill_override:
-                    # trim path: start e fine con stroke-dasharray su pathLength 100 (fine-inizio = parte visibile)
-                    extra = ' pathLength="100"'
-                if ks['a']:
-                    el = '<path d="%s" %s%s>%s' % (pathd(ks['k'][0]['s'][0]), paint, extra, anim('d', ks['k'], lambda s: pathd(s[0]), offset))
-                else:
-                    el = '<path d="%s" %s%s>' % (pathd(ks['k']), paint, extra)
-                if trim and not fill_override: el += trim_anim(trim, offset)
-                out.append('<g transform="%s">%s</path></g>' % (ltr(tr), el))
-    return ''.join(out)
-def trim_anim(tm, offset):
-    # parte visibile = [e, s] con s che va 100->0 e e 100->0 (m=1): dash = s-e, offset = -e
+def xform(ks, inner):
+    """trasformazione di livello o gruppo: translate(p) rotate(r) scale(s) translate(-a), animabili"""
+    p, a, r, s = ks.get('p', {'k': [0, 0]}), ks.get('a', {'k': [0, 0]}), ks.get('r', {'k': 0}), ks.get('s', {'k': [100, 100]})
+    out = inner
+    ak = a['k']
+    if ak[0] or ak[1]: out = '<g transform="translate(%s %s)">%s</g>' % (fmt(-ak[0]), fmt(-ak[1]), out)
+    sk = s['k']
+    if not s.get('a') and (sk[0] != 100 or sk[1] != 100): out = '<g transform="scale(%s %s)">%s</g>' % (fmt(sk[0] / 100), fmt(sk[1] / 100), out)
+    if r.get('a'): out = '<g>%s%s</g>' % (smil('transform', r['k'], lambda v: fmt(first(v)), 'animateTransform', 'type="rotate" '), out)
+    elif r['k']: out = '<g transform="rotate(%s)">%s</g>' % (fmt(r['k']), out)
+    if p.get('a'): out = '<g>%s%s</g>' % (smil('transform', p['k'], lambda v: '%s %s' % (fmt(v[0]), fmt(v[1])), 'animateTransform', 'type="translate" '), out)
+    elif p['k'][0] or p['k'][1]: out = '<g transform="translate(%s %s)">%s</g>' % (fmt(p['k'][0]), fmt(p['k'][1]), out)
+    return out
+def trim_anims(tm):
     def sample(prop, t):
-        ks = prop['k']
-        if t <= ks[0]['t'] + offset: return ks[0]['s'][0]
-        if t >= ks[-1]['t'] + offset: return ks[-1]['s'][0]
-        a, b = ks[0], ks[-1]; u = (t - a['t'] - offset) / (b['t'] - a['t'])
-        # easing (.42,0,.58,1) approssimato con smoothstep
-        u = u * u * (3 - 2 * u); return a['s'][0] + (b['s'][0] - a['s'][0]) * u
-    frames = list(range(0, OP + 1, 2))
-    da, do, op = [], [], []
+        ks = prop['k'] if prop.get('a') else [{'t': 0, 's': [prop['k']]}]
+        if t <= ks[0]['t']: return first(ks[0]['s'])
+        if t >= ks[-1]['t']: return first(ks[-1]['s'])
+        for a, b in zip(ks, ks[1:]):
+            if a['t'] <= t <= b['t']:
+                u = (t - a['t']) / (b['t'] - a['t']); u = u * u * (3 - 2 * u)
+                return first(a['s']) + (first(b['s']) - first(a['s'])) * u
+    frames = list(range(0, OP + 1, 2)); da, do, op = [], [], []
     for f in frames:
         s, e = sample(tm['s'], f), sample(tm['e'], f)
-        lo, hi = min(s, e), max(s, e); L = max(0.0001, hi - lo)
-        da.append('%s %s' % (fmt(L), fmt(200))); do.append(fmt(-lo)); op.append('1' if L > .5 else '0')   # niente puntini delle estremità tonde
+        lo, hi = min(s, e), max(s, e); L = max(.0001, hi - lo)
+        da.append('%s 200' % fmt(L)); do.append(fmt(-lo)); op.append('1' if L > .5 else '0')
     kt = ';'.join(fmt(f / OP) for f in frames)
-    return ('<animate attributeName="stroke-dasharray" dur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (fmt(DUR), ';'.join(da), kt) +
-            '<animate attributeName="stroke-dashoffset" dur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (fmt(DUR), ';'.join(do), kt) +
-            '<animate attributeName="stroke-opacity" calcMode="discrete" dur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (fmt(DUR), ';'.join(op), kt))
-L = {x['ind']: x for x in d['layers']}
-null = L[5]
-body = []
-mask = L[3]
-mid = 'icoMask'
-mask_svg = '<mask id="%s" maskUnits="userSpaceOnUse" x="-50" y="-50" width="600" height="600"><rect x="-50" y="-50" width="600" height="600" fill="#fff"/><g transform="%s"><g transform="%s">%s</g></g></mask>' % (
-    mid, ltr(null['ks']), ltr(mask['ks']), shapes(mask['shapes'], mask.get('st', 0), '#000'))
-for ind in (4, 2, 1):   # dal basso verso l'alto: persona (con matte), mano, linee
-    ly = L[ind]
-    inner = shapes(ly['shapes'], 0)
-    g = '<g transform="%s"><g transform="%s"%s>%s</g></g>' % (ltr(null['ks']), ltr(ly['ks']), '', inner)
-    if ind == 4: g = '<g mask="url(#%s)">%s</g>' % (mid, g)
-    body.append(g)
-svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><defs>%s</defs>%s</svg>' % (mask_svg, ''.join(body))
+    A = lambda attr, vals, extra='': '<animate attributeName="%s" %sdur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (attr, extra, fmt(DUR), ';'.join(vals), kt)
+    return A('stroke-dasharray', da) + A('stroke-dashoffset', do) + A('stroke-opacity', op, 'calcMode="discrete" ')
+def paint_attr(p, matte):
+    if p['ty'] == 'st':
+        w = p['w']['k']
+        col = '#000' if matte else color(p['c']['k'])
+        return 'fill="none" stroke="%s" stroke-width="%s" stroke-linecap="%s" stroke-linejoin="round"' % (col, fmt(w), {1: 'butt', 2: 'round', 3: 'square'}[p.get('lc', 2)])
+    return 'fill="%s"' % ('#000' if matte else color(p['c']['k']))
+def render_items(items, paints, trim, matte):
+    """un livello di elementi (come in un gruppo Lottie): le pitture valgono per le forme dello stesso livello e di quelli annidati"""
+    own = [x for x in items if x['ty'] in ('st', 'fl') and not x.get('hd') and (x.get('o', {'k': 100})['k'] if not x.get('o', {}).get('a') else 100) > 0]
+    paints = own + paints if own else paints
+    trim = next((x for x in items if x['ty'] == 'tm'), trim)
+    out = ''
+    for it in items:
+        if it.get('hd'): continue
+        if it['ty'] == 'gr':
+            inner = render_items(it['it'], paints, trim, matte)
+            tr = next((x for x in it['it'] if x['ty'] == 'tr'), None)
+            out += xform(tr, inner) if tr else inner
+        elif it['ty'] in ('sh', 'rc'):
+            if not paints: continue
+            for pnt in paints:
+                attrs = paint_attr(pnt, matte)
+                tr_extra = ' pathLength="100"' if (trim and pnt['ty'] == 'st') else ''
+                if it['ty'] == 'sh':
+                    ks = it['ks']
+                    if ks.get('a'): el = '<path d="%s" %s%s>%s' % (pathd(ks['k'][0]['s'][0]), attrs, tr_extra, smil('d', ks['k'], lambda s: pathd(s[0])))
+                    else: el = '<path d="%s" %s%s>' % (pathd(ks['k']), attrs, tr_extra)
+                    if tr_extra: el += trim_anims(trim)
+                    out += el + '</path>'
+                else:
+                    sz, ps, rr = it['s']['k'], it['p']['k'], it['r']['k']
+                    out += '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" %s/>' % (fmt(ps[0] - sz[0] / 2), fmt(ps[1] - sz[1] / 2), fmt(sz[0]), fmt(sz[1]), fmt(rr), attrs)
+    return out
+def layer_content(L, layers, matte):
+    if L['ty'] == 4: return render_items(L['shapes'], [], None, matte)
+    if L['ty'] == 0: return render_layers(ASSETS[L['refId']]['layers'], matte)
+    return ''
+def with_parents(L, byind, inner):
+    out = xform(L['ks'], inner)
+    while L.get('parent'):
+        L = byind[L['parent']]; out = xform(L['ks'], out)
+    return out
+def render_layers(layers, matte=False):
+    byind = {x['ind']: x for x in layers}
+    out = []
+    for idx, L in enumerate(layers):
+        if L.get('td') or L['ty'] == 3 or L.get('hd'): continue
+        if L['ks'].get('o', {}).get('k', 100) == 0 and not L['ks']['o'].get('a') and L['ty'] != 3: continue
+        g = with_parents(L, byind, layer_content(L, layers, matte))
+        if L.get('tt') and not matte:
+            M = layers[idx - 1]; mid = nid('m')
+            inv = L['tt'] == 2
+            mg = with_parents(M, byind, layer_content(M, layers, True))
+            if not inv: mg = mg.replace('#000', '#fff')
+            out.append('<mask id="%s" maskUnits="userSpaceOnUse" x="-100" y="-100" width="700" height="700"><rect x="-100" y="-100" width="700" height="700" fill="%s"/>%s</mask><g mask="url(#%s)">%s</g>' % (
+                mid, '#fff' if inv else '#000', mg, mid, g))
+        else: out.append(g)
+    return ''.join(reversed(out))   # in Lottie il primo livello è quello in alto
+svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d">%s</svg>' % (d['w'], d['h'], render_layers(d['layers']))
 open(OUT, 'w').write(svg); print(len(svg))
