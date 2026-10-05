@@ -26,24 +26,35 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
   - scrittura: "Aggiungi parole" → "Fatto";
   - pannello: "Nascondi altre parole" / "Troppe lettere: mostrane una" / "Cambia qualche parola" → "Fatto".
 - **Avvisi:** nessun avviso dentro le pagine. Ci sono messaggi in alto che spariscono da soli (`notify`). Gli errori sul file compaiono dentro il riquadro della foto. L'errore di caricamento nell'invio ha lo stile d'errore e "Riprova".
-- **Pannello "Parole e difficoltà":**
-  - ogni tocco funziona; «amo» e «amore» si scambiano da sole;
-  - "Modifica testo" funziona dentro il pannello;
-  - difficoltà Normale/Difficile.
+- **Pannello "Parole e difficoltà" (deve entrare senza scorrere su 390×664):**
+  - via il titolo "Parole e difficoltà" (resta solo per i lettori di schermo; si apre dal pulsante "Parole" e ha la maniglia);
+  - via la legenda "Nascoste / Visibili", via il riquadro statistiche ("griglia 5×7" e "4 parole nascoste" tolti: si vedono dall'anteprima);
+  - il tempo stimato va sotto la difficoltà: "Circa 2 min per svelarla", si aggiorna cambiando difficoltà;
+  - "Modifica testo" diventa solo icona (matita che scrive su una riga, 40 px, aria-label "Modifica testo"), in alto a destra accanto alla frase;
+  - la frase va a capo dopo "parola": "Tocca una parola / per nasconderla o mostrarla";
+  - via "Rimescola la griglia" (va nell'anteprima);
+  - "Fatto" sempre visibile in fondo (sticky); correggere i pulsanti schiacciati: il contenuto del pannello deve scorrere, non comprimersi (flex-shrink:0 sugli elementi).
 - **Chi gioca:** prima lettera in lilla nelle caselle del messaggio, mai nella griglia. Aiuto disponibile da subito.
 - **Vittoria:** resta il ritaglio 3:4 scelto da chi crea, il più grande possibile, con il messaggio sotto. Sugli schermi bassi o su desktop il messaggio scorre sopra l'immagine.
 - **Anteprima del link:** "Ti ho nascosto qualcosa", con l'immagine `og.png` che ha le caselle e l'icona.
 
 ## Deciso, da fare (branch word-challenge)
-- **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa una terza pillola "Rimescola" nella pagina dell'anteprima, accanto a "Modifica" e "Parole e difficoltà". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata". Da verificare che le tre pillole stiano in una riga sui telefoni stretti.
+- **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa il terzo pulsante "Rimescola" nella pagina dell'anteprima, accanto a "Testo" e "Parole". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata".
 - **Pulsante grande nella scrittura:** a tastiera aperta resta tutto com'è (la pillola fa da stato: "Aggiungi parole" → "Fatto", più il tasto Invio). A tastiera chiusa la stessa logica passa al pulsante grande in basso, come negli altri passi: dice "Aggiungi parole", attenuato, finché il messaggio non basta, e diventa "Avanti" quando è pronto. La pillola si nasconde. Nessun messaggio d'errore. A tastiera aperta il pulsante in basso resta nascosto su tutti i telefoni (su iPhone finirebbe sotto la tastiera).
 - **Pagina dell'anteprima (deve entrare senza scorrere):**
   - la scheda "La sua sfida" resta intera sotto la foto: è il riscontro di come apparirà a chi riceve;
   - la foto si adatta all'altezza disponibile (non più fissa a 270×360), finché scheda, pulsanti e footer stanno tutti nello schermo;
-  - sotto la scheda, tre pulsanti a colonne uguali, larghi quanto la scheda: **Testo · Parole · Rimescola** (icona + nome su una riga). "Testo" sostituisce "Modifica", "Parole" sostituisce "Parole e difficoltà" (il pannello mantiene il titolo completo);
+  - sotto la scheda, tre pulsanti a colonne uguali, larghi quanto la scheda: **Testo · Parole · Rimescola** (icona + nome su una riga). "Testo" sostituisce "Modifica", "Parole" sostituisce "Parole e difficoltà";
   - "Prova a giocare" e "Invia" affiancati in basso: Prova a sinistra (solo bordo), Invia a destra (pieno).
   - Misure dal mockup: iPhone 13 Safari (390×664) foto circa 206×275; iPhone SE (375×553) resta stretto, da verificare la leggibilità delle lettere.
-- **Pannello "Parole e difficoltà":** togliere la statistica "griglia 5×7" (gergo per chi crea), tenere parole nascoste e tempo stimato; il rimescolamento esce (vedi sopra). Correggere i pulsanti in fondo che su schermi bassi (390×664) vengono schiacciati in altezza.
+- **Pannello "Parole e difficoltà" (deve entrare senza scorrere su 390×664):**
+  - via il titolo "Parole e difficoltà" (resta solo per i lettori di schermo: si apre dal pulsante "Parole" e ha la maniglia);
+  - via la legenda "Nascoste / Visibili" e il riquadro statistiche ("griglia 5×7" e "N parole nascoste" tolti: si vedono già);
+  - il tempo stimato va sotto la difficoltà: "Circa 2 min per svelarla", si aggiorna cambiando difficoltà;
+  - "Modifica testo" diventa solo icona (matita che scrive su una riga, 40 px, aria-label "Modifica testo"), in alto a destra accanto alla frase;
+  - la frase va a capo dopo "parola": "Tocca una parola / per nasconderla o mostrarla";
+  - via "Rimescola la griglia" (va nell'anteprima);
+  - "Fatto" sempre visibile in fondo (sticky); correggere i pulsanti schiacciati: il contenuto del pannello deve scorrere, non comprimersi (flex-shrink:0 sugli elementi).
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
