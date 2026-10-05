@@ -56,9 +56,10 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
   - via "Rimescola la griglia" (va nell'anteprima);
   - "Fatto" sempre visibile in fondo (sticky); correggere i pulsanti schiacciati: il contenuto del pannello deve scorrere, non comprimersi (flex-shrink:0 sugli elementi).
 - **Altri problemi di spazio (controllo su 375×553, 360×640, 390×664, 390×844):**
-  - **Home su iPhone SE (375×553):** il pulsante "Nascondi qualcosa" finisce sotto il bordo (90 px da scorrere). La home deve entrare sempre: ridurre la demo o gli spazi in base all'altezza.
-  - **Intro di chi riceve su iPhone SE:** il pulsante "Inizia" viene schiacciato a 19 px di altezza (normale 58). Stessa causa del pannello: gli elementi si comprimono invece di adattarsi.
+  - **Home su iPhone SE (375×553):** il pulsante "Nascondi qualcosa" finisce sotto il bordo (90 px da scorrere). Soluzione decisa: la demo (griglietta) si rimpicciolisce in base all'altezza disponibile, finché tutto entra.
+  - **Intro di chi riceve su iPhone SE:** il pulsante "Inizia" viene schiacciato a 19 px di altezza (normale 58). Stessa causa del pannello: gli elementi si comprimono invece di adattarsi. Soluzione decisa: anche qui la demo si rimpicciolisce in base all'altezza; i pulsanti non si comprimono mai.
   - Tutto il resto entra: scelta foto (7 px, trascurabile), invio, partita (anche con messaggio di 50 caratteri e griglia grande), vittoria.
+- **Timer della partita:** via il cronometro dalla barra in alto durante il gioco. Il tempo si misura comunque e si vede solo alla fine ("Svelata in 0:42"). Da decidere se l'avanzamento ("0 di 4" con i pallini) sale al suo posto nella barra.
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
