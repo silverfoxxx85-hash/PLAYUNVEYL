@@ -32,6 +32,17 @@
   button, input, textarea { font: inherit; color: inherit; }
   button { border: none; background: none; cursor: pointer; }
   .screen { position: fixed; inset: 0; display: none; }
+  /* doodle animato (12%): icone sparse che si muovono piano e in disordine; altrove resta fermo */
+  .dd { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: .12; z-index: 0; }
+  .dd .d { position: absolute; width: var(--sz); height: var(--sz); color: var(--accent); will-change: transform; animation: drift var(--t) ease-in-out var(--dl) infinite alternate; }
+  .dd .d svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  @keyframes drift { 0% { transform: translate(0, 0) rotate(var(--r0)) } 33% { transform: translate(var(--x1), var(--y1)) rotate(var(--r1)) } 66% { transform: translate(var(--x2), var(--y2)) rotate(var(--r2)) } 100% { transform: translate(var(--x3), var(--y3)) rotate(var(--r3)) } }
+  @media (prefers-reduced-motion: reduce) { .dd .d { animation: none; } }
+  #screenCreate > .dd { display: none; }
+  #screenCreate.onhome { background: var(--bg); }
+  #screenCreate.onhome > .dd { display: block; }
+  #screenCreate > :not(.dd):not(.scrim):not(.ssheet), #introOv > :not(.dd) { position: relative; z-index: 1; }
+  #introOv, #finalOv { background: var(--bg); }
   .screen.active { display: flex; flex-direction: column; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -113,12 +124,14 @@
   .cfoot { padding: 10px 20px max(16px, env(safe-area-inset-bottom)); max-width: 480px; width: 100%; margin: 0 auto; }
   .label { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--soft); }
 
-  .home { justify-content: center; align-items: center; text-align: center; min-height: 100%; gap: 20px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: 44px; }
+  .home { justify-content: space-between; align-items: center; text-align: center; min-height: 100%; gap: 20px; padding-top: max(26px, env(safe-area-inset-top)); padding-bottom: max(22px, env(safe-area-inset-bottom)); }
+  .home .htop, .home .hbot { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+  .home .hbot { gap: 18px; }
   .home .brand { display: flex; align-items: center; gap: 12px; }
   .home .brand .wordmark { font-size: 30px; }
-  .home h1 { font-size: 26px; max-width: 320px; }
-  .home .lead { max-width: 320px; margin-top: -10px; font-size: 15px; }
-  .homebtns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 12px; }
+  .home h1 { font-size: 27px; max-width: 330px; }
+  .home .lead { max-width: 300px; font-size: 15px; }
+  .homebtns { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 
   /* passo 1 */
   .mediaframe { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 26px; overflow: hidden; background: var(--board); border: 2px dashed #43394d; touch-action: none; }
@@ -364,6 +377,7 @@
 
 <!-- ======================= CREAZIONE ======================= -->
 <section id="screenCreate" class="screen active">
+  <div class="dd" aria-hidden="true"></div>
   <div class="chead" id="chead">
     <button class="iconbtn" id="backBtn" aria-label="Indietro" onclick="goBack()">
       <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3L5 9l6 6"/></svg>
@@ -375,11 +389,15 @@
   <main class="steps" id="steps">
     <!-- 0 · HOME -->
     <div class="step home" data-step="0">
-      <div class="brand"><span id="homeLogo"></span><span class="wordmark" aria-label="unveil">unve<span class="i">ı<i></i></span>l</span></div>
-      <h1>Spoiler: dovrà guadagnarsela.</h1>
-      <p class="lead">Nascondi una foto o un video dietro un messaggio: per vederla dovrà trovare tutte le parole.</p>
+      <div class="htop">
+        <div class="brand"><span id="homeLogo"></span><span class="wordmark" aria-label="unveil">unve<span class="i">ı<i></i></span>l</span></div>
+        <p class="lead">Nascondi una foto o un video tra le parole di un messaggio.</p>
+      </div>
       <div class="demo" id="homeDemo" aria-hidden="true"></div>
-      <div class="homebtns" id="homeBtns"><button class="btn-main" onclick="newDraft()">Nascondi qualcosa</button></div>
+      <div class="hbot">
+        <h1>Spoiler: dovrà guadagnarsela.</h1>
+        <div class="homebtns" id="homeBtns"><button class="btn-main" onclick="newDraft()">Nascondi qualcosa</button></div>
+      </div>
     </div>
 
     <!-- 1 · FOTO O VIDEO -->
@@ -522,6 +540,7 @@
   </div>
 
   <div class="overlay" id="introOv">
+    <div class="dd" aria-hidden="true"></div>
     <h2 id="introTitle">Qualcuno ti sta nascondendo qualcosa</h2>
     <div class="demo" id="introDemo" aria-hidden="true"></div>
     <p class="introbig" id="introBig"></p>
@@ -530,6 +549,7 @@
   </div>
   <div class="overlay" id="errOv"><h2>Ops</h2><p class="introtxt" id="errText"></p><button class="btn-main" onclick="location.href=location.pathname">Nascondi qualcosa</button></div>
   <div class="overlay" id="finalOv">
+    <div class="dd" aria-hidden="true"></div>
     <div id="zoomer" onclick="toggleSheet()"></div>
     <div class="ftools" id="ftools">
       <button id="audioBtn" style="display:none" onclick="toggleAudio()" aria-label="Audio del video"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v4h3l4 3V4L6 7z"/><path id="audioWave" d="M13 6.5a4 4 0 0 1 0 5" opacity=".3"/></svg></button>
@@ -1110,6 +1130,40 @@ function mountDemo(root) {
 function kickDemos() { DEMOS.forEach(d => { if (d.wanted) d.resume(); }); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) DEMOS.forEach(d => d.pause()); else kickDemos(); });
 const homeDemo = mountDemo($('#homeDemo')), introDemo = mountDemo($('#introDemo'));
+/* doodle animato: una griglia irregolare di icone, ognuna con il suo ritmo (18-34 s) e il suo percorso */
+const DD_S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const ddTile = l => `<svg viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="currentColor" opacity=".6"/><text x="15" y="21" text-anchor="middle" font-family="Unbounded, sans-serif" font-weight="700" font-size="15" fill="#130f16">${l}</text></svg>`;
+const DD_HEART = `<svg viewBox="0 0 28 27" ${DD_S}><path d="M14 26C4 19 0 13 0 8a7 7 0 0 1 14-2 7 7 0 0 1 14 2c0 5-4 11-14 18z"/></svg>`;
+const DD_SQ = `<svg viewBox="0 0 8 8" ${DD_S} stroke-width="1.8"><rect x="1" y="1" width="6" height="6" rx="2"/></svg>`;
+const DD_ICONS = [
+  [ddTile('A'), 30], [ddTile('U'), 32], [ddTile('L'), 28], [ddTile('Z'), 28], [ddTile('E'), 28],
+  [`<svg viewBox="0 0 31 31" ${DD_S}><rect width="9" height="9" rx="3"/><rect y="11" width="9" height="9" rx="3"/><rect y="22" width="9" height="9" rx="3"/><rect x="11" y="22" width="9" height="9" rx="3"/><rect x="22" y="22" width="9" height="9" rx="3"/><rect x="22" y="11" width="9" height="9" rx="3"/><rect x="22" width="9" height="9" rx="3"/></svg>`, 32],
+  [DD_HEART, 28], [DD_HEART, 19],
+  [`<svg viewBox="0 0 29 29" ${DD_S}><circle cx="11" cy="11" r="10"/><path d="M18.5 18.5l9 9"/></svg>`, 28],
+  [`<svg viewBox="0 0 36 32" ${DD_S}><path d="M0 10a4 4 0 0 1 4-4h5l3-5h12l3 5h5a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4z"/><circle cx="18" cy="18" r="7"/></svg>`, 36],
+  [`<svg viewBox="0 0 42 36" ${DD_S}><path d="M6 0h30a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H16l-8 7v-7H6a6 6 0 0 1-6-6V6a6 6 0 0 1 6-6z"/><circle cx="12" cy="14" r="1.5" fill="currentColor"/><circle cx="21" cy="14" r="1.5" fill="currentColor"/><circle cx="30" cy="14" r="1.5" fill="currentColor"/></svg>`, 42],
+  [`<svg viewBox="0 0 26 33" ${DD_S}><rect y="12" width="26" height="20" rx="5"/><path d="M5 12V8a8 8 0 0 1 16 0v4M13 20v5"/></svg>`, 26],
+  [`<svg viewBox="0 0 36 24" ${DD_S}><rect width="36" height="24" rx="5"/><path d="M1 3l17 12L35 3"/></svg>`, 36],
+  [`<svg viewBox="0 0 16 16" ${DD_S} stroke-width="1.6"><path d="M8 0v16M0 8h16M2.5 2.5l11 11M13.5 2.5l-11 11"/></svg>`, 16],
+  [`<svg viewBox="0 0 12 12" ${DD_S} stroke-width="1.6"><path d="M6 0v12M0 6h12"/></svg>`, 12],
+  [DD_SQ, 8], [DD_SQ, 8],
+  [`<svg viewBox="0 0 6 6" ${DD_S} stroke-width="1.8"><circle cx="3" cy="3" r="2.5"/></svg>`, 6],
+];
+function buildDoodle(el) {
+  const W = innerWidth, H = innerHeight, cell = 92, rnd = (a, b) => a + Math.random() * (b - a);
+  let html = '', k = Math.floor(Math.random() * DD_ICONS.length);
+  for (let r = 0; r < Math.ceil(H / cell) + 1; r++) for (let c = 0; c < Math.ceil(W / cell) + 1; c++) {
+    const [svg, sz] = DD_ICONS[k++ % DD_ICONS.length];
+    const x = c * cell + rnd(-28, 28) - 10, y = r * cell + rnd(-28, 28) - 10, r0 = rnd(-25, 25), t = rnd(18, 34);
+    const m = () => (rnd(16, 42) * (Math.random() < .5 ? -1 : 1)).toFixed(1) + 'px', rr = () => (r0 + rnd(-22, 22)).toFixed(1) + 'deg';
+    html += `<div class="d" style="left:${x | 0}px;top:${y | 0}px;--sz:${sz}px;--t:${t.toFixed(1)}s;--dl:-${rnd(0, t).toFixed(1)}s;--r0:${r0.toFixed(1)}deg;--x1:${m()};--y1:${m()};--r1:${rr()};--x2:${m()};--y2:${m()};--r2:${rr()};--x3:${m()};--y3:${m()};--r3:${rr()}">${svg}</div>`;
+  }
+  el.innerHTML = html;
+}
+function buildDoodles() { document.querySelectorAll('.dd').forEach(buildDoodle); }
+buildDoodles();
+let ddT = null, ddW = innerWidth;
+window.addEventListener('resize', () => { if (Math.abs(innerWidth - ddW) < 40) return; ddW = innerWidth; clearTimeout(ddT); ddT = setTimeout(buildDoodles, 300); });   // la tastiera che si apre non ricostruisce
 /* la demo si adatta allo spazio libero: più grande sui telefoni normali, mai fuori schermo su quelli piccoli */
 function fitDemo(demo, host, avail) {
   if (!host.getClientRects().length || !host.clientHeight) return;
@@ -1118,7 +1172,7 @@ function fitDemo(demo, host, avail) {
   let used = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), n = 0;
   [...host.children].forEach(c => { if (c === demo || getComputedStyle(c).display === 'none') return; const m = getComputedStyle(c); used += c.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); n++; });
   used += gap * n;
-  const sz = Math.max(.82, Math.min(1.32, (avail - used - 8) / 236, (host.clientWidth - 48) / 206));
+  const sz = Math.max(.82, Math.min(1.55, (avail - used - 8) / 236, (host.clientWidth - 48) / 206));
   demo.style.setProperty('--s', sz.toFixed(3));
 }
 function layoutDemos() {
@@ -1149,6 +1203,7 @@ function goStep(n) {
   $('#cfoot').style.display = n === 0 ? 'none' : 'flex';
   $('#tryBtn').style.display = n === 2 ? 'flex' : 'none';
   $('#nextBtn').textContent = n === 2 ? 'Invia' : 'Avanti';
+  $('#screenCreate').classList.toggle('onhome', n === 0);
   if (n === 0) { homeDemo.start(); layoutDemos(); } else homeDemo.stop();
   if (n === 1) { layoutCrop(); if (!C.mediaEl) { const a = $('#pickArt svg'); icoEnd(a); setTimeout(() => C.step === 1 && icoBegin(a), 350); } }
   if (n === 2) { recompute(); renderMsg(); setWriting(C.view !== 'preview'); if (C.view === 'preview') refreshPreview(true); } else { stopLoop(); closeWords(false, true); }
