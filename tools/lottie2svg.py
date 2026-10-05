@@ -36,7 +36,7 @@ def smil(attr, kfs, conv, tag='animate', extra=''):
     if times[0] > 0: vals.insert(0, vals[0]); times.insert(0, 0); sp.insert(0, '0 0 1 1')
     if times[-1] < 1: vals.append(vals[-1]); times.append(1); sp.append('0 0 1 1')
     sp = [s or '0 0 1 1' for s in sp]
-    return '<%s attributeName="%s" %sdur="%ss" repeatCount="indefinite" calcMode="spline" values="%s" keyTimes="%s" keySplines="%s"/>' % (
+    return '<%s attributeName="%s" %sbegin="indefinite" dur="%ss" repeatCount="indefinite" calcMode="spline" values="%s" keyTimes="%s" keySplines="%s"/>' % (
         tag, attr, extra, fmt(DUR), ';'.join(vals), ';'.join(fmt(t) for t in times), ';'.join(sp))
 def pathd(sh):
     v, i, o, c = sh['v'], sh['i'], sh['o'], sh.get('c', False)
@@ -55,9 +55,9 @@ def xform(ks, inner):
     if ak[0] or ak[1]: out = '<g transform="translate(%s %s)">%s</g>' % (fmt(-ak[0]), fmt(-ak[1]), out)
     sk = s['k']
     if not s.get('a') and (sk[0] != 100 or sk[1] != 100): out = '<g transform="scale(%s %s)">%s</g>' % (fmt(sk[0] / 100), fmt(sk[1] / 100), out)
-    if r.get('a'): out = '<g>%s%s</g>' % (smil('transform', r['k'], lambda v: fmt(first(v)), 'animateTransform', 'type="rotate" '), out)
+    if r.get('a'): out = '<g transform="rotate(%s)">%s%s</g>' % (fmt(first(r['k'][0]['s'])), smil('transform', r['k'], lambda v: fmt(first(v)), 'animateTransform', 'type="rotate" '), out)
     elif r['k']: out = '<g transform="rotate(%s)">%s</g>' % (fmt(r['k']), out)
-    if p.get('a'): out = '<g>%s%s</g>' % (smil('transform', p['k'], lambda v: '%s %s' % (fmt(v[0]), fmt(v[1])), 'animateTransform', 'type="translate" '), out)
+    if p.get('a'): out = '<g transform="translate(%s %s)">%s%s</g>' % (fmt(p['k'][0]['s'][0]), fmt(p['k'][0]['s'][1]), smil('transform', p['k'], lambda v: '%s %s' % (fmt(v[0]), fmt(v[1])), 'animateTransform', 'type="translate" '), out)
     elif p['k'][0] or p['k'][1]: out = '<g transform="translate(%s %s)">%s</g>' % (fmt(p['k'][0]), fmt(p['k'][1]), out)
     return out
 def trim_anims(tm):
@@ -75,7 +75,8 @@ def trim_anims(tm):
         lo, hi = min(s, e), max(s, e); L = max(.0001, hi - lo)
         da.append('%s 200' % fmt(L)); do.append(fmt(-lo)); op.append('1' if L > .5 else '0')
     kt = ';'.join(fmt(f / OP) for f in frames)
-    A = lambda attr, vals, extra='': '<animate attributeName="%s" %sdur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (attr, extra, fmt(DUR), ';'.join(vals), kt)
+    trim_anims.base = ' stroke-dasharray="%s" stroke-dashoffset="%s" stroke-opacity="%s"' % (da[0], do[0], op[0])
+    A = lambda attr, vals, extra='': '<animate attributeName="%s" %sbegin="indefinite" dur="%ss" repeatCount="indefinite" values="%s" keyTimes="%s"/>' % (attr, extra, fmt(DUR), ';'.join(vals), kt)
     return A('stroke-dasharray', da) + A('stroke-dashoffset', do) + A('stroke-opacity', op, 'calcMode="discrete" ')
 def paint_attr(p, matte):
     if p['ty'] == 'st':
@@ -104,7 +105,8 @@ def render_items(items, paints, trim, matte):
                     ks = it['ks']
                     if ks.get('a'): el = '<path d="%s" %s%s>%s' % (pathd(ks['k'][0]['s'][0]), attrs, tr_extra, smil('d', ks['k'], lambda s: pathd(s[0])))
                     else: el = '<path d="%s" %s%s>' % (pathd(ks['k']), attrs, tr_extra)
-                    if tr_extra: el += trim_anims(trim)
+                    if tr_extra:
+                        anims = trim_anims(trim); el = el.replace(tr_extra + '>', tr_extra + trim_anims.base + '>', 1) + anims
                     out += el + '</path>'
                 else:
                     sz, ps, rr = it['s']['k'], it['p']['k'], it['r']['k']
