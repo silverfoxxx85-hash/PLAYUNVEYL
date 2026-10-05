@@ -7,7 +7,7 @@ const UnveilGen = (() => {
   const GEN_VERSION = 2;
   const MIN_LETTERS = 10;
   const MAX_LETTERS = 35;
-  const MAX_CHARS = 100;
+  const MAX_CHARS = 50;
   // cornice 3:4, riempimento max ~80%
   const TIERS = [
     { cols: 4, rows: 5, max: 15 },

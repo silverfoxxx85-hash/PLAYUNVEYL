@@ -116,7 +116,7 @@
   .dgrid::after, .pv::after, .frame::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--board); pointer-events: none; z-index: 6; }
   .demo.reset, .demo.reset * { transition: none !important; }
   .dgrid .pic { position: absolute; inset: 3px; border-radius: 21px; overflow: hidden; }   /* rientrata di 3px: il lilla non arriva al bordo antialiasato della cartolina */
-  .dgrid .pic svg { display: block; position: absolute; left: -3px; top: -3px; width: 180px; height: 180px; filter: grayscale(1) blur(3px); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
+  .dgrid .pic svg { display: block; position: absolute; left: -3px; top: -3px; width: 180px; height: 180px; filter: blur(3px); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
   .dgrid .pic.clear svg { filter: none; transform: none; }
   /* duotono di precisione: b/n → (moltiplica per luci-ombre) + ombre = ombre #2a2140, luci #e9e4ff. Sparisce allo svelamento */
   .dgrid, .pv, .frame, #zoomer { isolation: isolate; }
@@ -179,6 +179,14 @@
   .pickcta .plus { width: 72px; height: 72px; border-radius: 24px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
   .pickcta b { font-family: var(--display); font-weight: 700; font-size: 16px; }
   .pickcta span.s { font-size: 14px; color: var(--soft); }
+  .pickcta .perr { display: none; max-width: 270px; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.4; text-align: left; background: rgba(255,138,154,.12); border: 1px solid rgba(255,138,154,.45); color: var(--ink); }
+  .pickcta .perr svg { width: 18px; height: 18px; float: left; margin: 1px 8px 0 0; }
+  .pickcta.bad span.s { display: none; }
+  .pickcta.bad .perr { display: block; }
+  .step.s1 .mediaframe { align-self: center; flex-shrink: 0; }
+  .fwarn { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 4; display: flex; gap: 8px; align-items: center; padding: 9px 12px; border-radius: 14px; background: rgba(19,15,22,.85); font-size: 13px; line-height: 1.35; color: var(--ink); opacity: 0; transition: opacity .35s; pointer-events: none; }
+  .fwarn.show { opacity: 1; }
+  .fwarn svg { width: 18px; height: 18px; flex-shrink: 0; }
   .mediaframe.has .pickcta, .mediaframe.has .ghost:not(.reveal) { display: none; }
   .camrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .croprow { display: flex; justify-content: space-between; align-items: center; color: var(--soft); font-size: 14px; }
@@ -284,6 +292,20 @@
   .hint.flash, .al.flash { animation: alflash .6s ease; }
   .donebtn { display: inline-block; }
   .donebtn.off, .btn-main.off { opacity: .4; }
+  /* pulsante che fa da stato: scuro finché manca qualcosa, lilla quando si può andare avanti */
+  .donebtn.wait, .btn-main.wait { opacity: 1; background: #2a2233; color: var(--soft); box-shadow: inset 0 0 0 1.5px #3a3142; }
+  .btn-main.wait { font-family: var(--body); font-weight: 700; }
+  .shake { animation: shake .4s ease; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+  #writeHint, #alertSheet { display: none !important; }
+  /* messaggio in alto, sopra a tutto, che sparisce da solo */
+  .ttoast { position: fixed; left: 14px; right: 14px; top: max(12px, env(safe-area-inset-top)); z-index: 80; max-width: 452px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-start;
+    padding: 13px 15px; border-radius: 18px; background: #2b2131; color: var(--ink); font-size: 14px; line-height: 1.4; box-shadow: 0 14px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(179,166,255,.35);
+    transform: translateY(-140%); opacity: 0; transition: transform .35s cubic-bezier(.2,.9,.25,1.05), opacity .25s; pointer-events: none; }
+  .ttoast.err { box-shadow: 0 14px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,138,154,.55); }
+  .ttoast.warn { box-shadow: 0 14px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,211,107,.5); }
+  .ttoast.show { transform: none; opacity: 1; }
+  .ttoast svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
   .cfoot { display: flex; flex-direction: column; gap: 10px; }
   /* pannello "Parole e difficoltà" */
   .wsheet .in { max-height: calc(86vh - 20px); overflow-y: auto; gap: 12px; }
@@ -330,6 +352,8 @@
   .input:focus { outline: none; border-color: var(--accent); }
   .sendbox { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 16px; border-radius: 24px; background: var(--card); text-align: center; }
   .sendbox .stxt { font-size: 15px; color: var(--soft); }
+  .sendbox.failed { padding: 0; background: transparent; align-items: stretch; text-align: left; }
+  .sendbox.failed .stxt { font-size: 14px; }
   .sendbtns { display: none; flex-direction: column; gap: 10px; }
 
   /* ---------- PARTITA ---------- */
@@ -401,6 +425,7 @@
   .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 70px 22px max(24px, env(safe-area-inset-bottom));
     background: linear-gradient(to bottom, rgba(19,15,22,0), rgba(19,15,22,.92) 70px, var(--bg)); transform: translateY(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
   .fsheet.show { transform: none; }
+  .fsheet.below { padding-top: 0; background: none; }
   .fsheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
   .fmsg { font-size: 27px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
   .fstats { font-size: 14px; color: var(--soft); }
@@ -417,6 +442,7 @@
 </style>
 </head>
 <body>
+<div class="ttoast" id="topToast" role="status" aria-live="polite"></div>
 
 <div id="splash"><div id="splashLogo"></div><span class="wordmark">unve<span class="i">ı<i></i></span>l</span></div>
 
@@ -447,14 +473,15 @@
     </div>
 
     <!-- 1 · FOTO O VIDEO -->
-    <div class="step" data-step="1">
+    <div class="step s1" data-step="1">
       <h1>Scegli una foto o un video</h1>
       <div class="mediaframe" id="cropFrame" role="button" tabindex="0" aria-label="Scegli dalla galleria">
         <div class="ghost"></div>
+        <div class="fwarn" id="frameWarn" role="status"></div>
         <div class="pickcta">
           <div class="pickart" id="pickArt" aria-hidden="true"></div>
           <span class="plus"><svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="#130f16" stroke-width="3.4" stroke-linecap="round"><path d="M15 5v20M5 15h20"/></svg></span>
-          <b>Scegli dalla galleria</b><span class="s">foto o video fino a 15 secondi</span>
+          <b>Scegli dalla galleria</b><span class="s">foto o video fino a 15 secondi</span><span class="perr" id="pickErr" role="alert"></span>
         </div>
       </div>
       <div class="croprow" id="cropRow" style="display:none"><span id="cropHint">Trascina per inquadrare · pizzica per lo zoom</span><button class="btn-link" onclick="$('#inGal').click()">Cambia</button></div>
@@ -462,7 +489,6 @@
         <button class="btn-ghost" onclick="$('#inImg').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>Scatta</button>
         <button class="btn-ghost" onclick="$('#inVid').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="M15.5 10.5L21 7.5v9l-5.5-3"/></svg>Registra</button>
       </div>
-      <p class="err" id="mediaErr"></p>
       <input type="file" id="inImg" accept="image/*" capture="environment" hidden>
       <input type="file" id="inVid" accept="video/*" capture="environment" hidden>
       <input type="file" id="inGal" accept="image/*,video/*" hidden>
@@ -493,9 +519,9 @@
       <div class="hint writeonly" id="writeHint" role="status" aria-live="polite"></div>
       <div class="tawrap writeonly">
         <label class="sr" for="msgIn">Messaggio segreto</label>
-        <textarea id="msgIn" class="msg" maxlength="100" placeholder="Scrivi qui il tuo messaggio…" enterkeyhint="done"></textarea>
+        <textarea id="msgIn" class="msg" maxlength="50" placeholder="Scrivi qui il tuo messaggio…" enterkeyhint="done"></textarea>
       </div>
-      <div class="msgmeta writeonly"><span>Le parole di 1-2 lettere restano visibili</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount">0/100</span><button class="donebtn" onmousedown="event.preventDefault()" id="doneBtn" onclick="doneWriting()">Fatto</button></span></div>
+      <div class="msgmeta writeonly"><span></span><span style="display:flex;align-items:center;gap:10px"><span id="charCount">0/50</span><button class="donebtn" onmousedown="event.preventDefault()" id="doneBtn" onclick="doneWriting()">Fatto</button></span></div>
     </div>
   </main>
 
@@ -510,8 +536,8 @@
     <div class="alert" id="alertSheet" role="alert"></div>
     <div class="sedit" id="sEdit">
       <label class="sr" for="sheetTa">Modifica il messaggio</label>
-      <textarea id="sheetTa" class="msg" maxlength="100" enterkeyhint="done"></textarea>
-      <div class="msgmeta"><span>Le parole nuove si nascondono da sole</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount2">0/100</span><button class="donebtn" onmousedown="event.preventDefault()" onclick="sheetEdit(false)">Fatto</button></span></div>
+      <textarea id="sheetTa" class="msg" maxlength="50" enterkeyhint="done"></textarea>
+      <div class="msgmeta"><span>Le parole nuove si nascondono da sole</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount2">0/50</span><button class="donebtn" onmousedown="event.preventDefault()" onclick="sheetEdit(false)">Fatto</button></span></div>
     </div>
     <div class="prevcard" id="wordsCard">
       <span class="cardtitle">Tocca una parola per nasconderla o mostrarla</span>
@@ -553,7 +579,7 @@
         <button class="btn-main" onclick="shareLink()">Invia</button>
         <button class="btn-ghost" onclick="copyLink(this)">Copia il link</button>
       </div>
-      <button class="btn-ghost" id="retryBtn" style="display:none" onclick="makeLink()">Riprova</button>
+      <button class="btn-main" id="retryBtn" style="display:none" onclick="makeLink()">Riprova</button>
     </div>
     <div class="donebox">
       <div id="doneLogo"></div>
@@ -800,7 +826,7 @@ const DEMOS = [];
 function mountDemo(root) {
   const uid = root.id;
   root.innerHTML = `<div class="dz"><div class="dmsg"><span class="w" data-w="0">${'<span></span>'.repeat(5)}</span><span class="w" data-w="1">${'<span></span>'.repeat(3)}</span></div>
-    <div class="dgrid"><div class="pic"><svg viewBox="0 0 180 180"><rect width="180" height="180" fill="#b3a6ff"/>${icoSVG('i' + uid, { attrs: 'x="-23" y="-10" width="234" height="234"', once: true })}</svg></div><i class="duo-a"></i><i class="duo-b"></i>
+    <div class="dgrid"><div class="pic"><svg viewBox="0 0 180 180"><rect width="180" height="180" fill="#b3a6ff"/>${icoSVG('i' + uid, { attrs: 'x="-23" y="-10" width="234" height="234"', once: true })}</svg></div>
       <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/><rect width="180" height="180" rx="24" fill="none" stroke="#fff" stroke-width="12"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
       <div class="dtiles">${[...DEMO_L].map(l => `<span>${l}</span>`).join('')}</div><div class="finger"></div></div></div>`;
   const tiles = [...root.querySelectorAll('.dtiles span')], fg = root.querySelector('.finger'), pic = root.querySelector('.pic'), grid = root.querySelector('.dgrid');
@@ -993,7 +1019,7 @@ function goStep(n) {
   if (n !== 0 && $('#screenCreate').classList.contains('lit')) setLit($('#screenCreate'), false, $('#homeBtns .btn-main'));   // il lilla rientra nel pulsante
   $('#screenCreate').classList.toggle('onhome', n === 0);
   if (n === 0) { homeDemo.start(); layoutDemos(); } else homeDemo.stop();
-  if (n === 1) { layoutCrop(); if (!C.mediaEl) { const a = $('#pickArt svg'); icoEnd(a); setTimeout(() => C.step === 1 && icoBegin(a), 350); } }
+  if (n === 1) { fitMediaStep(); layoutCrop(); if (!C.mediaEl) { const a = $('#pickArt svg'); icoEnd(a); setTimeout(() => C.step === 1 && icoBegin(a), 350); } }
   if (n === 2) { recompute(); renderMsg(); setWriting(C.view !== 'preview'); if (C.view === 'preview') refreshPreview(true); } else { stopLoop(); closeWords(false, true); }
   validate(); saveDraft();
 }
@@ -1051,7 +1077,7 @@ async function newDraft() {
   Object.assign(C, { kind: null, file: null, blob: null, msg: '', ovr: new Map(), hide: new Set(), hints: true, seed: randomSeed(), upload: null, grid: null, gridKey: '', genFail: false });
   if (C.mediaEl) { C.mediaEl.remove(); C.mediaEl = null; }
   if (C.pvMedia) { C.pvMedia.remove(); C.pvMedia = null; }
-  $('#cropFrame').classList.remove('has'); $('#cropRow').style.display = 'none'; $('#camRow').style.display = 'grid';
+  $('#cropFrame').classList.remove('has'); $('#cropRow').style.display = 'none'; $('#camRow').style.display = 'grid'; showErr('');
   $('#msgIn').value = '';
   onMsg(true); goStep(1);
 }
@@ -1062,7 +1088,29 @@ async function restart() { await clearDraft(); location.href = location.pathname
 $('#cropFrame').addEventListener('click', () => { if (!C.mediaEl) $('#inGal').click(); });
 $('#cropFrame').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !C.mediaEl) { e.preventDefault(); $('#inGal').click(); } });
 ['dragover', 'drop'].forEach(ev => $('#cropFrame').addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' && e.dataTransfer.files[0]) loadMedia(e.dataTransfer.files[0]); }));
-function showErr(t, kind = 'err') { const e = $('#mediaErr'); e.innerHTML = t ? alertHTML({ t: kind, title: t }) : ''; e.style.display = t ? 'block' : 'none'; }
+/* avvisi della scelta foto: dentro il riquadro, mai sotto (non allungano la pagina) */
+function showErr(t, kind = 'err') {
+  const cta = $('#cropFrame .pickcta'), w = $('#frameWarn');
+  if (!t) { cta.classList.remove('bad'); w.classList.remove('show'); return; }
+  if (kind === 'warn') { w.innerHTML = AL_IC.warn + `<span>${t}</span>`; w.classList.add('show'); clearTimeout(showErr._t); showErr._t = setTimeout(() => w.classList.remove('show'), 5000); return; }
+  if (C.mediaEl) return notify(`<b>${t}</b>`);   // c'è già una foto: il riquadro resta com'è, messaggio in alto
+  $('#pickErr').innerHTML = AL_IC.err + t; cta.classList.add('bad'); vibrate(30);
+}
+/* il riquadro 3:4 prende l'altezza che resta: titolo, riquadro, pulsanti e "Avanti" stanno sempre in uno schermo */
+function fitMediaStep() {
+  const st = $('.step.s1'), f = $('#cropFrame'), box = $('#steps');
+  if (C.step !== 1 || !st.classList.contains('active')) return;
+  f.style.width = '';
+  const cs = getComputedStyle(st), gap = parseFloat(cs.rowGap) || 0;
+  let used = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), n = 0;
+  [...st.children].forEach(c => { if (c === f || getComputedStyle(c).display === 'none') return; used += c.offsetHeight; n++; });
+  used += gap * n;
+  const inner = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const w = Math.max(180, Math.min(inner, (box.clientHeight - used) * 3 / 4));
+  f.style.width = Math.floor(w) + 'px';
+  layoutCrop();
+}
+window.addEventListener('resize', () => fitMediaStep());
 function makeMediaEl(kind, url) {
   if (kind === 'i') { const el = new Image(); el.className = 'media'; el.alt = ''; el.src = url; return el; }
   const v = document.createElement('video'); v.className = 'media'; v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
@@ -1103,7 +1151,7 @@ async function loadMedia(file, opts = {}) {
       if (v.duration > VIDEO_MAX_S) setTimeout(() => showErr('Il video dura più di 15 secondi: verranno usati i primi 15.', 'warn'), 0);
     }
   } catch (e) { return showErr('Non riesco a leggere questo file. Prova con un altro.'); }
-  $('#cropFrame').classList.add('has'); $('#cropRow').style.display = 'flex'; $('#camRow').style.display = 'none';
+  $('#cropFrame').classList.add('has'); $('#cropRow').style.display = 'flex'; $('#camRow').style.display = 'none'; fitMediaStep();
   layoutCrop(); validate(); revealGhost();
   // nuova copia per l'anteprima del passo 2
   if (C.pvMedia) C.pvMedia.remove();
@@ -1120,7 +1168,7 @@ async function loadMediaUrl(kind, url) {
     C.kind = kind; C.url = url; C.blob = null; C.file = null;
     C.natW = el.videoWidth || el.naturalWidth; C.natH = el.videoHeight || el.naturalHeight;
     setCropMedia(el); if (kind === 'v') el.play().catch(() => {});
-    $('#cropFrame').classList.add('has'); $('#cropRow').style.display = 'flex'; $('#camRow').style.display = 'none';
+    $('#cropFrame').classList.add('has'); $('#cropRow').style.display = 'flex'; $('#camRow').style.display = 'none'; fitMediaStep();
     layoutCrop();
     if (C.pvMedia) C.pvMedia.remove();
     C.pvMedia = makeMediaEl(kind, url); $('#pv').insertBefore(C.pvMedia, $('#pv').firstChild); C.gridKey = '';
@@ -1214,11 +1262,9 @@ function doneWriting() {
   C.live = false; recompute(); renderMsg();
   if (!C.msg.trim()) return $('#msgIn').focus();
   if (!msgValid() || !ensureSeed()) {
-    C.tried = true; renderHint(); vibrate([20, 40, 20]);
-    const h = $('#writeHint'); h.classList.remove('flash'); void h.offsetWidth; h.classList.add('flash');
+    renderHint(); shake($('#doneBtn')); const st = writeState(); if (st.why) notify(st.why);
     return;
   }
-  C.tried = false;
   $('#msgIn').blur(); setWriting(false); validate(); saveDraft();
   refreshPreview(false); arrivalNotice();
 }
@@ -1280,71 +1326,60 @@ const AL_IC = {
   ok: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#b3a6ff"/><path d="M6 10.3l2.7 2.7L14 7.6" fill="none" stroke="#130f16" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 const alertHTML = (a, compact) => `<div class="al ${a.t}${compact ? ' compact' : ''}">${AL_IC[a.t]}<div>${compact && a.short ? a.short : `<b>${a.title}</b>${a.body ? ' ' + a.body : ''}`}${a.fix && !compact ? `<button class="fixbtn" data-fix>${a.fix.label}</button>` : ''}</div></div>`;
-let alertFix = null;
-$('#alertSheet').addEventListener('click', e => { if (e.target.closest('[data-fix]') && alertFix) alertFix(); });
-/* soluzioni a un tocco: quale parola mostrare (la più corta che basta) o quale nascondere */
-function swapCandidate(excess, except) {
-  return [...C.hide].filter(j => j !== except && C.segs[j].norm.length >= excess)
-    .sort((x, y) => C.segs[x].norm.length - C.segs[y].norm.length)[0] ?? -1;
-}
-function hideCandidate(n) {   // una parola visibile che, nascosta, porta le lettere nel limite giusto
-  return C.segs.map((s, i) => i).filter(i => C.segs[i].type === 'w' && C.segs[i].hideable && !C.hide.has(i) && i !== C.typing)
-    .filter(i => { const t = n + C.segs[i].norm.length; return t >= G.MIN_LETTERS && t <= G.MAX_LETTERS && !G.conflicts(C.segs, [...C.hide, i]).length; })
-    .sort((x, y) => (C.segs[x].norm.length < 4) - (C.segs[y].norm.length < 4) || C.segs[x].norm.length - C.segs[y].norm.length)[0] ?? -1;   // meglio non proporre "nel", "per"…
-}
 function setWords(list) {
+  const before = new Set(C.hide);
   list.forEach(([i, h]) => C.ovr.set(wordKey(i), h));
   C.genFail = false; recompute(); renderMsg(); validate();
   if (msgValid()) { saveDraft(); refreshPreview(false); }
-  showToast(list.map(([i, h]) => `«${esc(C.segs[i].text)}» ${h ? 'nascosta' : 'visibile'}`).join(' · '));
+  const on = [...C.hide].filter(i => !before.has(i)), off = [...before].filter(i => !C.hide.has(i)), w = i => `«${esc(C.segs[i].text)}»`;
+  const parts = [];
+  if (on.length) parts.push(`${on.map(w).join(', ')} ${on.length === 1 ? 'nascosta' : 'nascoste'}`);
+  if (off.length) parts.push(`${off.map(w).join(', ')} ${off.length === 1 ? 'torna visibile' : 'tornano visibili'}`);
+  if (parts.length) showToast(parts.join(' · '));
 }
-let denyAlert = null, denyT = null;
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
-/* pagina di scrittura: una riga neutra mentre si scrive, rossa solo dopo un "Fatto" non valido */
-function renderHint() {
-  const h = $('#writeHint'), n = hiddenLetters(), m = G.MIN_LETTERS - n;
-  let html = '', cls = '';
-  if (!C.msg.trim()) html = '';
-  else if (C.genFail) { cls = 'err'; html = AL_IC.err + '<span>Il messaggio è troppo ripetitivo per costruire la griglia: cambia qualche parola.</span>'; }
-  else if (m > 0) html = C.tried
-      ? (cls = 'err', AL_IC.err + `<span>${m === 1 ? 'Manca' : 'Mancano'} ancora <b>${plural(m, 'lettera', 'lettere')}</b> (minimo ${G.MIN_LETTERS}): prova ad aggiungere una parola.</span>`)
-      : `<span>Ancora ${plural(m, 'lettera', 'lettere')} da nascondere (minimo ${G.MIN_LETTERS})</span>`;
-  else if (C.autoTrim) html = `<span>Alcune parole resteranno visibili: al massimo ${G.MAX_LETTERS} lettere da trovare.</span>`;
-  h.className = 'hint writeonly' + (cls ? ' ' + cls : ''); h.innerHTML = html;
+/* pagina di scrittura: il pulsante fa da stato ("Aggiungi parole" → "Fatto") */
+function lettersNow() {   // conta anche la parola che si sta ancora scrivendo
+  let n = hiddenLetters();
+  if (C.typing >= 0) { const t = C.segs[C.typing]; if (t.hideable && t.norm.length >= 3) n += t.norm.length; }
+  return n;
 }
-/* pannello delle parole: errori e avvisi completi */
-function sheetAlert() {
-  if (denyAlert) return denyAlert;
-  const edit = { label: 'Modifica testo', act: () => sheetEdit(true) };
-  if (C.genFail) return { t: 'err', title: 'Il messaggio è troppo ripetitivo per costruire la griglia:', body: 'lascia visibile una parola o cambia il testo.', fix: edit };
+function writeState() {
+  if (C.genFail) return { ok: false, label: 'Cambia qualche parola', why: '<b>Il messaggio è troppo ripetitivo</b> per costruire la griglia: cambia qualche parola.' };
+  const m = G.MIN_LETTERS - lettersNow();
+  if (m > 0) return { ok: false, label: 'Aggiungi parole', why: `<b>${m === 1 ? 'Manca' : 'Mancano'} ancora ${plural(m, 'lettera', 'lettere')} da trovare.</b> Le parole di 1-2 lettere restano visibili: aggiungine una più lunga.` };
+  return { ok: true, label: 'Fatto' };
+}
+function renderHint() {
+  const st = writeState(), b = $('#doneBtn');
+  b.textContent = st.label; b.classList.toggle('wait', !st.ok);
+  if (st.ok && $('#topToast').classList.contains('err')) $('#topToast').classList.remove('show');   // problema risolto: via l'avviso
+}
+/* messaggio in alto che sparisce da solo (errori, avvisi, conferme) */
+function notify(html, kind = 'err', ms) {
+  const t = $('#topToast'); t.className = 'ttoast ' + kind; t.innerHTML = AL_IC[kind] + `<div>${html}</div>`;
+  void t.offsetWidth; t.classList.add('show');
+  clearTimeout(notify._t); notify._t = setTimeout(() => t.classList.remove('show'), ms || (kind === 'ok' ? 2200 : 4200));
+}
+function shake(el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); vibrate([20, 40, 20]); }
+/* pannello delle parole: lo stato sta nel pulsante in fondo */
+function sheetState() {
+  if (C.genFail) return { ok: false, label: 'Cambia qualche parola', why: '<b>Il messaggio è troppo ripetitivo</b> per costruire la griglia: cambia qualche parola con «Modifica testo».' };
   const n = hiddenLetters(), m = G.MIN_LETTERS - n;
-  if (m > 0) { const j = hideCandidate(n);
-    return { t: 'err', title: `${m === 1 ? 'Manca' : 'Mancano'} ancora ${plural(m, 'lettera', 'lettere')} (minimo ${G.MIN_LETTERS}):`, body: j >= 0 ? "nascondi un'altra parola o allunga il testo." : 'allunga il testo.',
-      fix: j >= 0 ? { label: `Nascondi «${esc(C.segs[j].text)}»`, act: () => setWords([[j, true]]) } : edit }; }
-  if (n > G.MAX_LETTERS) { const j = swapCandidate(n - G.MAX_LETTERS, -1);
-    return { t: 'err', title: `Troppe lettere: ${n} su un massimo di ${G.MAX_LETTERS}.`, body: 'Lascia visibile una parola o accorcia il testo.',
-      fix: j >= 0 ? { label: `Lascia visibile «${esc(C.segs[j].text)}»`, act: () => setWords([[j, false]]) } : edit }; }
-  const est = G.estimate(n);
-  if (est && est.level >= 2) return { t: 'warn', title: 'Sarà una bella sfida:', body: 'se vuoi renderla più facile, lascia visibile qualche parola.' };
-  return null;
+  if (m > 0) return { ok: false, label: 'Nascondi altre parole', why: `<b>${m === 1 ? 'Manca' : 'Mancano'} ancora ${plural(m, 'lettera', 'lettere')} da trovare:</b> tocca un'altra parola per nasconderla.` };
+  if (n > G.MAX_LETTERS) return { ok: false, label: 'Troppe lettere: mostrane una', why: `<b>Troppe lettere: ${n} su ${G.MAX_LETTERS}.</b> Tocca una parola lilla per lasciarla visibile.` };
+  return { ok: true, label: 'Fatto' };
 }
 function renderAlert() {
   renderHint();
-  const a = sheetAlert();
-  const b = a && sheetEditing && a.fix && a.fix.label === 'Modifica testo' ? { ...a, fix: null } : a;
-  $('#alertSheet').innerHTML = b ? alertHTML(b) : ''; alertFix = b && b.fix ? b.fix.act : null;
-  $('#wordsDone').classList.toggle('off', !msgValid());
-}
-function deny(title, body, fix) {
-  denyAlert = { t: 'err', title, body, fix }; clearTimeout(denyT);
-  denyT = setTimeout(() => { denyAlert = null; renderAlert(); }, fix ? 6000 : 3500);
-  renderAlert();
+  const st = sheetState(), b = $('#wordsDone');
+  b.textContent = st.label; b.classList.toggle('wait', !st.ok); b.classList.remove('off');
+  if (st.ok && $('#topToast').classList.contains('err')) $('#topToast').classList.remove('show');
 }
 /* all'arrivo nell'anteprima: una conferma solo se c'è qualcosa da sapere; la prima volta la pillola "Parole e difficoltà" si fa notare */
 function arrivalNotice() {
   const n = hiddenLetters(), est = G.estimate(n);
   if (C.autoTrim) showToast('Alcune parole restano visibili · tocca <b>Parole e difficoltà</b> per sceglierle', 3800);
-  else if (est && est.level >= 2) showToast('Sarà una bella sfida · puoi renderla più facile da <b>Parole e difficoltà</b>', 3800);
   if (!store.get('unveil:seenWords')) { const pl = $('#wordsPill'); pl.classList.remove('nudge'); void pl.offsetWidth; pl.classList.add('nudge'); }
 }
 /* pannello "Parole e difficoltà": "Fatto" solo con scelte valide; chiudendolo in altro modo si torna all'ultima scelta valida */
@@ -1360,15 +1395,14 @@ function closeWords(confirm, silent) {
   if (sheetEditing) sheetEdit(false);
   if (!msgValid()) {
     if (confirm) {
-      vibrate([20, 40, 20]); const el = $('#alertSheet .al');
-      if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+      shake($('#wordsDone')); const st = sheetState(); if (st.why) notify(st.why);
       return;
     }
     C.ovr = wordsSnap.ovr; C.seed = wordsSnap.seed; C.genFail = false;
     if (C.msg !== wordsSnap.msg) { C.msg = $('#msgIn').value = wordsSnap.msg; $('#charCount').textContent = `${C.msg.length}/${G.MAX_CHARS}`; }
     recompute(); renderMsg(); validate(); saveDraft();
   }
-  wordsOpen = false; denyAlert = null;
+  wordsOpen = false;
   $('#wscrim').classList.remove('show'); $('#wordsSheet').classList.remove('show');
   if (!silent) refreshPreview(false);
 }
@@ -1385,7 +1419,7 @@ var sheetEditing = false;   // var: letta anche dagli avvisi prima di questa rig
 function sheetEdit(on) {
   const sh = $('#wordsSheet'), t = $('#sheetTa');
   if (on) {
-    sheetEditing = true; denyAlert = null; sh.classList.add('editing'); $('#wordsTitle').textContent = 'Modifica il testo';
+    sheetEditing = true; sh.classList.add('editing'); $('#wordsTitle').textContent = 'Modifica il testo';
     t.value = C.msg; $('#charCount2').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
     t.focus(); const n = t.value.length; try { t.setSelectionRange(n, n); } catch (e) {}
     renderAlert();
@@ -1420,28 +1454,16 @@ $('#segDiff').addEventListener('click', e => {
   showToast(`Difficoltà: <b>${h ? 'normale' : 'difficile'}</b>`);
 });
 function showToast(html, ms = 2000) {
+  if (wordsOpen) return notify(html, 'ok', ms);
   const t = $('#pvToast'); t.innerHTML = AL_IC.ok + `<span>${html}</span>`; t.classList.add('show');
   clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove('show'), ms);
 }
-$('#chips').addEventListener('click', e => {
+$('#chips').addEventListener('click', e => {   // ogni tocco funziona: lo stato lo dice il pulsante in fondo
   const b = e.target.closest('button.chip'); if (!b) return;
-  const i = +b.dataset.i, hiding = !C.hide.has(i);
-  if (hiding) {
-    const no = (t, body, fix) => { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); vibrate(40); deny(t, body, fix); };
-    const cf = G.conflicts(C.segs, [...C.hide, i]).find(p => p.includes(i));
-    if (cf) return no(`«${C.segs[cf[0]].text}» è dentro «${C.segs[cf[1]].text}»:`, 'puoi nasconderne solo una.');
-    const nn = G.countLetters(C.segs, [...C.hide, i]);
-    if (nn > G.MAX_LETTERS) {
-      const j = swapCandidate(nn - G.MAX_LETTERS, i);
-      return no(`Troppe lettere: ${nn} su un massimo di ${G.MAX_LETTERS}.`, j >= 0 ? 'Per nasconderla, lascia visibile un\'altra parola.' : 'Accorcia il testo o lascia visibile qualche parola.',
-        j >= 0 ? { label: `Lascia visibile «${esc(C.segs[j].text)}»`, act: () => { denyAlert = null; clearTimeout(denyT); setWords([[j, false], [i, true]]); } }
-               : { label: 'Modifica testo', act: () => sheetEdit(true) });
-    }
-  }
-  C.ovr.set(wordKey(i), hiding); C.genFail = false; recompute(); renderMsg(); validate();
-  if (msgValid()) saveDraft();
-  showToast(`«${esc(C.segs[i].text)}» ${hiding ? 'nascosta' : 'visibile'}`);
-  if (msgValid()) refreshPreview(false);
+  const i = +b.dataset.i, hiding = !C.hide.has(i), list = [[i, hiding]];
+  if (hiding)   // «amo» dentro «amore»: si scambia da sola, nasconde quella toccata e mostra l'altra
+    G.conflicts(C.segs, [...C.hide, i]).filter(p => p.includes(i)).forEach(p => list.unshift([p[0] === i ? p[1] : p[0], false]));
+  setWords(list);
 });
 function renderDiff() {
   const n = hiddenLetters(), nw = C.hide.size, est = G.estimate(n);
@@ -1597,7 +1619,7 @@ function updateSendProgress() {
   $('#sendTxt').textContent = p < 1 ? `Sto caricando la tua sorpresa · ${Math.round(p * 100)}%` : 'Ci siamo quasi…';
 }
 async function makeLink() {
-  $('#sendLogo').innerHTML = ''; setLoader($('#sendLogo'), 0);
+  $('#sendLogo').innerHTML = ''; $('#sendLogo').style.display = ''; $('#sendBox').classList.remove('failed'); setLoader($('#sendLogo'), 0);
   $('#sendBox').style.display = 'flex'; $('#sendBtns').style.display = 'none'; $('#retryBtn').style.display = 'none';
   try {
     if (!C.upload || C.upload.error) startUpload();
@@ -1607,8 +1629,9 @@ async function makeLink() {
     $('#sendBox').style.display = 'none';
     $('#sendBtns').style.display = 'flex';
   } catch (e) {
-    $('#sendTxt').textContent = navigator.onLine === false ? 'Sei offline: collegati a internet e riprova.' : 'Il caricamento non è riuscito. Riprova tra un attimo.';
-    $('#retryBtn').style.display = 'flex';
+    $('#sendLogo').style.display = 'none'; $('#sendBox').classList.add('failed');
+    $('#sendTxt').innerHTML = alertHTML({ t: 'err', title: navigator.onLine === false ? 'Sei offline.' : 'Il caricamento non è riuscito.', body: navigator.onLine === false ? 'Collegati a internet e riprova: la tua sorpresa è ancora qui.' : 'Controlla la connessione e riprova: la tua sorpresa è ancora qui.' });
+    $('#retryBtn').style.display = 'block';
   }
 }
 const shareUrl = () => `${location.origin}${location.pathname}#g=${b64uEncode(JSON.stringify(buildConfig(C.upload.url)))}`;
@@ -1857,12 +1880,26 @@ function win() {
   setTimeout(() => showFinal(S.total, S.hintsUsed, true), 150 + rest.length * 45 + 450);
 }
 /* finale: la foto si stacca dalla griglia e cresce fino a riempire lo schermo */
-function targetRect() { const vw = innerWidth, vh = innerHeight, s = Math.min(vw / S.natW, vh / S.natH); const w = S.natW * s, h = S.natH * s; return { left: (vw - w) / 2, top: (vh - h) / 2, w, h }; }
+/* finale: resta il ritaglio scelto da chi crea (3:4), grande quanto possibile, con il messaggio sotto.
+   Se lo schermo è troppo basso per stare sopra il messaggio, va a tutta larghezza e il messaggio gli scorre sopra. */
+function targetRect() {
+  const vw = innerWidth, vh = innerHeight, r = cropOf(S), ar = r.w / r.h;
+  const topPad = 14, sheetH = $('#fsheet .in').offsetHeight + 24 + 18;
+  const avail = vh - topPad - sheetH;
+  let w = Math.min(vw, 560), h = w / ar, below = true;
+  if (h > avail) {
+    if (avail * ar >= Math.min(vw, 560) * .8) { h = avail; w = h * ar; }
+    else { below = false; w = Math.min(vw, vh * ar); h = w / ar; }
+  }
+  return { left: (vw - w) / 2, top: below ? topPad + Math.max(0, (avail - h) / 2) : (vh - h) / 2, w, h, below, r };
+}
 function fitZoomer(anim) {
   const z = $('#zoomer'), m = S.media, T = targetRect();
   z.classList.toggle('anim', !!anim);
-  Object.assign(z.style, { left: T.left + 'px', top: T.top + 'px', width: T.w + 'px', height: T.h + 'px', borderRadius: '0px' });
-  Object.assign(m.style, { left: '0px', top: '0px', width: T.w + 'px', height: T.h + 'px' });
+  $('#fsheet').classList.toggle('below', T.below);
+  Object.assign(z.style, { left: T.left + 'px', top: T.top + 'px', width: T.w + 'px', height: T.h + 'px', borderRadius: T.w < innerWidth - 1 ? '22px' : '0px' });
+  const k = T.w / T.r.w;   // il media si sposta come nel ritaglio: niente cambio di inquadratura
+  Object.assign(m.style, { left: -T.r.x * k + 'px', top: -T.r.y * k + 'px', width: S.natW * k + 'px', height: S.natH * k + 'px' });
   z.classList.add('clear');
 }
 function showFinal(total, hints, animate) {
@@ -1876,11 +1913,6 @@ function showFinal(total, hints, animate) {
     Object.assign(z.style, { left: F.left + 'px', top: F.top + 'px', width: F.width + 'px', height: F.height + 'px', borderRadius: '26px' });
     Object.assign(m.style, { width: S.natW * s0 + 'px', height: S.natH * s0 + 'px', left: -r.x * s0 + 'px', top: -r.y * s0 + 'px' });
   }
-  z.insertBefore(m, z.firstChild); if (S.cfg.k === 'v') m.play().catch(() => {});
-  $('#frame').style.opacity = 0; $('#screenPlay').classList.add('playing-done');
-  if (go) { void z.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => fitZoomer(true))); }
-  else fitZoomer(!!animate);
-  if (animate) vibrate([30, 60, 30]);
   $('#fFor').textContent = S.cfg.n ? `Da ${S.cfg.n}` : 'Per te';
   $('#fMsg').textContent = S.cfg.m;
   $('#fStats').textContent = `Svelata in ${fmtTime(total)} · ` + (hints ? `${hints} ${hints === 1 ? 'aiuto' : 'aiuti'}` : 'senza aiuti');
@@ -1890,6 +1922,11 @@ function showFinal(total, hints, animate) {
                : `<button class="btn-main" onclick="restart()">Tocca a te: nascondi qualcosa</button>`)
       + `<button class="btn-ghost" onclick="reply(this)">Rispondi</button>`;
   $('#audioBtn').style.display = S.cfg.k === 'v' ? 'flex' : 'none'; if (S.cfg.k === 'v') setAudioIcon();
+  z.insertBefore(m, z.firstChild); if (S.cfg.k === 'v') m.play().catch(() => {});
+  $('#frame').style.opacity = 0; $('#screenPlay').classList.add('playing-done');
+  if (go) { void z.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => fitZoomer(true))); }
+  else fitZoomer(!!animate);
+  if (animate) vibrate([30, 60, 30]);
   setTimeout(() => { $('#fsheet').classList.add('show'); $('#ftools').classList.add('show'); }, go ? 1300 : 100);
   if (animate) setTimeout(confetti, go ? 1100 : 200);
 }
