@@ -37,6 +37,13 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 ## Deciso, da fare (branch word-challenge)
 - **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa una terza pillola "Rimescola" nella pagina dell'anteprima, accanto a "Modifica" e "Parole e difficoltà". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata". Da verificare che le tre pillole stiano in una riga sui telefoni stretti.
 - **Pulsante grande nella scrittura:** a tastiera aperta resta tutto com'è (la pillola fa da stato: "Aggiungi parole" → "Fatto", più il tasto Invio). A tastiera chiusa la stessa logica passa al pulsante grande in basso, come negli altri passi: dice "Aggiungi parole", attenuato, finché il messaggio non basta, e diventa "Avanti" quando è pronto. La pillola si nasconde. Nessun messaggio d'errore. A tastiera aperta il pulsante in basso resta nascosto su tutti i telefoni (su iPhone finirebbe sotto la tastiera).
+- **Pagina dell'anteprima (deve entrare senza scorrere):**
+  - la scheda "La sua sfida" resta intera sotto la foto: è il riscontro di come apparirà a chi riceve;
+  - la foto si adatta all'altezza disponibile (non più fissa a 270×360), finché scheda, pulsanti e footer stanno tutti nello schermo;
+  - sotto la scheda, tre pulsanti a colonne uguali, larghi quanto la scheda: **Testo · Parole · Rimescola** (icona + nome su una riga). "Testo" sostituisce "Modifica", "Parole" sostituisce "Parole e difficoltà" (il pannello mantiene il titolo completo);
+  - "Prova a giocare" e "Invia" affiancati in basso: Prova a sinistra (solo bordo), Invia a destra (pieno).
+  - Misure dal mockup: iPhone 13 Safari (390×664) foto circa 206×275; iPhone SE (375×553) resta stretto, da verificare la leggibilità delle lettere.
+- **Pannello "Parole e difficoltà":** togliere la statistica "griglia 5×7" (gergo per chi crea), tenere parole nascoste e tempo stimato; il rimescolamento esce (vedi sopra). Correggere i pulsanti in fondo che su schermi bassi (390×664) vengono schiacciati in altezza.
 
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
