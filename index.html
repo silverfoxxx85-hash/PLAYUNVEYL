@@ -67,6 +67,8 @@
   .dmsg .w span.on { background: var(--accent); }
   .dmsg .w.done span { background: transparent; }
   .dgrid { position: relative; width: 180px; height: 180px; border-radius: 24px; overflow: hidden; background: var(--board); }
+  /* filo del colore del tavolo sul bordo arrotondato: niente alone dell'immagine sotto */
+  .dgrid::after, .pv::after, .frame::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--board); pointer-events: none; z-index: 6; }
   .demo.reset, .demo.reset * { transition: none !important; }
   .dgrid .pic { position: absolute; inset: 0; filter: grayscale(1) blur(5px) brightness(.85); transform: scale(1.08); transition: filter 1s ease, transform 1.2s cubic-bezier(.2,.8,.2,1); }
   .dgrid .pic.clear { filter: none; transform: none; }
@@ -76,9 +78,12 @@
   .dgrid .tint { opacity: .85; }
   .dgrid .pic.clear + .tint { opacity: 0; }
   .pic .bob { transform-box: fill-box; transform-origin: 50% 100%; }
-  .pic.snap .bob { animation: bob .7s cubic-bezier(.3,1.8,.5,1); }
-  .pic.snap .flash { animation: flash .8s ease-out; }
-  @keyframes bob { 0% { transform: scale(.9) } 100% { transform: none } }
+  .pic.snap .bob { animation: bob .75s cubic-bezier(.3,1.9,.5,1); }
+  .pic.snap .flash { animation: flash .9s ease-out; }
+  .dgrid .snapfx { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .dgrid .pic.snap ~ .snapfx { animation: flashall .55s ease-out; }
+  @keyframes bob { 0% { transform: scale(.8) } 100% { transform: none } }
+  @keyframes flashall { 0% { opacity: 0 } 12% { opacity: .85 } 100% { opacity: 0 } }
   @keyframes flash { 0% { opacity: 0 } 15% { opacity: 1 } 100% { opacity: 0 } }
   .dgrid svg.dboard { position: absolute; inset: 0; }
   .dtiles { position: absolute; inset: 0; padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -99,7 +104,7 @@
   .step { display: none; max-width: 480px; margin: 0 auto; padding: 12px 20px 26px; flex-direction: column; gap: 16px; animation: stepin .3s ease; }
   .step.active { display: flex; }
   @keyframes stepin { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
-  .step h1 { font-family: var(--display); font-weight: 700; font-size: 25px; line-height: 1.12; letter-spacing: -.02em; }
+  .step h1 { text-align: center; font-family: var(--display); font-weight: 700; font-size: 25px; line-height: 1.12; letter-spacing: -.02em; }
   .lead { color: var(--soft); font-size: 16px; line-height: 1.45; }
   .cfoot { padding: 10px 20px max(16px, env(safe-area-inset-bottom)); max-width: 480px; width: 100%; margin: 0 auto; }
   .label { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--soft); }
@@ -114,9 +119,9 @@
   /* passo 1 */
   .mediaframe { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 26px; overflow: hidden; background: var(--board); border: 2px dashed #43394d; touch-action: none; }
   .mediaframe.has { border: 0; background: #000; cursor: grab; }
-  .mediaframe .ghost { position: absolute; inset: 0; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(8, 1fr); gap: 7px; opacity: .55; z-index: 2; pointer-events: none; transition: background .3s; }
+  .mediaframe .ghost { position: absolute; inset: 0; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(8, 1fr); gap: 7px; opacity: .55; pointer-events: none; transition: background .3s; }
   .mediaframe .ghost span { border-radius: 10px; background: #251e2b; transition: opacity .3s ease, transform .3s ease; }
-  .mediaframe .ghost.reveal { opacity: 1; background: var(--board); }
+  .mediaframe .ghost.reveal { opacity: 1; background: var(--board); z-index: 2; }
   .mediaframe .ghost.reveal.go { background: transparent; }
   .mediaframe .ghost.reveal span { background: var(--tile); }
   .mediaframe .ghost.reveal span.off { opacity: 0; transform: scale(.7); }
@@ -168,6 +173,7 @@
   .liveprev .empty { color: var(--soft); font-size: 15px; font-weight: 500; line-height: 1.4; }
   .wtok { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; padding: 0 3px; border-radius: 8px; white-space: nowrap; font-size: 20px; font-weight: 600; transition: background .25s; }
   .wtok .box.on { background: var(--accent); }
+  .wtok.found { color: var(--ink); animation: pop .45s ease; }
   .shake { animation: shake .35s; }
   .fixedtxt, .typing { color: var(--soft); }
   .box { display: inline-block; width: 13px; height: 18px; border-radius: 5px; background: var(--box); transition: background .2s, transform .35s cubic-bezier(.3,1.8,.5,1); }
@@ -301,6 +307,7 @@
   .fmsg { font-size: 27px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
   .fstats { font-size: 14px; color: var(--soft); }
   .fbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .fbtns .btn-main { max-width: none; }
   .confetti { position: fixed; inset: 0; z-index: 54; pointer-events: none; overflow: hidden; }
   .confetti i { position: absolute; top: -20px; border-radius: 2px; animation: fall var(--d, 2.6s) cubic-bezier(.25,.6,.45,1) var(--w, 0s) forwards; opacity: 0; }
   @keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0) } 85% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--x, 0), 105vh) rotate(var(--r, 360deg)) } }
@@ -362,7 +369,7 @@
       <div class="mtop">
         <div class="pv" id="pv">
           <div class="tint"></div>
-          <svg class="pboard" id="pBoard"><defs><mask id="pMask" maskUnits="userSpaceOnUse" x="0" y="0"><rect id="pMaskRect" fill="#fff"/><path id="pHoles" fill="#000"/></mask></defs><rect id="pBoardRect" style="fill:var(--board)" mask="url(#pMask)"/></svg>
+          <svg class="pboard" id="pBoard"><defs><mask id="pMask" maskUnits="userSpaceOnUse" x="0" y="0"><rect id="pMaskRect" fill="#fff"/><path id="pHoles" fill="#000"/><rect id="pRim" class="rim" fill="none" stroke="#fff"/></mask></defs><rect id="pBoardRect" style="fill:var(--board)" mask="url(#pMask)"/></svg>
           <div class="ptiles" id="pTiles"></div>
           <svg class="ptrace" id="pTrace"><polyline points=""/></svg>
           <div class="phint" id="pHint">Scrivi il messaggio: le parole copriranno la tua foto</div>
@@ -387,7 +394,7 @@
         <div class="chips" id="chips"></div>
       </div>
       <div class="prevcard needmsg" id="seeCard">
-        <span class="label">Così lo vedrà</span>
+        <span class="label">Cosa vedrà chi lo riceve</span>
         <div class="liveprev" id="livePrev"></div>
       </div>
       <p class="note" id="msgNote"></p>
@@ -453,7 +460,7 @@
   <div class="stage" id="stage">
     <div class="frame" id="frame">
       <div class="tint"></div>
-      <svg class="board" id="board"><defs><mask id="boardMask" maskUnits="userSpaceOnUse" x="0" y="0"><rect id="maskRect" fill="#fff"/><path id="holes" fill="#000"/></mask></defs><rect id="boardRect" style="fill:var(--board)" mask="url(#boardMask)"/></svg>
+      <svg class="board" id="board"><defs><mask id="boardMask" maskUnits="userSpaceOnUse" x="0" y="0"><rect id="maskRect" fill="#fff"/><path id="holes" fill="#000"/><rect id="rim" class="rim" fill="none" stroke="#fff"/></mask></defs><rect id="boardRect" style="fill:var(--board)" mask="url(#boardMask)"/></svg>
       <div class="tiles" id="tiles"></div>
       <svg class="trace" id="trace"><polyline id="traceLine" points=""/></svg>
     </div>
@@ -873,6 +880,8 @@ function holesPath(open, g) {
   }
   return d;
 }
+/* anello bianco nella maschera: il bordo del tavolo resta largo quanto il margine, anche dove i fori arrivano al bordo */
+function setRim(sel, w, h, cr, pad) { const r = $(sel); [['x', 0], ['y', 0], ['width', w], ['height', h], ['rx', cr], ['stroke-width', 2 * pad]].forEach(([k, v]) => r.setAttribute(k, v)); }
 function gridGeo(w, h, cols, rows) {
   const gap = Math.max(3, Math.round(w * 0.016)), pad = gap;
   const sw = (w - 2 * pad - (cols - 1) * gap) / cols, sh = (h - 2 * pad - (rows - 1) * gap) / rows;
@@ -960,7 +969,7 @@ function mountDemo(root) {
   const uid = root.id;
   root.innerHTML = `<div class="dmsg"><span class="w" data-w="0">${'<span></span>'.repeat(5)}</span><span class="w" data-w="1">${'<span></span>'.repeat(3)}</span></div>
     <div class="dgrid"><div class="pic">${DEMO_PIC}</div><div class="tint"></div>
-      <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
+      <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/><rect width="180" height="180" rx="24" fill="none" stroke="#fff" stroke-width="12"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
       <div class="dtiles">${[...DEMO_L].map(l => `<span>${l}</span>`).join('')}</div><div class="finger"></div></div>`;
   const tiles = [...root.querySelectorAll('.dtiles span')], fg = root.querySelector('.finger'), pic = root.querySelector('.pic');
   const holes = root.querySelector('.dh'), words = [...root.querySelectorAll('.dmsg .w')];
@@ -999,7 +1008,7 @@ function mountDemo(root) {
   at(f2 + 140, drawHoles);
   at(f2 + 650, () => { tiles[6].classList.add('gone'); open.add(6); drawHoles(); });
   at(f2 + 950, () => pic.classList.add('clear'));
-  at(f2 + 1050, () => pic.classList.add('snap'));   // lo scatto: flash del telefono e piccolo rimbalzo
+   // lo scatto: flash del telefono e piccolo rimbalzo
   EV.sort((a, b) => a[0] - b[0]);
 
   let raf = 0, t0 = 0, idx = 0;
@@ -1282,15 +1291,19 @@ function renderMsg() {
     const h = C.hide.has(i);
     return `<button class="chip${h ? ' h' : ''}" data-i="${i}" aria-pressed="${h}" aria-label="${esc(s.text)}: ${h ? 'nascosta' : 'visibile'}">${esc(s.text)}</button>`;
   }).join('');
-  // scheda 2: così lo vedrà chi riceve
+  renderSeen(); renderDiff();
+}
+/* scheda 2: cosa vedrà chi lo riceve (le parole già "trovate" dal giro dell'anteprima si riempiono) */
+function renderSeen() {
   const lp = $('#livePrev');
-  if (!has) lp.innerHTML = '<span class="empty">Le parole nascoste appariranno qui come caselline da trovare.</span>';
+  if (!C.msg.trim()) lp.innerHTML = '<span class="empty">Le parole nascoste appariranno qui come caselline da trovare.</span>';
   else lp.innerHTML = C.segs.map((s, i) => {
     if (s.type !== 'w' || !s.hideable) return `<span class="fixedtxt">${esc(s.text)}</span>`;
     if (i === C.typing) return `<span class="typing">${esc(s.text)}</span>`;
-    return C.hide.has(i) ? `<span class="wtok" data-i="${i}">${boxes(s.norm.length)}</span>` : `<span class="wtok">${esc(s.text)}</span>`;
+    if (!C.hide.has(i)) return `<span class="wtok">${esc(s.text)}</span>`;
+    return PV.found.has(i) ? `<span class="wtok found" data-i="${i}">${esc(s.text)}</span>` : `<span class="wtok" data-i="${i}">${boxes(s.norm.length)}</span>`;
   }).join('');
-  applyLit(); renderDiff();
+  applyLit();
 }
 function note(t, ok) { const n = $('#msgNote'); n.textContent = t || ''; n.classList.toggle('ok', !!ok); clearTimeout(note._t); if (t) note._t = setTimeout(() => note(''), ok ? 2200 : 3800); }
 $('#chips').addEventListener('click', e => {
@@ -1331,7 +1344,7 @@ function ensureSeed() {
 /* anteprima: la griglia vera sulla foto, rigenerata quando cambiano le parole nascoste.
    Il giro gira sempre (anche con la tastiera aperta) e riparte dalla prima parola solo quando la griglia cambia. */
 let pvT = null, PGEO = null, loopT = [];
-const PV = { open: new Set(), trace: [], lit: null };   // stato attuale dell'animazione, ridisegnabile dopo un cambio di misura
+const PV = { open: new Set(), trace: [], lit: null, found: new Set() };   // stato attuale dell'animazione, ridisegnabile dopo un cambio di misura
 function refreshPreviewSoon() {
   clearTimeout(pvT);
   pvT = setTimeout(() => refreshPreview(false), $('#step2').classList.contains('writing') ? 700 : 220);
@@ -1363,6 +1376,7 @@ function drawPreviewGrid(rebuild) {
   $('#pHint').style.display = C.grid ? 'none' : 'flex';
   ['#pMaskRect', '#pBoardRect'].forEach(id => { $(id).setAttribute('width', w); $(id).setAttribute('height', h); });
   $('#pBoard').setAttribute('viewBox', `0 0 ${w} ${h}`); $('#pMask').setAttribute('width', w); $('#pMask').setAttribute('height', h);
+  setRim('#pRim', w, h, 22, Math.max(3, Math.round(w * 0.016)));
   if (!C.grid) { tl.innerHTML = ''; $('#pBoardRect').style.display = 'none'; $('#pHoles').setAttribute('d', ''); return; }
   $('#pBoardRect').style.display = '';
   const g = C.grid; PGEO = gridGeo(w, h, g.cols, g.rows);
@@ -1386,13 +1400,15 @@ function applyLit() {
 }
 function stopLoop() {
   loopT.forEach(clearTimeout); loopT = [];
-  PV.open = new Set(); PV.trace = []; PV.lit = null;
-  pvHoles(); pvTrace(); applyLit();
+  const hadFound = PV.found.size > 0;
+  PV.open = new Set(); PV.trace = []; PV.lit = null; PV.found = new Set();
+  pvHoles(); pvTrace(); if (hadFound) renderSeen(); else applyLit();
   $('#pv').classList.remove('clear');
   [...pTiles()].forEach(t => t.classList.remove('gone', 'sel'));
 }
 /* tempi: con la tastiera aperta un po' più svelti, per distrarre meno */
-const LT = { letter: 120, pause: 280, fade: 500, open: 1000, close: 450 }, LT_W = { letter: 100, pause: 200, fade: 400, open: 700, close: 350 };
+const LT = { letter: 120, pause: 280, fade: 500, open: 800 }, LT_W = { letter: 100, pause: 200, fade: 400, open: 600 };
+/* una parola: le lettere si accendono in ordine con la linea, poi spariscono e la zona resta aperta (come in partita) */
 function playWord(w, t, at) {
   const L = $('#step2').classList.contains('writing') ? LT_W : LT, line = $('#pTrace polyline'), tile = c => pTiles()[c];
   w.cells.forEach((c, k) => at(t + k * L.letter, () => {
@@ -1401,25 +1417,24 @@ function playWord(w, t, at) {
     PV.lit = { seg: w.seg, upto: k + 1 }; applyLit();
   }));
   const tf = t + w.cells.length * L.letter + L.pause;
-  at(tf, () => { line.style.opacity = 0; w.cells.forEach(c => tile(c) && tile(c).classList.add('gone')); });
-  at(tf + 150, () => { PV.open = new Set(w.cells); pvHoles(); });
-  const tc = tf + L.fade + L.open;
-  at(tc, () => {
-    PV.open = new Set(); pvHoles(); PV.trace = []; pvTrace(); PV.lit = null; applyLit();
-    w.cells.forEach(c => tile(c) && tile(c).classList.remove('gone', 'sel'));
+  at(tf, () => {
+    line.style.opacity = 0; w.cells.forEach(c => tile(c) && tile(c).classList.add('gone'));
+    PV.lit = null; PV.found.add(w.seg); renderSeen();
   });
-  return tc + L.close;
+  at(tf + 150, () => { w.cells.forEach(c => PV.open.add(c)); pvHoles(); PV.trace = []; pvTrace(); });
+  return tf + L.fade + L.open;
 }
 function restartLoop() {
   stopLoop();
   if (!C.grid || C.step !== 2 || sendOpen || reducedMotion()) return;
   const at = (ms, fn) => loopT.push(setTimeout(fn, ms));
-  let t = 450;
+  let t = 600;
   C.grid.words.forEach(w => { t = playWord(w, t, at); });
+  // le caselle rimaste cadono e la foto diventa nitida e a colori
   at(t, () => [...pTiles()].forEach(x => x.classList.add('gone')));
   at(t + 150, () => { PV.open = new Set([...pTiles()].map((_, i) => i)); pvHoles(); });
   at(t + 400, () => $('#pv').classList.add('clear'));
-  at(t + 2600, () => restartLoop());
+  at(t + 2800, () => restartLoop());   // pausa sulla foto intera, poi tutto torna insieme e si ricomincia
 }
 function reshuffle() { C.seed = randomSeed(); refreshPreview(true); saveDraft(); }
 function cropFractions() {
@@ -1588,7 +1603,7 @@ function layoutGame() {
   fr.style.setProperty('--fs', Math.round(Math.min(GEO.sw, GEO.sh) * 0.4) + 'px'); fr.style.setProperty('--tr', GEO.r + 'px');
   const b = $('#board'); b.setAttribute('viewBox', `0 0 ${w} ${h}`); b.setAttribute('width', w); b.setAttribute('height', h);
   ['#maskRect', '#boardRect'].forEach(id => { $(id).setAttribute('width', w); $(id).setAttribute('height', h); });
-  $('#boardMask').setAttribute('width', w); $('#boardMask').setAttribute('height', h);
+  $('#boardMask').setAttribute('width', w); $('#boardMask').setAttribute('height', h); setRim('#rim', w, h, 26, GEO.pad);
   $('#trace').setAttribute('viewBox', `0 0 ${w} ${h}`); $('#traceLine').setAttribute('stroke-width', Math.round(Math.min(GEO.sw, GEO.sh) * 0.32));
   const frR = fr.getBoundingClientRect(), stR = st.getBoundingClientRect();
   $('#bubble').style.top = (frR.top - stR.top - 20) + 'px'; $('#toastMsg').style.top = (frR.top - stR.top - 20) + 'px';
