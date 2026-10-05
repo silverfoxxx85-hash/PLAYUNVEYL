@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#130f16">
-<title>unveil · qualcuno ti sta nascondendo qualcosa</title>
+<title>unveil · ti ho nascosto qualcosa</title>
 <meta name="description" content="Trova le parole nascoste per scoprirlo.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Qualcuno ti sta nascondendo qualcosa">
+<meta property="og:title" content="Ti ho nascosto qualcosa">
 <meta property="og:description" content="Trova le parole nascoste per scoprirlo.">
 <meta property="og:image" content="https://silverfoxxx85-hash.github.io/PLAYUNVEYL/og.png">
 <meta property="og:image:width" content="1200">
@@ -43,6 +43,7 @@
   #screenCreate.onhome > .dd { display: block; }
   #screenCreate > :not(.dd):not(.flood):not(.scrim):not(.ssheet), #introOv > :not(.dd):not(.flood) { position: relative; z-index: 1; }
   #introOv, #finalOv { background: var(--bg); }
+  #introOv { padding-bottom: calc(28px + 5vh); }   /* stesso centro ottico della home */
   /* svelamento: il fondo lilla della foto si allarga a tutto schermo e la pagina si inverte (testi e pulsante scuri) */
   /* il lilla è la cartolina stessa che cresce: parte dai suoi bordi e dai suoi angoli e arriva ai bordi dello schermo */
   .flood { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: var(--accent);
@@ -68,6 +69,8 @@
   .lit .dgrid { background: transparent; }
   .lit .dgrid::after { box-shadow: none; }
   .lit .dgrid .dboard, .lit .dgrid .dtiles { opacity: 0; }
+  .dgrid .pic svg > rect { transition: fill-opacity .45s ease; }
+  .lit .dgrid .pic svg > rect { fill-opacity: 0; }
   .lit .dmsg .w span { background: rgba(19,15,22,.16); }
   @media (prefers-reduced-motion: reduce) { .flood { transition: none; } }
   .screen.active { display: flex; flex-direction: column; }
@@ -152,7 +155,7 @@
   .cfoot { padding: 10px 20px max(16px, env(safe-area-inset-bottom)); max-width: 480px; width: 100%; margin: 0 auto; }
   .label { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--soft); }
 
-  .home { justify-content: space-between; align-items: center; text-align: center; min-height: 100%; gap: 20px; padding-top: max(26px, env(safe-area-inset-top)); padding-bottom: max(22px, env(safe-area-inset-bottom)); }
+  .home { justify-content: center; align-items: center; text-align: center; min-height: 100%; gap: 30px; padding-top: max(26px, env(safe-area-inset-top)); padding-bottom: calc(max(22px, env(safe-area-inset-bottom)) + 5vh); }   /* blocco unico, poco sopra il centro */
   .home .htop, .home .hbot { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
   .home .hbot { gap: 18px; }
   .home .brand { display: flex; align-items: center; gap: 12px; }
@@ -292,6 +295,20 @@
   .recap .statlist { flex-direction: row; justify-content: space-between; }
   .recap .lvl { flex-direction: row; align-items: center; justify-content: space-between; }
   .wsheet .btn-ghost { background: var(--bg); }
+  .sedit { display: none; flex-direction: column; gap: 14px; }
+  .sedit textarea.msg { background: #241d2a; }
+  .wsheet.editing .sedit { display: flex; }
+  .wsheet.editing #wordsCard, .wsheet.editing #recapCard, .wsheet.editing #reshuffleBtn, .wsheet.editing #wordsDone { display: none; }
+  .editbtn { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; margin-top: 6px; padding: 7px 14px; border-radius: 999px; background: var(--bg); font-size: 13px; font-weight: 700; }
+  .editbtn svg { width: 14px; height: 14px; color: var(--accent); }
+  .diffpick { width: 100%; display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .seg { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--bg); }
+  .seg button { flex: 1; padding: 9px 0; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--soft); transition: background .2s, color .2s; }
+  .seg button.on { background: var(--accent); color: var(--onaccent); font-weight: 700; }
+  .segnote { color: var(--soft); font-size: 13px; }
+  .fixbtn { display: block; margin-top: 9px; padding: 7px 15px; border-radius: 999px; background: #ff8a9a; color: #130f16; font-weight: 700; font-size: 13px; text-align: left; }
+  .box.cue { display: inline-flex; align-items: center; justify-content: center; vertical-align: top; background: #2f2742; box-shadow: inset 0 0 0 1.2px rgba(179,166,255,.4); color: var(--accent); font-family: var(--display); font-weight: 700; font-size: 10px; }
+  .wsheet .prevcard.sm .box.cue { font-size: 9px; }
 
   /* pannello di invio */
   .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(8,6,10,.6); opacity: 0; pointer-events: none; transition: opacity .3s; }
@@ -329,6 +346,7 @@
   .msgbar .fixed { color: var(--soft); }
   .slot { display: inline-flex; gap: 3px; vertical-align: middle; white-space: nowrap; margin: 0 .12em; }
   .msgbar .box { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 22px; font-size: 12px; font-weight: 800; color: var(--accent); }
+  .msgbar .box.cue { font-size: 13px; font-weight: 800; }
   .msgbar.sm .box { width: 13px; height: 18px; font-size: 10px; }
   .msgbar .found { animation: pop .45s ease; }
   @keyframes pop { 0% { opacity: 0; transform: translateY(6px) } 100% { opacity: 1; transform: none } }
@@ -476,9 +494,9 @@
       <div class="hint writeonly" id="writeHint" role="status" aria-live="polite"></div>
       <div class="tawrap writeonly">
         <label class="sr" for="msgIn">Messaggio segreto</label>
-        <textarea id="msgIn" class="msg" maxlength="140" placeholder="Scrivi qui il tuo messaggio…" enterkeyhint="done"></textarea>
+        <textarea id="msgIn" class="msg" maxlength="100" placeholder="Scrivi qui il tuo messaggio…" enterkeyhint="done"></textarea>
       </div>
-      <div class="msgmeta writeonly"><span>Le parole di 1-2 lettere restano visibili</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount">0/140</span><button class="donebtn" onmousedown="event.preventDefault()" id="doneBtn" onclick="doneWriting()">Fatto</button></span></div>
+      <div class="msgmeta writeonly"><span>Le parole di 1-2 lettere restano visibili</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount">0/100</span><button class="donebtn" onmousedown="event.preventDefault()" id="doneBtn" onclick="doneWriting()">Fatto</button></span></div>
     </div>
   </main>
 
@@ -491,22 +509,30 @@
     <h2 id="wordsTitle">Parole e difficoltà</h2>
     <div class="prevcard sm"><span class="seetitle">La sua sfida</span><div class="liveprev" id="livePrev2"></div></div>
     <div class="alert" id="alertSheet" role="alert"></div>
+    <div class="sedit" id="sEdit">
+      <label class="sr" for="sheetTa">Modifica il messaggio</label>
+      <textarea id="sheetTa" class="msg" maxlength="100" enterkeyhint="done"></textarea>
+      <div class="msgmeta"><span>Le parole nuove si nascondono da sole</span><span style="display:flex;align-items:center;gap:10px"><span id="charCount2">0/100</span><button class="donebtn" onmousedown="event.preventDefault()" onclick="sheetEdit(false)">Fatto</button></span></div>
+    </div>
     <div class="prevcard" id="wordsCard">
       <span class="cardtitle">Tocca una parola per nasconderla o mostrarla</span>
       <div class="legend"><span><i class="h"></i>Nascoste</span><span><i></i>Visibili</span></div>
       <div class="chips" id="chips"></div>
+      <button class="editbtn" onclick="sheetEdit(true)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L5 14H2v-3z"/></svg>Modifica testo</button>
     </div>
     <div class="prevcard recap" id="recapCard">
+        <div class="diffpick"><span class="cardtitle">Difficoltà</span>
+          <div class="seg" id="segDiff" role="radiogroup" aria-label="Difficoltà"><button data-v="1" role="radio">Normale</button><button data-v="0" role="radio">Difficile</button></div>
+          <small class="segnote" id="segNote"></small></div>
         <div class="stats" id="stats">
           <div class="statlist">
             <div class="st"><span class="ic"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1.5" y="5.5" width="4.5" height="7" rx="1.4"/><rect x="6.75" y="5.5" width="4.5" height="7" rx="1.4"/><rect x="12" y="5.5" width="4.5" height="7" rx="1.4"/></svg></span><span><b id="stWords">—</b><small>nascoste</small></span></div>
             <div class="st"><span class="ic"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="14" height="14" rx="3"/><path d="M6.7 2v14M11.3 2v14M2 6.7h14M2 11.3h14"/></svg></span><span><b id="stGrid">—</b><small>griglia</small></span></div>
             <div class="st"><span class="ic"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9.5" r="6.5"/><path d="M9 6v3.7l2.4 1.6M7 1.5h4"/></svg></span><span><b id="stTime">—</b><small>stimati</small></span></div>
           </div>
-          <div class="lvl"><b id="lvlName">Difficoltà</b><span class="bars" id="lvlBars"><i></i><i></i><i></i><i></i></span></div>
         </div>
     </div>
-    <button class="btn-ghost" onclick="reshuffle()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c4 0 5 8 9 8H17M14 11.5l3 2.5-3 2.5M3 14h3.5c1.4 0 2.4-.9 3.2-2.1M12.4 7.6C13.1 6.6 14 6 15.5 6H17M14 3.5L17 6l-3 2.5"/></svg>Rimescola la griglia</button>
+    <button class="btn-ghost" id="reshuffleBtn" onclick="reshuffle()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c4 0 5 8 9 8H17M14 11.5l3 2.5-3 2.5M3 14h3.5c1.4 0 2.4-.9 3.2-2.1M12.4 7.6C13.1 6.6 14 6 15.5 6H17M14 3.5L17 6l-3 2.5"/></svg>Rimescola la griglia</button>
     <button class="btn-main" id="wordsDone" onclick="closeWords(true)">Fatto</button>
   </div></div>
 
@@ -602,8 +628,8 @@
 const UnveilGen = (() => {
   const GEN_VERSION = 2;
   const MIN_LETTERS = 10;
-  const MAX_LETTERS = 50;
-  const MAX_CHARS = 140;
+  const MAX_LETTERS = 35;
+  const MAX_CHARS = 100;
   // cornice 3:4, riempimento max ~80%
   const TIERS = [
     { cols: 4, rows: 5, max: 15 },
@@ -935,7 +961,7 @@ const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catc
 const randomSeed = () => (Math.random() * 2 ** 31) >>> 0;
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reducedMotion = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const boxes = n => `<span class="slot">${'<span class="box"></span>'.repeat(n)}</span>`;
+const boxes = (n, first) => `<span class="slot">${first ? `<span class="box cue">${first}</span>` : ''}${'<span class="box"></span>'.repeat(first ? n - 1 : n)}</span>`;
 function strHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
@@ -1082,7 +1108,7 @@ const DEMOS = [];
 function mountDemo(root) {
   const uid = root.id;
   root.innerHTML = `<div class="dz"><div class="dmsg"><span class="w" data-w="0">${'<span></span>'.repeat(5)}</span><span class="w" data-w="1">${'<span></span>'.repeat(3)}</span></div>
-    <div class="dgrid"><div class="pic"><svg viewBox="0 0 180 180"><rect width="180" height="180" fill="#b3a6ff"/>${icoSVG('i' + uid, { attrs: 'x="-23" y="-10" width="234" height="234"' })}</svg></div><i class="duo-a"></i><i class="duo-b"></i>
+    <div class="dgrid"><div class="pic"><svg viewBox="0 0 180 180"><rect width="180" height="180" fill="#b3a6ff"/>${icoSVG('i' + uid, { attrs: 'x="-23" y="-10" width="234" height="234"', once: true })}</svg></div><i class="duo-a"></i><i class="duo-b"></i>
       <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/><rect width="180" height="180" rx="24" fill="none" stroke="#fff" stroke-width="12"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
       <div class="dtiles">${[...DEMO_L].map(l => `<span>${l}</span>`).join('')}</div><div class="finger"></div></div></div>`;
   const tiles = [...root.querySelectorAll('.dtiles span')], fg = root.querySelector('.finger'), pic = root.querySelector('.pic'), grid = root.querySelector('.dgrid');
@@ -1233,14 +1259,15 @@ buildDoodles();
 let ddT = null, ddW = innerWidth;
 window.addEventListener('resize', () => { if (Math.abs(innerWidth - ddW) < 40) return; ddW = innerWidth; clearTimeout(ddT); ddT = setTimeout(buildDoodles, 300); });   // la tastiera che si apre non ricostruisce
 /* la demo si adatta allo spazio libero: più grande sui telefoni normali, mai fuori schermo su quelli piccoli */
+const DEMO_MAX = 1.2;   // griglia della demo al massimo 216 px, uguale per chi crea e per chi riceve
 function fitDemo(demo, host, avail) {
   if (!host.getClientRects().length || !host.clientHeight) return;
   demo.style.setProperty('--s', 1);
   const cs = getComputedStyle(host), gap = parseFloat(cs.rowGap) || 0;
   let used = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), n = 0;
-  [...host.children].forEach(c => { if (c === demo || getComputedStyle(c).display === 'none') return; const m = getComputedStyle(c); used += c.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); n++; });
+  [...host.children].forEach(c => { const m = getComputedStyle(c); if (c === demo || m.display === 'none' || m.position === 'absolute' || m.position === 'fixed') return; used += c.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); n++; });
   used += gap * n;
-  const sz = Math.max(.82, Math.min(1.55, (avail - used - 8) / 236, (host.clientWidth - 48) / 206));
+  const sz = Math.max(.82, Math.min(DEMO_MAX, (avail - used - 8) / 236, (host.clientWidth - 48) / 206));
   demo.style.setProperty('--s', sz.toFixed(3));
 }
 function layoutDemos() {
@@ -1253,7 +1280,7 @@ window.addEventListener('resize', layoutDemos);
    CREAZIONE
    ============================================================ */
 const C = { step: 0, kind: null, file: null, blob: null, url: null, natW: 0, natH: 0, cx: .5, cy: .5, z: 1, mediaEl: null, pvMedia: null,
-            msg: '', segs: [], hide: new Set(), ovr: new Map(), typing: -1, name: '', seed: randomSeed(), upload: null, grid: null, gridKey: '' };
+            msg: '', segs: [], hide: new Set(), ovr: new Map(), typing: -1, hints: true, name: '', seed: randomSeed(), upload: null, grid: null, gridKey: '' };
 const STEPS = 2, SESS_KEY = 'unveil:sess', ME_KEY = 'unveil:me';
 C.name = store.get(ME_KEY) || '';
 $('#pickArt').innerHTML = icoSVG('pk', { colors: ['#b3a6ff', '#e9e4ff'], once: true });
@@ -1310,7 +1337,7 @@ function saveDraft() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
     if (!C.mediaEl || !C.upload || !C.upload.url) return;   // senza file già caricato non c'è niente da recuperare
-    sess.set({ step: Math.max(1, Math.min(2, C.step)), kind: C.kind, cx: C.cx, cy: C.cy, z: C.z, msg: C.msg, ovr: [...C.ovr],
+    sess.set({ step: Math.max(1, Math.min(2, C.step)), kind: C.kind, cx: C.cx, cy: C.cy, z: C.z, msg: C.msg, ovr: [...C.ovr], hints: C.hints,
       seed: C.seed, url: C.upload.url, t: Date.now() });
   }, 300);
 }
@@ -1319,7 +1346,7 @@ async function clearDraft() {
   store.del('unveil:draft'); idb.del('draft');   // pulizia delle bozze delle versioni precedenti
 }
 async function restoreSession(d) {
-  Object.assign(C, { cx: d.cx ?? .5, cy: d.cy ?? .5, z: d.z ?? 1, msg: d.msg || '', ovr: new Map(d.ovr || []), seed: d.seed || randomSeed() });
+  Object.assign(C, { cx: d.cx ?? .5, cy: d.cy ?? .5, z: d.z ?? 1, msg: d.msg || '', ovr: new Map(d.ovr || []), seed: d.seed || randomSeed(), hints: d.hints !== false });
   $('#msgIn').value = C.msg;
   goStep(1);
   const ok = await loadMediaUrl(d.kind, d.url);
@@ -1329,7 +1356,7 @@ async function restoreSession(d) {
 }
 async function newDraft() {
   await clearDraft();
-  Object.assign(C, { kind: null, file: null, blob: null, msg: '', ovr: new Map(), hide: new Set(), seed: randomSeed(), upload: null, grid: null, gridKey: '', genFail: false });
+  Object.assign(C, { kind: null, file: null, blob: null, msg: '', ovr: new Map(), hide: new Set(), hints: true, seed: randomSeed(), upload: null, grid: null, gridKey: '', genFail: false });
   if (C.mediaEl) { C.mediaEl.remove(); C.mediaEl = null; }
   if (C.pvMedia) { C.pvMedia.remove(); C.pvMedia = null; }
   $('#cropFrame').classList.remove('has'); $('#cropRow').style.display = 'none'; $('#camRow').style.display = 'grid';
@@ -1517,7 +1544,7 @@ function onMsg(silent) {
 function recompute() {
   C.segs = G.tokenize(C.msg);
   const last = C.segs.length - 1;
-  C.typing = C.live && document.activeElement === $('#msgIn') && last >= 0 && C.segs[last].type === 'w' ? last : -1;
+  C.typing = C.live && (document.activeElement === $('#msgIn') || document.activeElement === $('#sheetTa')) && last >= 0 && C.segs[last].type === 'w' ? last : -1;
   const words = C.segs.map((s, i) => i).filter(i => C.segs[i].type === 'w' && C.segs[i].hideable && i !== C.typing);
   const def = new Set(G.defaultHidden(C.segs));
   const ov = i => C.ovr.get(wordKey(i));
@@ -1550,7 +1577,7 @@ function renderSeen() {
   const html = !C.msg.trim() ? '<span class="empty">Le parole nascoste appariranno qui come caselline da trovare.</span>' : C.segs.map((s, i) => {
     if (s.type !== 'w' || !s.hideable) return `<span class="fixedtxt">${esc(s.text)}</span>`;
     if (i === C.typing) return `<span class="typing">${esc(s.text)}</span>`;
-    return C.hide.has(i) ? `<span class="wtok">${boxes(s.norm.length)}</span>` : `<span class="wtok">${esc(s.text)}</span>`;
+    return C.hide.has(i) ? `<span class="wtok">${boxes(s.norm.length, C.hints && s.norm[0])}</span>` : `<span class="wtok">${esc(s.text)}</span>`;
   }).join('');
   $('#livePrev').innerHTML = html; $('#livePrev2').innerHTML = html;
 }
@@ -1560,7 +1587,25 @@ const AL_IC = {
   warn: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#ffd36b"/><circle cx="10" cy="5.8" r="1.3" fill="#130f16"/><path d="M10 9v5.5" stroke="#130f16" stroke-width="2.2" stroke-linecap="round"/></svg>',
   ok: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#b3a6ff"/><path d="M6 10.3l2.7 2.7L14 7.6" fill="none" stroke="#130f16" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
-const alertHTML = (a, compact) => `<div class="al ${a.t}${compact ? ' compact' : ''}">${AL_IC[a.t]}<div>${compact && a.short ? a.short : `<b>${a.title}</b>${a.body ? ' ' + a.body : ''}`}</div></div>`;
+const alertHTML = (a, compact) => `<div class="al ${a.t}${compact ? ' compact' : ''}">${AL_IC[a.t]}<div>${compact && a.short ? a.short : `<b>${a.title}</b>${a.body ? ' ' + a.body : ''}`}${a.fix && !compact ? `<button class="fixbtn" data-fix>${a.fix.label}</button>` : ''}</div></div>`;
+let alertFix = null;
+$('#alertSheet').addEventListener('click', e => { if (e.target.closest('[data-fix]') && alertFix) alertFix(); });
+/* soluzioni a un tocco: quale parola mostrare (la più corta che basta) o quale nascondere */
+function swapCandidate(excess, except) {
+  return [...C.hide].filter(j => j !== except && C.segs[j].norm.length >= excess)
+    .sort((x, y) => C.segs[x].norm.length - C.segs[y].norm.length)[0] ?? -1;
+}
+function hideCandidate(n) {   // una parola visibile che, nascosta, porta le lettere nel limite giusto
+  return C.segs.map((s, i) => i).filter(i => C.segs[i].type === 'w' && C.segs[i].hideable && !C.hide.has(i) && i !== C.typing)
+    .filter(i => { const t = n + C.segs[i].norm.length; return t >= G.MIN_LETTERS && t <= G.MAX_LETTERS && !G.conflicts(C.segs, [...C.hide, i]).length; })
+    .sort((x, y) => (C.segs[x].norm.length < 4) - (C.segs[y].norm.length < 4) || C.segs[x].norm.length - C.segs[y].norm.length)[0] ?? -1;   // meglio non proporre "nel", "per"…
+}
+function setWords(list) {
+  list.forEach(([i, h]) => C.ovr.set(wordKey(i), h));
+  C.genFail = false; recompute(); renderMsg(); validate();
+  if (msgValid()) { saveDraft(); refreshPreview(false); }
+  showToast(list.map(([i, h]) => `«${esc(C.segs[i].text)}» ${h ? 'nascosta' : 'visibile'}`).join(' · '));
+}
 let denyAlert = null, denyT = null;
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 /* pagina di scrittura: una riga neutra mentre si scrive, rossa solo dopo un "Fatto" non valido */
@@ -1578,10 +1623,15 @@ function renderHint() {
 /* pannello delle parole: errori e avvisi completi */
 function sheetAlert() {
   if (denyAlert) return denyAlert;
-  if (C.genFail) return { t: 'err', title: 'Il messaggio è troppo ripetitivo per costruire la griglia:', body: 'lascia visibile una parola o cambia il testo.' };
+  const edit = { label: 'Modifica testo', act: () => sheetEdit(true) };
+  if (C.genFail) return { t: 'err', title: 'Il messaggio è troppo ripetitivo per costruire la griglia:', body: 'lascia visibile una parola o cambia il testo.', fix: edit };
   const n = hiddenLetters(), m = G.MIN_LETTERS - n;
-  if (m > 0) return { t: 'err', title: `${m === 1 ? 'Manca' : 'Mancano'} ancora ${plural(m, 'lettera', 'lettere')} (minimo ${G.MIN_LETTERS}):`, body: "nascondi un'altra parola." };
-  if (n > G.MAX_LETTERS) return { t: 'err', title: `Troppe lettere: ${n} su un massimo di ${G.MAX_LETTERS}.`, body: 'Lascia visibile una parola.' };
+  if (m > 0) { const j = hideCandidate(n);
+    return { t: 'err', title: `${m === 1 ? 'Manca' : 'Mancano'} ancora ${plural(m, 'lettera', 'lettere')} (minimo ${G.MIN_LETTERS}):`, body: j >= 0 ? "nascondi un'altra parola o allunga il testo." : 'allunga il testo.',
+      fix: j >= 0 ? { label: `Nascondi «${esc(C.segs[j].text)}»`, act: () => setWords([[j, true]]) } : edit }; }
+  if (n > G.MAX_LETTERS) { const j = swapCandidate(n - G.MAX_LETTERS, -1);
+    return { t: 'err', title: `Troppe lettere: ${n} su un massimo di ${G.MAX_LETTERS}.`, body: 'Lascia visibile una parola o accorcia il testo.',
+      fix: j >= 0 ? { label: `Lascia visibile «${esc(C.segs[j].text)}»`, act: () => setWords([[j, false]]) } : edit }; }
   const est = G.estimate(n);
   if (est && est.level >= 2) return { t: 'warn', title: 'Sarà una bella sfida:', body: 'se vuoi renderla più facile, lascia visibile qualche parola.' };
   return null;
@@ -1589,12 +1639,13 @@ function sheetAlert() {
 function renderAlert() {
   renderHint();
   const a = sheetAlert();
-  $('#alertSheet').innerHTML = a ? alertHTML(a) : '';
+  const b = a && sheetEditing && a.fix && a.fix.label === 'Modifica testo' ? { ...a, fix: null } : a;
+  $('#alertSheet').innerHTML = b ? alertHTML(b) : ''; alertFix = b && b.fix ? b.fix.act : null;
   $('#wordsDone').classList.toggle('off', !msgValid());
 }
-function deny(title, body) {
-  denyAlert = { t: 'err', title, body }; clearTimeout(denyT);
-  denyT = setTimeout(() => { denyAlert = null; renderAlert(); }, 3500);
+function deny(title, body, fix) {
+  denyAlert = { t: 'err', title, body, fix }; clearTimeout(denyT);
+  denyT = setTimeout(() => { denyAlert = null; renderAlert(); }, fix ? 6000 : 3500);
   renderAlert();
 }
 /* all'arrivo nell'anteprima: una conferma solo se c'è qualcosa da sapere; la prima volta la pillola "Parole e difficoltà" si fa notare */
@@ -1608,19 +1659,22 @@ function arrivalNotice() {
 let wordsOpen = false, wordsSnap = null;
 function openWords() {
   store.set('unveil:seenWords', 1);
-  wordsOpen = true; wordsSnap = { ovr: new Map(C.ovr), seed: C.seed };
+  wordsOpen = true; wordsSnap = { ovr: new Map(C.ovr), seed: C.seed, msg: C.msg };
   renderMsg(); renderAlert();
   $('#wscrim').classList.add('show'); $('#wordsSheet').classList.add('show');
 }
 function closeWords(confirm, silent) {
   if (!wordsOpen) return;
+  if (sheetEditing) sheetEdit(false);
   if (!msgValid()) {
     if (confirm) {
       vibrate([20, 40, 20]); const el = $('#alertSheet .al');
       if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
       return;
     }
-    C.ovr = wordsSnap.ovr; C.seed = wordsSnap.seed; C.genFail = false; recompute(); renderMsg(); validate(); saveDraft();
+    C.ovr = wordsSnap.ovr; C.seed = wordsSnap.seed; C.genFail = false;
+    if (C.msg !== wordsSnap.msg) { C.msg = $('#msgIn').value = wordsSnap.msg; $('#charCount').textContent = `${C.msg.length}/${G.MAX_CHARS}`; }
+    recompute(); renderMsg(); validate(); saveDraft();
   }
   wordsOpen = false; denyAlert = null;
   $('#wscrim').classList.remove('show'); $('#wordsSheet').classList.remove('show');
@@ -1634,6 +1688,45 @@ function closeWords(confirm, silent) {
   const end = e => { if (y0 === null) return; const d = e.clientY - y0; y0 = null; sh.style.transform = ''; sh.style.transition = ''; if (d > 80) closeWords(false); };
   [g, $('#wordsTitle')].forEach(el => { el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end); });
 })();
+/* modifica del testo dentro il pannello, senza cambiare schermata */
+var sheetEditing = false;   // var: letta anche dagli avvisi prima di questa riga
+function sheetEdit(on) {
+  const sh = $('#wordsSheet'), t = $('#sheetTa');
+  if (on) {
+    sheetEditing = true; denyAlert = null; sh.classList.add('editing'); $('#wordsTitle').textContent = 'Modifica il testo';
+    t.value = C.msg; $('#charCount2').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
+    t.focus(); const n = t.value.length; try { t.setSelectionRange(n, n); } catch (e) {}
+    renderAlert();
+  } else {
+    if (!sheetEditing) return;
+    sheetEditing = false; C.live = false; t.blur(); sh.classList.remove('editing'); $('#wordsTitle').textContent = 'Parole e difficoltà';
+    C.genFail = false; recompute(); if (msgValid()) ensureSeed(); renderMsg(); validate();
+    if (msgValid()) { saveDraft(); refreshPreview(false); }
+  }
+}
+$('#sheetTa').addEventListener('input', e => {
+  $('#msgIn').value = e.target.value; C.live = true; onMsg();
+  $('#charCount2').textContent = `${C.msg.length}/${G.MAX_CHARS}`;
+});
+if (window.visualViewport) {
+  const lift = () => { const sh = $('#wordsSheet'); sh.style.bottom = sheetEditing ? Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop) + 'px' : ''; };
+  visualViewport.addEventListener('resize', lift); visualViewport.addEventListener('scroll', lift);
+  $('#sheetTa').addEventListener('blur', () => setTimeout(lift, 50));
+}
+$('#sheetTa').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sheetEdit(false); } });
+/* difficoltà: normale (prima lettera visibile) o difficile */
+const SEG_NOTE = { 1: 'Vedrà la prima lettera di ogni parola nascosta.', 0: 'Nessun indizio: solo le caselle vuote.' };
+function renderSeg() {
+  const v = C.hints ? 1 : 0;
+  [...$('#segDiff').children].forEach(b => { const on = +b.dataset.v === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  $('#segNote').textContent = SEG_NOTE[v];
+}
+$('#segDiff').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const h = b.dataset.v === '1'; if (h === C.hints) return;
+  C.hints = h; renderSeen(); renderSeg(); saveDraft();
+  showToast(`Difficoltà: <b>${h ? 'normale' : 'difficile'}</b>`);
+});
 function showToast(html, ms = 2000) {
   const t = $('#pvToast'); t.innerHTML = AL_IC.ok + `<span>${html}</span>`; t.classList.add('show');
   clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove('show'), ms);
@@ -1642,23 +1735,26 @@ $('#chips').addEventListener('click', e => {
   const b = e.target.closest('button.chip'); if (!b) return;
   const i = +b.dataset.i, hiding = !C.hide.has(i);
   if (hiding) {
-    const no = (t, body) => { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); vibrate(40); deny(t, body); };
-    const nn = G.countLetters(C.segs, [...C.hide, i]);
-    if (nn > G.MAX_LETTERS) return no(`Troppe lettere: ${nn} su un massimo di ${G.MAX_LETTERS}.`, "Lascia visibile un'altra parola.");
+    const no = (t, body, fix) => { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); vibrate(40); deny(t, body, fix); };
     const cf = G.conflicts(C.segs, [...C.hide, i]).find(p => p.includes(i));
     if (cf) return no(`«${C.segs[cf[0]].text}» è dentro «${C.segs[cf[1]].text}»:`, 'puoi nasconderne solo una.');
+    const nn = G.countLetters(C.segs, [...C.hide, i]);
+    if (nn > G.MAX_LETTERS) {
+      const j = swapCandidate(nn - G.MAX_LETTERS, i);
+      return no(`Troppe lettere: ${nn} su un massimo di ${G.MAX_LETTERS}.`, j >= 0 ? 'Per nasconderla, lascia visibile un\'altra parola.' : 'Accorcia il testo o lascia visibile qualche parola.',
+        j >= 0 ? { label: `Lascia visibile «${esc(C.segs[j].text)}»`, act: () => { denyAlert = null; clearTimeout(denyT); setWords([[j, false], [i, true]]); } }
+               : { label: 'Modifica testo', act: () => sheetEdit(true) });
+    }
   }
   C.ovr.set(wordKey(i), hiding); C.genFail = false; recompute(); renderMsg(); validate();
   if (msgValid()) saveDraft();
-  const n = hiddenLetters(), est = n >= G.MIN_LETTERS ? G.estimate(n) : null;
-  showToast(`«${esc(C.segs[i].text)}» ${hiding ? 'nascosta' : 'visibile'}${est && n <= G.MAX_LETTERS ? ` · <b>difficoltà: ${est.name.toLowerCase()}</b>` : ''}`);
+  showToast(`«${esc(C.segs[i].text)}» ${hiding ? 'nascosta' : 'visibile'}`);
   if (msgValid()) refreshPreview(false);
 });
 function renderDiff() {
   const n = hiddenLetters(), nw = C.hide.size, est = G.estimate(n);
-  const bars = [...$('#lvlBars').children];
+  renderSeg();
   const set = (name, lvl, tip, w, g, t) => {
-    $('#lvlName').textContent = name; bars.forEach((b, k) => b.classList.toggle('on', k < lvl));
     $('#stWords').textContent = w; $('#stGrid').textContent = g; $('#stTime').textContent = t;
   };
   const words = `${nw} ${nw === 1 ? 'parola' : 'parole'}`;
@@ -1775,6 +1871,7 @@ function cropFractions() {
 function buildConfig(url) {
   const cfg = { v: G.GEN_VERSION, m: C.msg, h: [...C.hide].sort((a, b) => a - b), s: C.seed, d: GAME_DIFF, k: C.kind, u: url, c: cropFractions() };
   if (C.name) cfg.n = C.name;
+  cfg.f = C.hints ? 1 : 0;   // 1 = normale (prima lettera visibile) · 0 = difficile
   return cfg;
 }
 function tryLocal() { if (!ensureSeed()) return; stopLoop(); C.view = 'preview'; startGame(buildConfig(C.url), { local: true }); }
@@ -1826,7 +1923,7 @@ const shareUrl = () => `${location.origin}${location.pathname}#g=${b64uEncode(JS
 const SENT_TXT = 'Per vedere la sorpresa dovrà trovare tutte le parole.';
 async function shareLink() {
   const url = shareUrl();
-  const text = 'Ti sto nascondendo qualcosa: trova le parole per scoprirlo!';
+  const text = C.kind === 'v' ? 'Ho nascosto un video per te tra le parole. Te lo devi guadagnare.' : 'Ho nascosto una foto per te tra le parole. Te la devi guadagnare.';
   if (navigator.share) {
     try { await navigator.share({ title: 'unveil', text, url }); markSent('Inviata!', SENT_TXT); } catch (e) {}
   } else { await copyText(`${text} ${url}`); markSent('Link copiato!', 'Incollalo in chat a chi vuoi. ' + SENT_TXT); }
@@ -1869,7 +1966,7 @@ function startGame(cfg, opts = {}) {
   const nHidden = grid.words.reduce((a, w) => a + w.norm.length, 0);
   const bar = $('#msgBar'); bar.classList.toggle('sm', nHidden > 30);
   bar.innerHTML = segs.map((s, i) => hidden.has(i)
-    ? `<span class="slot" data-seg="${i}">${'<span class="box"></span>'.repeat(s.norm.length)}</span>`
+    ? `<span class="slot" data-seg="${i}">${[...s.norm].map((c, k) => k === 0 && cfg.f !== 0 ? `<span class="box cue">${c}</span>` : '<span class="box"></span>').join('')}</span>`
     : `<span class="fixed">${esc(s.text)}</span>`).join('');
   $('#progDots').innerHTML = grid.words.map(() => '<i></i>').join('');
 
@@ -1952,7 +2049,7 @@ function beginPlay() {
   if (!S || !S.ready) return;
   SFX.unlock(); introDemo.stop(); $('#introOv').classList.remove('active');
   if (S.cfg.k === 'v') S.media.play().catch(() => {});
-  S.startT = performance.now(); S.hintReadyAt = S.hintEvery;
+  S.startT = performance.now(); S.hintReadyAt = 0;   // il primo aiuto è disponibile subito
   S.timerId = setInterval(tick, 250); tick();
   S.saveId = setInterval(saveProgress, 5000);
 }
