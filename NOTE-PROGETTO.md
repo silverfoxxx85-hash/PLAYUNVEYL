@@ -38,28 +38,19 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 - **Vittoria:** resta il ritaglio 3:4 scelto da chi crea, il più grande possibile, con il messaggio sotto. Sugli schermi bassi o su desktop il messaggio scorre sopra l'immagine.
 - **Anteprima del link:** "Ti ho nascosto qualcosa", con l'immagine `og.png` che ha le caselle e l'icona.
 
-## Deciso, da fare (branch word-challenge)
-- **Rimescola la griglia:** esce dal pannello "Parole e difficoltà" e diventa il terzo pulsante "Rimescola" nella pagina dell'anteprima, accanto a "Testo" e "Parole". Così l'effetto si vede subito sulla griglia. Aggiungere un piccolo movimento delle lettere al rimescolamento e togliere l'avviso "Griglia rimescolata".
-- **Pulsante grande nella scrittura:** a tastiera aperta resta tutto com'è (la pillola fa da stato: "Aggiungi parole" → "Fatto", più il tasto Invio). A tastiera chiusa la stessa logica passa al pulsante grande in basso, come negli altri passi: dice "Aggiungi parole", attenuato, finché il messaggio non basta, e diventa "Avanti" quando è pronto. La pillola si nasconde. Nessun messaggio d'errore. A tastiera aperta il pulsante in basso resta nascosto su tutti i telefoni (su iPhone finirebbe sotto la tastiera).
-- **Pagina dell'anteprima (deve entrare senza scorrere):**
-  - la scheda "La sua sfida" resta intera sotto la foto: è il riscontro di come apparirà a chi riceve;
-  - la foto si adatta all'altezza disponibile (non più fissa a 270×360), finché scheda, pulsanti e footer stanno tutti nello schermo;
-  - sotto la scheda, tre pulsanti a colonne uguali, larghi quanto la scheda: **Testo · Parole · Rimescola** (icona + nome su una riga). "Testo" sostituisce "Modifica", "Parole" sostituisce "Parole e difficoltà";
-  - "Prova a giocare" e "Invia" affiancati in basso: Prova a sinistra (solo bordo), Invia a destra (pieno).
-  - Misure dal mockup: iPhone 13 Safari (390×664) foto circa 206×275; iPhone SE (375×553) resta stretto, da verificare la leggibilità delle lettere.
-- **Pannello "Parole e difficoltà" (deve entrare senza scorrere su 390×664):**
-  - via il titolo "Parole e difficoltà" (resta solo per i lettori di schermo: si apre dal pulsante "Parole" e ha la maniglia);
-  - via la legenda "Nascoste / Visibili" e il riquadro statistiche ("griglia 5×7" e "N parole nascoste" tolti: si vedono già);
-  - il tempo stimato va sotto la difficoltà: "Circa 2 min per svelarla", si aggiorna cambiando difficoltà;
-  - "Modifica testo" diventa solo icona (matita che scrive su una riga, 40 px, aria-label "Modifica testo"), in alto a destra accanto alla frase;
-  - la frase va a capo dopo "parola": "Tocca una parola / per nasconderla o mostrarla";
-  - via "Rimescola la griglia" (va nell'anteprima);
-  - "Fatto" sempre visibile in fondo (sticky); correggere i pulsanti schiacciati: il contenuto del pannello deve scorrere, non comprimersi (flex-shrink:0 sugli elementi).
-- **Altri problemi di spazio (controllo su 375×553, 360×640, 390×664, 390×844):**
-  - **Home su iPhone SE (375×553):** il pulsante "Nascondi qualcosa" finisce sotto il bordo (90 px da scorrere). Soluzione decisa: la demo (griglietta) si rimpicciolisce in base all'altezza disponibile, finché tutto entra.
-  - **Intro di chi riceve su iPhone SE:** il pulsante "Inizia" viene schiacciato a 19 px di altezza (normale 58). Stessa causa del pannello: gli elementi si comprimono invece di adattarsi. Soluzione decisa: anche qui la demo si rimpicciolisce in base all'altezza; i pulsanti non si comprimono mai.
-  - Tutto il resto entra: scelta foto (7 px, trascurabile), invio, partita (anche con messaggio di 50 caratteri e griglia grande), vittoria.
-- **Timer della partita:** via il cronometro dalla barra in alto durante il gioco. Il tempo si misura comunque e si vede solo alla fine ("Svelata in 0:42"). Al suo posto, al centro della barra, sale l'avanzamento ("0 di 4" con i pallini), che oggi sta sotto il messaggio: la griglia guadagna una riga di spazio.
+## Fatto il 6 ottobre 2026 (branch word-challenge)
+Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553 (iPhone SE Safari), 360×640, 390×664 (iPhone 13 Safari) e 390×844, con un messaggio di 50 caratteri.
+- **Scrittura:** a tastiera aperta la pillola accanto al campo fa da stato ("Aggiungi parole" → "Fatto") e il pulsante in basso è nascosto (su iPhone finirebbe sotto la tastiera). A tastiera chiusa la pillola sparisce e il pulsante grande in basso fa da stato: "Aggiungi parole" (scuro, riapre la tastiera) → "Avanti". Nessun messaggio d'errore. Funzione `syncFoot()`.
+- **Anteprima:** la scheda "La sua sfida" resta intera; la foto si adatta all'altezza (`layoutPreview`, minimo 160 px di altezza), così scheda, pulsanti e footer entrano senza scorrere. Su schermi bassi (max-height 600 px) spazi ridotti e frase "Trovando le parole…" nascosta.
+  - Tre pulsanti a colonne uguali sotto la scheda: **Testo · Parole · Rimescola**.
+  - "Prova a giocare" e "Invia" affiancati in basso (`.cfoot.row`).
+  - Rimescola: le lettere nuove arrivano con un piccolo rimbalzo (`.ptiles.shuf`), niente più avviso "Griglia rimescolata".
+  - Misure con messaggio lungo: foto 121×161 (SE), 173×231 (iPhone 13 Safari), 270×360 (schermi alti).
+- **Pannello "Parole e difficoltà":** senza titolo (resta per i lettori di schermo e torna come "Modifica il testo" in modifica), senza legenda e senza statistiche. Frase su due righe "Tocca una parola / per nasconderla o mostrarla" con la matita (solo icona, matita su una riga) in alto a destra. Sotto la difficoltà "Circa N minuti per svelarla" (dipende dalle lettere nascoste, non dalla difficoltà). "Fatto" sempre visibile in fondo; niente più pulsanti schiacciati (`flex-shrink: 0`).
+- **Home e intro di chi riceve:** la demo si rimpicciolisce fino a 0,45 per far entrare tutto; i pulsanti non si comprimono più (prima "Inizia" su SE era alto 19 px).
+- **Partita:** niente cronometro durante il gioco (il tempo si misura e compare solo alla fine); l'avanzamento ("0 di 6" con i pallini) sta al centro della barra in alto. Con più di 7 parole restano solo i numeri.
+- **Vittoria:** "Rispondi" diventa "Fai sapere com'è andata" (forma senza genere).
+- **Statistiche:** rimandate. Ipotesi pronta: GoatCounter (gratuito, senza cookie), 8 eventi su creazione, gioco e passaparola; serve che Fara crei l'account.
 
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
