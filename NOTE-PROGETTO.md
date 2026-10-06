@@ -47,6 +47,7 @@ Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553
   - Rimescola: le lettere nuove arrivano con un piccolo rimbalzo (`.ptiles.shuf`), niente più avviso "Griglia rimescolata".
   - Misure con messaggio lungo: foto 121×161 (SE), 173×231 (iPhone 13 Safari), 270×360 (schermi alti).
 - **Pannello "Parole e difficoltà":** senza titolo (resta per i lettori di schermo e torna come "Modifica il testo" in modifica), senza legenda e senza statistiche. Frase su due righe "Tocca una parola / per nasconderla o mostrarla" con la matita (solo icona, matita su una riga) in alto a destra. Sotto la difficoltà "Circa N minuti per svelarla" (dipende dalle lettere nascoste, non dalla difficoltà). "Fatto" sempre visibile in fondo; niente più pulsanti schiacciati (`flex-shrink: 0`).
+- **Angoli della cornice:** il raggio segue la griglia (`cornerR`: al massimo 3,4 × margine + raggio delle caselle; 22 px anteprima, 26 px partita come tetto), così sulle griglie piccole le caselle d'angolo non vengono tagliate.
 - **Home e intro di chi riceve:** la demo si rimpicciolisce fino a 0,45 per far entrare tutto; i pulsanti non si comprimono più (prima "Inizia" su SE era alto 19 px).
 - **Partita:** niente cronometro durante il gioco (il tempo si misura e compare solo alla fine); l'avanzamento ("0 di 6" con i pallini) sta al centro della barra in alto. Con più di 7 parole restano solo i numeri.
 - **Vittoria:** "Rispondi" diventa "Fai sapere com'è andata" (forma senza genere).
