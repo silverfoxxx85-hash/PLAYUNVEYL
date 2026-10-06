@@ -178,7 +178,7 @@
   .dgrid svg.dboard { position: absolute; inset: 0; }
   .dtiles { position: absolute; inset: 0; padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .dtiles span { border-radius: 13px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 21px; transition: background .15s, color .15s, opacity .35s, transform .45s cubic-bezier(.3,1.8,.5,1); }
-  .dtiles span.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.06); }
+  .dtiles span.sel { background: var(--accent); color: var(--onaccent); }   /* niente ingrandimento: accanto alla parte già scoperta la casella si fonderebbe col lilla */
   .dtiles span.gone { opacity: 0; transform: scale(.6); }
   .finger { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: rgba(246,238,244,.35); border: 2px solid rgba(246,238,244,.85); transform: translate(-50%, -50%); transition: left .13s ease-out, top .13s ease-out, opacity .2s, scale .15s; pointer-events: none; opacity: 0; }
   .finger.tap { scale: .75; }
@@ -1173,26 +1173,18 @@ const GUIDE_CREA = [
     run: c => { c.at(200, () => c.pic.classList.remove('clear')); return c.cover([4, 0, 8, 2, 6, 1, 7, 3, 5], 650) + 1700; } },
   { h: 'Chi la riceve<br>dovrà trovarle.', p: 'Ogni parola scoperta rivela parte dell\'immagine.',
     init: c => c.state({ covered: true }),
-    run: c => { let t = c.drag(DEMO_W1, 350, 140) + 120; c.found(DEMO_W1, t); t = c.drag(DEMO_W2, t + 250, 140) + 110; c.found(DEMO_W2, t); return c.reveal(t + 300); } }
+    run: c => { let t = c.drag(DEMO_W1, 350, 140) + 120; c.found(DEMO_W1, t); t = c.tap(DEMO_W2, t + 350, 320) + 60; c.found(DEMO_W2, t); return c.reveal(t + 300); } }
 ];
 const GUIDE_GIOCA = [
-  { h: 'Trova le parole<br>nella griglia.', p: 'Trascina il dito sulle lettere, anche in diagonale.',
+  { h: 'Trova le parole<br>nella griglia.', p: 'Trascina il dito o tocca le lettere una a una.',
     init: c => { c.state({ covered: true }); c.enter(); },
-    run: c => { c.pop(); const t = c.drag(DEMO_W1, 900, 170) + 150; c.found(DEMO_W1, t); return t + 1800; } },
-  { h: 'Puoi anche toccarle<br>una a una.', p: 'E se ti blocchi, l\'aiuto ti suggerisce una lettera.',
+    run: c => { c.pop(); const t = c.drag(DEMO_W1, 900, 170); c.at(t + 250, () => c.fg.style.opacity = 0); return t + 1500; } },   // la parola resta accesa
+  { h: d => `Ogni parola scoperta<br>rivela parte ${d.noun === 'il video' ? 'del video' : 'della foto'}.`, p: '',
+    init: c => c.state({ covered: true, sel: DEMO_W1 }),
+    run: c => { c.found(DEMO_W1, 600); return 2900; } },
+  { h: 'Trovale tutte.', p: 'Se ti blocchi, usa l\'aiuto.',
     init: c => c.state({ covered: true, found: DEMO_W1 }),
-    run: c => { c.at(350, () => c.tiles[DEMO_W2[0]].classList.add('hint')); const t = c.tap(DEMO_W2.slice(0, 2), 1100); return t + 1700; } },
-  { h: d => `Ogni parola scoperta<br>rivela parte ${d.noun === 'il video' ? 'del video' : 'della foto'}.`, p: d => `Trovale tutte e vedrai ${d.noun || 'la foto'}.`,
-    init: c => c.state({ covered: true, found: DEMO_W1, sel: DEMO_W2.slice(0, 2) }),
-    run: c => {   // il dito riparte dalla U, tocca la I: QUI è trovata e la foto si scopre
-      const [u, i] = DEMO_W2.slice(1);
-      c.at(250, () => { c.move(u, true); c.fg.style.opacity = 1; });
-      c.at(600, () => c.move(i));
-      c.at(750, () => { c.fg.classList.add('tap'); c.tiles[i].classList.add('sel'); });
-      c.at(890, () => c.fg.classList.remove('tap'));
-      c.found(DEMO_W2, 1100);
-      return c.reveal(1500);
-    } }
+    run: c => { const t = c.tap(DEMO_W2, 500) + 60; c.found(DEMO_W2, t); return c.reveal(t + 300); } }
 ];
 const homeDemo = mountGuide($('#homeDemo'), { textEl: $('#homeText'), dotsEl: $('#homeDots'), steps: GUIDE_CREA,
   final: null });   // lo «Spoiler» è già fisso sotto i testi
@@ -1410,8 +1402,10 @@ const tutAnim = (() => {
       const drag = (cells, t) => cells.forEach((c, k) => { at(t + k * 170, () => { move(c, k === 0); fg.style.opacity = 1; }); at(t + k * 170 + (k ? 90 : 0), () => tiles[c].classList.add('sel')); });
       const found = (cells, t) => { at(t, () => { fg.style.opacity = 0; cells.forEach(c => { tiles[c].classList.remove('sel'); tiles[c].classList.add('gone'); open.add(c); }); }); at(t + 90, draw); };
       drag(DEMO_W1, 500); found(DEMO_W1, 500 + 5 * 170 + 220);
-      const t2 = 500 + 5 * 170 + 480; drag(DEMO_W2, t2); found(DEMO_W2, t2 + 2 * 170 + 220);
-      const t3 = t2 + 2 * 170 + 520;
+      const t2 = 500 + 5 * 170 + 520;
+      DEMO_W2.forEach((c, k) => { at(t2 + k * 340, () => { move(c, k === 0); fg.style.opacity = 1; }); at(t2 + k * 340 + 150, () => { fg.classList.add('tap'); tiles[c].classList.add('sel'); }); at(t2 + k * 340 + 290, () => fg.classList.remove('tap')); });
+      found(DEMO_W2, t2 + 3 * 340);
+      const t3 = t2 + 3 * 340 + 300;
       at(t3, () => { DEMO_REST.forEach(i => { tiles[i].classList.add('gone'); open.add(i); }); draw(); });
       at(t3 + 160, () => { pic.classList.add('clear'); grid.classList.add('bare'); });   // via la cornice, la ragazza a fuoco
       at(t3 + 860, lit);                                                                  // il lilla ruota e invade il pannello
@@ -1974,8 +1968,28 @@ function restartLoop() {
   at(t + 400, () => $('#pv').classList.add('clear'));
   at(t + 2800, () => restartLoop());   // pausa sulla foto intera, poi tutto torna insieme e si ricomincia
 }
+/* Rimescola: mai la stessa disposizione di adesso. Si cerca una griglia con le parole in posti diversi, diversa
+   in almeno un terzo delle lettere e non vista di recente; se le combinazioni possibili sono poche, si gira fra quelle. */
+function pickShuffleSeed() {
+  const cur = C.grid, hide = [...C.hide];
+  if (!cur || !hide.length) return randomSeed();
+  const sig = g => g.cols + 'x' + g.rows + ':' + g.words.map(w => G.keyOf(w.cells)).join('|');   // la disposizione delle parole, non le lettere di riempimento
+  const hist = C.shufHist = (C.shufHist || []).filter(h => h !== sig(cur)).concat(sig(cur)).slice(-4);
+  let anyOther = null, notRecent = null;
+  for (let k = 0; k < 30; k++) {
+    const seed = randomSeed(), g = G.generate({ msg: C.msg, hide, seed, diff: GAME_DIFF });
+    if (!g) continue;
+    const s = sig(g); if (s === sig(cur)) continue;
+    anyOther = anyOther || seed;
+    if (hist.includes(s)) continue;
+    notRecent = notRecent || seed;
+    const changed = g.cols !== cur.cols || g.rows !== cur.rows ? Infinity : g.letters.filter((l, i) => l !== cur.letters[i]).length;
+    if (changed >= g.letters.length / 3) return seed;
+  }
+  return notRecent || anyOther || randomSeed();
+}
 function reshuffle() {   // le lettere nuove arrivano con un piccolo rimbalzo: il cambio si vede da sé
-  C.seed = randomSeed(); refreshPreview(true); if (msgValid()) saveDraft();
+  C.seed = pickShuffleSeed(); refreshPreview(true); if (msgValid()) saveDraft();
   if (reducedMotion()) return;
   const tl = $('#pTiles'); clearTimeout(reshuffle._t);
   reshuffle._t = setTimeout(() => { tl.classList.remove('shuf'); void tl.offsetWidth; tl.classList.add('shuf'); reshuffle._t = setTimeout(() => tl.classList.remove('shuf'), 1300); }, 185);
@@ -2069,7 +2083,7 @@ setMuteIcon();
 
 function startGame(cfg, opts = {}) {
   const segs = G.tokenize(cfg.m || '');
-  const grid = G.generate({ msg: cfg.m, hide: cfg.h, seed: cfg.s, diff: cfg.d });
+  const grid = G.generate({ msg: cfg.m, hide: cfg.h, seed: cfg.s, diff: cfg.d, v: cfg.v || 2 });   // stessa versione del link: i link vecchi danno la stessa griglia
   showScreen('play'); $('#screenPlay').classList.remove('playing-done'); $('#frame').style.opacity = 1;
   ['#introOv', '#finalOv', '#errOv'].forEach(id => $(id).classList.remove('active'));
   $('#fsheet').classList.remove('show'); $('#ftools').classList.remove('show');

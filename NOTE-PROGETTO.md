@@ -62,18 +62,27 @@ Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553
 - **Statistiche:** rimandate. Ipotesi pronta: GoatCounter (gratuito, senza cookie), 8 eventi su creazione, gioco e passaparola; serve che Fara crei l'account.
 
 ## Fatto il 6 ottobre 2026, seconda parte (branch word-challenge)
-Decisioni prese con Fara e implementate. Provate con Playwright su 375×553, 390×664, 390×844 e 1280×800.
+Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate con Playwright su 375×553, 390×664, 390×844 e 1280×800.
 - **Guida animata al posto della demo** (`mountGuide`, usata da home e intro): tre passi che avanzano da soli, un solo giro che finisce sul lilla. Alla fine i puntini lasciano il posto alla pillola "↻ Rivedi". Toccando l'animazione riparte, toccando un puntino si salta a quel passo. La griglia resta invisibile finché la guida non parte (niente lampo iniziale) e il primo testo non rifà la dissolvenza alla fine del logo iniziale.
-  - Chi crea (`GUIDE_CREA`): "Scegli una foto / o un video." · "Scrivi una / frase segreta." · "Chi la riceve / dovrà trovarle." (sotto: "Ogni parola scoperta rivela parte dell'immagine.").
-  - Chi riceve (`GUIDE_GIOCA`): "Trova le parole / nella griglia." · "Puoi anche toccarle / una a una." · "Ogni parola scoperta / rivela parte della foto." ("del video" per i video).
+  - Chi crea (`GUIDE_CREA`): "Scegli una foto / o un video." · "Scrivi una / frase segreta." · "Chi la riceve / dovrà trovarle." (sotto: "Ogni parola scoperta rivela parte dell'immagine."). Al passo 3 ECCOMI si trascina, QUI si tocca lettera per lettera.
+  - Chi riceve (`GUIDE_GIOCA`), un'azione per passo:
+    1. "Trova le parole / nella griglia." · "Trascina il dito o tocca le lettere una a una." Il dito trascina ECCOMI, che resta accesa.
+    2. "Ogni parola scoperta / rivela parte della foto." ("del video" per i video), senza sottotitolo. ECCOMI sparisce e scopre un pezzo.
+    3. "Trovale tutte." · "Se ti blocchi, usa l'aiuto." Il dito tocca Q, U, I; QUI sparisce e la foto si svela.
+  - Ogni cambio di passo cade in un momento fermo (niente dito, niente selezioni a metà).
+  - Nella demo niente aiuto e niente ingrandimento della casella selezionata (cambia solo colore): ingrandita, accanto alla parte già scoperta si fondeva col lilla e sembrava alta il doppio.
+  - Anche il tutorial del "?" trascina ECCOMI e tocca QUI.
   - A capo scelti a mano con `<br>`, il resto con `text-wrap: balance`.
-  - Tempi misurati: passi a circa 6,1 s e 9,6 s, "Rivedi" a circa 13 s dal caricamento.
-- **Frase della griglia: ECCOMI QUI** (`DEMO_L = 'ECCQMOUII'`, E C C / Q M O / U I I). Nove lettere, nessuna casella avanzata (`DEMO_REST` vuoto). ECCOMI si trascina con un pezzo in diagonale; per chi riceve, al passo 2 l'aiuto illumina la Q e si toccano Q e U, al passo 3 si tocca la I e la foto si scopre. Niente caselle del messaggio nella demo: si scoprono nel gioco.
+  - Tempi misurati: chi crea passi a 6,1 s e 9,6 s, "Rivedi" a 14 s; chi riceve passi a 6,0 s e 8,9 s, "Rivedi" a 12 s.
+- **Frase della griglia: ECCOMI QUI** (`DEMO_L = 'ECCQMOUII'`, E C C / Q M O / U I I). Nove lettere, nessuna casella avanzata (`DEMO_REST` vuoto). ECCOMI si trascina con un pezzo in diagonale, QUI si tocca. Niente caselle del messaggio nella demo: si scoprono nel gioco.
 - **Home e intro gemelle:** logo in alto nella stessa posizione, stessi margini e spazi (`#introOv` copia `.home`), stessa misura della demo. Sotto i testi c'è una frase fissa (`.tagline`): "Spoiler: dovrà guadagnarsela." per chi crea, "Alberto ti sta nascondendo qualcosa" per chi riceve ("Qualcuno" se manca il nome, "Bentornato!" alla ripresa). Lilla sul nero, bianca quando la pagina diventa lilla. Sta sempre in due righe: con nomi lunghi il carattere si rimpicciolisce (`fitTag`), così nulla si sposta.
 - **Svelamento lilla:** l'immagine della demo è rientrata di 6 px con raggio 18 (esattamente dentro la cornice), è sfocata solo l'icona e il lilla parte dal rettangolo dell'immagine: niente "saltino". Sul lilla il pulsante è bianco (#f6eef4) con testo scuro e senza ombra; il puntino della "ı" del logo diventa bianco.
 - **Buchi morbidi nella demo** (`holesPath(open, g, true)`): le parti scoperte hanno la forma delle caselle unite (angoli arrotondati, raccordi concavi intorno alle caselle ancora coperte). Partita e anteprima usano ancora la forma vecchia.
 - **"?" nell'intestazione della creazione** (`#helpBtn`, al posto del logo): apre il tutorial in tre passi (`TUT_STEPS`) su scheda scura, con l'ultimo passo che si allaga di lilla. Si apre solo dal pulsante: niente apertura automatica, niente "Non mostrarlo più".
 - **Sfondo animato (doodle):** caselle con le lettere a contorno, come le altre icone (anche nello sfondo fisso delle altre pagine). Ogni icona ha la sua cella (`DD_CELL` 100 px, stacco minimo `DD_GAP` 6 px) e non ne esce mai, nemmeno ruotando: le icone non possono sovrapporsi. Verificato con 400 istanti casuali per schermo, stacco minimo misurato circa 10 px.
+- **Generatore v3 (`GEN_VERSION = 3`): il centro della griglia coperto da parole.** Una parola scelta a caso parte dal centro, e fra le prime griglie valide (fino a 10) si tiene quella con il centro più coperto (`centerScore`: «cuore» = 1-4 caselle più vicine al centro, «zona centrale» = riquadro di metà lato). Centro coperto da parole: 26% prima, 97% ora (480 griglie di prova). Effetto: il riempimento finisce più spesso ai bordi, a volte in basso.
+  - `generate({…, v})` usa la versione del link: chi riceve passa `cfg.v || 2`, quindi i link v2 danno esattamente la griglia di prima (verificato su 480 griglie). I link nuovi hanno `v: 3`.
+- **Rimescola senza ripetizioni** (`pickShuffleSeed`): prima a volte le parole tornavano negli stessi posti (cambiavano solo le lettere di riempimento). Ora si confronta la disposizione delle parole: si scartano quella attuale e le ultime 4 viste, e si chiede che cambi almeno un terzo delle lettere (fino a 30 tentativi). Con poche combinazioni possibili si gira fra quelle, mai la stessa due volte di fila.
 - **Meta description:** "Nascondi una foto o un video tra le parole di un messaggio: per vederla, dovrà trovarle." (og:description invariata).
 
 ## Scelte di prodotto (ottobre 2026)
@@ -85,7 +94,7 @@ Decisioni prese con Fara e implementate. Provate con Playwright su 375×553, 390
 Da fare su una branch separata, senza toccare word-challenge.
 - **Cornice:** 5:8 invece di 3:4, nell'inquadratura, nell'anteprima e nella partita.
 - **Griglie:** 4×6 per i messaggi corti e 5×8 per quelli medi. Massimo circa 30 lettere.
-- **Link già inviati:** aumentare `GEN_VERSION` e tenere le vecchie misure, così i link vecchi generano la stessa griglia.
+- **Link già inviati:** aumentare `GEN_VERSION` (sarà la 4) e tenere le vecchie misure, così i link vecchi generano la stessa griglia (`generate` riceve già la versione del link).
 - **Vittoria:** riempire lo schermo (cover). Con 5:8 il taglio è di circa il 3–5% per lato. Su desktop o in orizzontale si resta all'altezza massima, con lo sfondo sfocato ai lati.
 - **Consegna:** come file separato da provare (es. `index-5x8.html`).
 

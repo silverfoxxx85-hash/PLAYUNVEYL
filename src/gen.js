@@ -4,7 +4,7 @@
    NON modificare il comportamento senza aumentare GEN_VERSION.
    ============================================================ */
 const UnveilGen = (() => {
-  const GEN_VERSION = 2;
+  const GEN_VERSION = 3;   // 3: il centro della griglia va coperto da parole (il soggetto di solito è lì). I link v2 restano identici.
   const MIN_LETTERS = 10;
   const MAX_LETTERS = 35;
   const MAX_CHARS = 50;
@@ -119,13 +119,14 @@ const UnveilGen = (() => {
 
   /* Piazza le parole come percorsi in 8 direzioni senza sovrapposizioni.
      diff 0 = percorsi dritti, 1 = liberi, 2 = tortuosi */
-  function placeAll(cols, rows, lens, rnd, diff, budget) {
+  function placeAll(cols, rows, lens, rnd, diff, budget, centered) {
     const N = cols * rows;
     const g = new Int16Array(N).fill(-1);
     let steps = 0;
     const free = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows && g[y * cols + x] < 0;
     const deg = (x, y) => { let d = 0; for (const [dx, dy] of DIRS) if (free(x + dx, y + dy)) d++; return d; };
     const paths = lens.map(() => []);
+    const hub = centered ? Math.floor(rnd() * lens.length) : -1;   // v3: quale parola passa dal centro (cambia da griglia a griglia, così non si impara)
 
     function word(i, x, y, k, pdx, pdy) {
       if (++steps > budget) return false;
@@ -156,8 +157,9 @@ const UnveilGen = (() => {
     function placeWord(i) {
       if (i === lens.length) return true;
       const starts = [];
+      const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
       for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++)
-        if (free(x, y)) starts.push([deg(x, y) + rnd() * 2.5, x, y]);
+        if (free(x, y)) starts.push([deg(x, y) + rnd() * 2.5 - (centered && i === hub && Math.abs(x - cx) <= .5 && Math.abs(y - cy) <= .5 ? 100 : 0), x, y]);   // v3: una parola a caso parte dal centro
       starts.sort((a, b) => a[0] - b[0]);
       for (const [, x, y] of starts.slice(0, 12)) {
         if (word(i, x, y, 0, 0, 0)) return true;
@@ -219,9 +221,24 @@ const UnveilGen = (() => {
   const keyOf = cells => [...cells].sort((a, b) => a - b).join(',');
 
   /* Entry point.
-     opts: { msg, hide:[indici segmenti], seed, diff:0|1|2 }
+     opts: { msg, hide:[indici segmenti], seed, diff:0|1|2, v: versione (quella del link; se manca, l'attuale) }
      ritorna { version, cols, rows, letters:[], words:[{seg, norm, text, cells}], filler:[] } o null */
-  function generate({ msg, hide, seed, diff }) {
+  /* Dalla v3: quanto il centro della griglia è coperto da parole.
+     «cuore» = le 1-4 caselle più vicine al centro esatto: tutte di parole, se possibile.
+     «zona centrale» = il riquadro di metà lato attorno al centro: più caselle di parole possibile. */
+  function centerScore(cols, rows, owner) {
+    const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
+    let core = 0, coreWords = 0, zone = 0;
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const w = owner[y * cols + x] >= 0;
+      if (Math.abs(x - cx) <= .5 && Math.abs(y - cy) <= .5) { core++; if (w) coreWords++; }
+      if (Math.abs(x - cx) <= cols / 4 && Math.abs(y - cy) <= rows / 4 && w) zone++;
+    }
+    return (coreWords === core ? 1000 : coreWords * 100) + zone;
+  }
+
+  function generate({ msg, hide, seed, diff, v }) {
+    const ver = v || GEN_VERSION, centered = ver >= 3;
     const segs = tokenize(msg);
     const hidden = (hide || []).filter(i => segs[i] && segs[i].type === 'w' && segs[i].hideable);
     const n = countLetters(segs, hidden);
@@ -234,9 +251,10 @@ const UnveilGen = (() => {
 
     for (let ti = t0; ti < TIERS.length; ti++) {
       const { cols, rows } = TIERS[ti];
+      let best = null, found = 0;
       for (let attempt = 0; attempt < 40; attempt++) {
-        const rnd = mulberry32(hash(seed, ti, attempt, GEN_VERSION));
-        const paths = placeAll(cols, rows, lens, rnd, diff, 25000);
+        const rnd = mulberry32(hash(seed, ti, attempt, ver));
+        const paths = placeAll(cols, rows, lens, rnd, diff, 25000, centered);
         if (!paths) continue;
 
         const N = cols * rows;
@@ -293,10 +311,17 @@ const UnveilGen = (() => {
         if (!clean) continue; // ancora ambiguo: si riprova con un altro piazzamento
         const filler = [];
         for (let i = 0; i < N; i++) if (owner[i] < 0) filler.push(i);
-        const best = [...letters];
         words.sort((a, b) => a.seg - b.seg); // ordine del messaggio
-        return { version: GEN_VERSION, cols, rows, letters: best, words, filler, tier: ti };
+        const res = { version: ver, cols, rows, letters: [...letters], words, filler, tier: ti };
+        if (!centered) return res;
+        // v3: fra le prime griglie valide (fino a 6) si tiene quella col centro più coperto da parole;
+        // se il cuore è già tutto di parole e la zona centrale non ha riempimento, basta così
+        const sc = centerScore(cols, rows, owner);
+        if (!best || sc > best.sc) best = { sc, res };
+        const zoneMax = centerScore(cols, rows, new Int16Array(N).fill(0));
+        if (sc >= zoneMax || ++found >= 10) break;
       }
+      if (best) return best.res;
     }
     return null;
   }
