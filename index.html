@@ -154,13 +154,19 @@
   .dtiles span.hint { box-shadow: inset 0 0 0 2.5px var(--accent); color: var(--accent); }
   /* testo della guida: titolo e riga sotto, altezza fissa così niente salta quando cambia */
   .gdots { position: relative; display: flex; gap: 7px; justify-content: center; align-items: center; height: 32px; flex-shrink: 0; }
-  .gdots button:not(.greplay) { transition: width .3s, opacity .3s, background .6s ease .3s; }
-  .gdots.end button:not(.greplay) { opacity: 0 !important; pointer-events: none; }
-  .greplay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.9); display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px 0 11px; border-radius: 999px;
-    background: rgba(19,15,22,.11); color: var(--ink); font-weight: 700; font-size: 14px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .4s ease, transform .4s cubic-bezier(.3,1.6,.5,1); }
-  .greplay svg { width: 16px; height: 16px; }
-  .gdots.end .greplay { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
-  .gdots button:not(.greplay) { width: 8px; height: 8px; padding: 0; border-radius: 4px; background: var(--soft); opacity: .4; }
+  .gdots button { transition: width .3s, opacity .3s, background .6s ease .3s; }
+  /* fine guida: l'ultima frase lascia il posto a «Rivedi come funziona» (secondario: a contorno, il pulsante pieno resta l'azione) */
+  .gwrap { position: relative; display: flex; justify-content: center; flex-shrink: 0; width: 100%; }
+  /* in sequenza, mai sovrapposti: prima svanisce la frase, poi compare il pulsante (e al «Rivedi» il contrario) */
+  .gwrap .gtext { transition: opacity .3s ease; }
+  .gwrap.hold .gtext { opacity: 0; transition: none; }
+  .gwrap.end .gtext { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+  .greplay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px 0 18px; border-radius: 999px;
+    background: none; border: 2px solid currentColor; color: var(--ink); font-weight: 700; font-size: 17px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+  .lit .greplay { color: #130f16; }
+  .greplay svg { width: 19px; height: 19px; }
+  .gwrap.end .greplay { opacity: 1; pointer-events: auto; transition: opacity .35s ease .4s; }
+  .gdots button { width: 8px; height: 8px; padding: 0; border-radius: 4px; background: var(--soft); opacity: .4; }
   .gdots button.on { width: 22px; opacity: 1; background: var(--ink); }
   .gtext { min-height: 112px; max-width: 330px; display: flex; flex-direction: column; gap: 8px; text-align: center; flex-shrink: 0; }
   .gtext h3 { font-family: var(--display); font-weight: 700; font-size: 23px; line-height: 1.2; margin: 0; color: var(--ink); transition: color .6s ease .3s; }
@@ -274,7 +280,11 @@
   .bars i.on { background: var(--accent); }
   .prevcard { background: var(--card); border-radius: 20px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
   .liveprev { font-size: 20px; font-weight: 600; line-height: 1.8; min-height: 36px; word-break: break-word; }
-  .liveprev .empty { color: var(--soft); font-size: 15px; font-weight: 500; line-height: 1.4; }
+  .liveprev .empty { display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500; line-height: 1.4; padding: 4px 0 2px; }
+  .liveprev .empty b { font-weight: 600; color: var(--ink); }
+  .liveprev .empty small { font-size: 13px; color: var(--soft); }
+  .seenote { font-size: 13px; color: var(--soft); line-height: 1.35; }
+  .seenote[hidden] { display: none; }
   .wtok { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; padding: 0 3px; border-radius: 8px; white-space: nowrap; font-size: 20px; font-weight: 600; transition: background .25s; }
   .seesub { font-size: 13px; color: var(--soft); margin-top: -2px; }
   .seetitle, .cardtitle { font-size: 15px; font-weight: 700; line-height: 1.35; }
@@ -479,7 +489,9 @@
   /* finale */
   #finalOv { padding: 0; display: none; }
   #finalOv.active { display: block; }
-  #zoomer { position: fixed; overflow: hidden; background: #000; z-index: 51; cursor: pointer; }
+  #zoomer { position: fixed; overflow: hidden; background: #000; z-index: 51; touch-action: none; cursor: zoom-in; }
+  #zoomer.zoomed { cursor: grab; }
+  #zoomer.zease .media { transition: transform .32s cubic-bezier(.2,.8,.2,1); }
   #zoomer .media { filter: grayscale(1) blur(var(--blur, 4px)); transform: scale(1.06); }
   #zoomer.anim, #zoomer.anim .media { transition: left 1.4s cubic-bezier(.2,.8,.2,1), top 1.4s cubic-bezier(.2,.8,.2,1), width 1.4s cubic-bezier(.2,.8,.2,1), height 1.4s cubic-bezier(.2,.8,.2,1),
     border-radius 1.4s ease, filter 1.3s ease .1s, transform 1.4s cubic-bezier(.2,.8,.2,1); }
@@ -493,6 +505,7 @@
   .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 70px 22px max(24px, env(safe-area-inset-bottom));
     background: linear-gradient(to bottom, rgba(19,15,22,0), rgba(19,15,22,.92) 70px, var(--bg)); transform: translateY(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
   .fsheet.show { transform: none; }
+  .fsheet { pointer-events: none; } .fsheet .in { pointer-events: auto; }   /* la sfumatura sopra il messaggio lascia passare i gesti alla foto */
   .fsheet.below { padding-top: 0; background: none; }
   .fsheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
   .fmsg { font-size: 27px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
@@ -615,6 +628,7 @@
         <span class="seetitle">La sua sfida</span>
         <span class="seesub previewonly" id="seeSub">Trovando le parole, scoprirà la tua foto.</span>
         <div class="liveprev" id="livePrev"></div>
+        <span class="seenote writeonly" id="seeNote" hidden>Le parole di una o due lettere restano visibili.</span>
       </div>
       <div class="pills previewonly">
         <button class="pill" onclick="editMsg()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L5 14H2v-3z"/></svg>Testo</button>
@@ -732,7 +746,7 @@
   <div class="overlay" id="errOv"><div class="errart" id="errArt" aria-hidden="true"></div><h2 id="errTitle">Ops</h2><p class="introtxt" id="errText"></p><button class="btn-main" id="errBtn">Nascondi qualcosa</button></div>
   <div class="overlay" id="finalOv">
     <div class="dd" aria-hidden="true"></div>
-    <div id="zoomer" onclick="toggleSheet()"></div>
+    <div id="zoomer" aria-label="Foto svelata: due dita o doppio tocco per ingrandire"></div>
     <div class="ftools" id="ftools">
       <button id="audioBtn" style="display:none" onclick="toggleAudio()" aria-label="Audio del video"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v4h3l4 3V4L6 7z"/><path id="audioWave" d="M13 6.5a4 4 0 0 1 0 5" opacity=".3"/></svg></button>
     </div>
@@ -1425,9 +1439,11 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
     <svg class="dboard" viewBox="0 0 180 180"><defs><mask id="dm_${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180"><rect width="180" height="180" fill="#fff"/><path class="dh" fill="#000"/><rect width="180" height="180" rx="24" fill="none" stroke="#fff" stroke-width="12"/></mask></defs><rect width="180" height="180" style="fill:var(--board)" mask="url(#dm_${uid})"/></svg>
     <div class="dtiles">${[...DEMO_L].map(l => `<span class="out">${l}</span>`).join('')}</div><div class="finger"></div></div></div>`;
   dotsEl.innerHTML = steps.map((s, k) => `<button aria-label="Passo ${k + 1}"></button>`).join('')
-    + `<button class="greplay" tabindex="-1"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7"/><path d="M3.5 3.5v3.8h3.8"/></svg>Rivedi</button>`;
+    ;
+  const wrap = document.createElement('div'); wrap.className = 'gwrap'; textEl.before(wrap); wrap.append(textEl);   // il testo e, al suo posto alla fine, «Rivedi come funziona»
+  wrap.insertAdjacentHTML('beforeend', `<button class="greplay" tabindex="-1"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7"/><path d="M3.5 3.5v3.8h3.8"/></svg>Rivedi come funziona</button>`);
   const grid = root.querySelector('.dgrid'), pic = root.querySelector('.pic'), holes = root.querySelector('.dh'), fg = root.querySelector('.finger');
-  const tiles = [...root.querySelectorAll('.dtiles span')], ico = root.querySelector('.pic svg'), dots = [...dotsEl.querySelectorAll('button:not(.greplay)')], replay = dotsEl.querySelector('.greplay');
+  const tiles = [...root.querySelectorAll('.dtiles span')], ico = root.querySelector('.pic svg'), dots = [...dotsEl.querySelectorAll('button')], replay = wrap.querySelector('.greplay');
   grid.style.opacity = 0;   // invisibile finché la guida non parte: la prima cosa che si vede è la sua entrata
   const geo = { sw: 52, sh: 52, gap: 6, pad: 6, cols: 3, rows: 3, r: 13 }, ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
   const pos = i => [6 + (i % 3) * 58 + 26, 6 + ((i / 3) | 0) * 58 + 26];
@@ -1469,7 +1485,7 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
       at(t, () => { DEMO_REST.forEach(i => { tiles[i].classList.add('gone'); open.add(i); }); draw(); });
       at(t + 150, () => { pic.classList.add('clear'); grid.classList.add('bare'); });
       at(t + 850, () => { setLit(d.host, true, grid); if (final) say(final[0], final[1]); });
-      at(t + 1350, () => { dotsEl.classList.add('end'); replay.tabIndex = 0; });
+      at(t + 2050, () => { dotsEl.classList.add('end'); wrap.classList.add('end'); replay.tabIndex = 0; });   // l'ultima frase resta ancora un secondo sul lilla
       at(t + 1600, () => icoBegin(ico));
       return t + 1600;
     }
@@ -1477,20 +1493,20 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
   function go(n) {
     T.forEach(clearTimeout); T = []; icoEnd(ico);
     if (d.host && d.host.classList.contains('lit')) setLit(d.host, false, grid);
-    d.step = n; d.running = true; d.done = false; dotsEl.classList.remove('end'); replay.tabIndex = -1;
+    d.step = n; d.running = true; d.done = false; const wasEnd = wrap.classList.contains('end'); dotsEl.classList.remove('end'); wrap.classList.remove('end'); replay.tabIndex = -1;
     dots.forEach((b, k) => b.classList.toggle('on', k === n));
-    const s = steps[n]; say(s.h, s.p); s.init(c);
+    const s = steps[n]; if (wasEnd) { wrap.classList.add('hold'); at(260, () => { wrap.classList.remove('hold'); say(s.h, s.p); }); } else say(s.h, s.p); s.init(c);   // dopo «Rivedi»: prima svanisce il pulsante, poi torna la frase
     const dur = s.run(c);
     if (n < steps.length - 1) at(dur, () => go(n + 1)); else at(dur, () => { d.running = false; d.done = true; });
   }
   d.run = (n = 0) => {
-    if (reducedMotion()) { T.forEach(clearTimeout); T = []; c.state({ covered: true, found: ALL }); pic.classList.add('clear'); grid.classList.add('bare'); grid.style.opacity = ''; setLit(d.host, true, grid); if (final) say(final[0], final[1]); dotsEl.classList.add('end'); replay.tabIndex = 0; d.done = true; return; }
+    if (reducedMotion()) { T.forEach(clearTimeout); T = []; c.state({ covered: true, found: ALL }); pic.classList.add('clear'); grid.classList.add('bare'); grid.style.opacity = ''; setLit(d.host, true, grid); if (final) say(final[0], final[1]); dotsEl.classList.add('end'); wrap.classList.add('end'); replay.tabIndex = 0; d.done = true; return; }
     go(n);
   };
   d.pause = () => { if (d.done) { try { ico.pauseAnimations(); } catch (e) {} return; } T.forEach(clearTimeout); T = []; d.running = false; icoEnd(ico); };
   d.resume = () => { if (d.done) { try { ico.unpauseAnimations(); } catch (e) {} } else if (!d.running) d.run(d.step); };
   d.start = () => { d.wanted = true; if (splashDone && !document.hidden) d.run(0); else { const s = steps[0]; say(s.h, s.p); dots[0].classList.add('on'); } };
-  d.stop = () => { d.wanted = false; d.done = false; d.running = false; T.forEach(clearTimeout); T = []; icoEnd(ico); setLit(d.host, false); dotsEl.classList.remove('end'); grid.style.opacity = 0; };
+  d.stop = () => { d.wanted = false; d.done = false; d.running = false; T.forEach(clearTimeout); T = []; icoEnd(ico); setLit(d.host, false); dotsEl.classList.remove('end'); wrap.classList.remove('end', 'hold'); grid.style.opacity = 0; };
   root.addEventListener('click', () => { if (d.wanted && splashDone) d.run(0); });
   dots.forEach((b, k) => b.addEventListener('click', () => { if (d.wanted && splashDone) d.run(k); }));
   replay.addEventListener('click', () => { if (d.wanted && splashDone) d.run(0); });
@@ -2031,12 +2047,14 @@ function renderMsg() {
 /* "La sua sfida": il messaggio come lo troverà chi lo riceve. Statica: si aggiorna solo quando cambia il messaggio */
 function renderSeen() {
   $('#seeSub').textContent = `Trovando le parole, scoprirà ${C.kind === 'v' ? 'il tuo video' : 'la tua foto'}.`;
-  const html = !C.msg.trim() ? '<span class="empty">Le parole nascoste appariranno qui come caselline da trovare.</span>' : C.segs.map((s, i) => {
+  const html = !C.msg.trim() ? '<span class="empty"><b>Ogni parola inserita diventerà una fila di caselle vuote da scoprire.</b><small>Quelle di una o due lettere restano visibili.</small></span>' : C.segs.map((s, i) => {
     if (s.type !== 'w' || !s.hideable) return `<span class="fixedtxt">${esc(s.text)}</span>`;
     if (i === C.typing) return `<span class="typing">${esc(s.text)}</span>`;
     return C.hide.has(i) ? `<span class="wtok">${boxes(s.norm.length, C.hints && s.norm[0])}</span>` : `<span class="wtok">${esc(s.text)}</span>`;
   }).join('');
   $('#livePrev').innerHTML = html; $('#livePrev2').innerHTML = html;
+  // la regola delle parole corte ricompare solo quando serve: se nel messaggio ce n'è almeno una
+  $('#seeNote').hidden = !(C.msg.trim() && C.segs.some(s => s.type === 'w' && !s.hideable && /^[A-Z]{1,2}$/.test(s.norm)));
   if (C.step === 2 && C.view === 'preview') requestAnimationFrame(layoutPreview);   // la scheda può cambiare altezza
 }
 /* avvisi: errore (blocca l'invio, resta finché non è risolto), avviso (non blocca); i tocchi negati mostrano un errore per qualche secondo */
@@ -2647,26 +2665,88 @@ function win() {
 /* finale: la foto si stacca dalla griglia e cresce fino a riempire lo schermo */
 /* finale: resta il ritaglio scelto da chi crea (3:4), grande quanto possibile, con il messaggio sotto.
    Se lo schermo è troppo basso per stare sopra il messaggio, va a tutta larghezza e il messaggio gli scorre sopra. */
-function targetRect() {
-  const vw = innerWidth, vh = innerHeight, r = cropOf(S), ar = r.w / r.h;
+function targetRect() {   // la cartolina svelata: angoli tondi e un margine ai lati, così non tocca mai i bordi dello schermo
+  const vw = innerWidth, vh = innerHeight, r = cropOf(S), ar = r.w / r.h, side = 12;
   const topPad = 14, sheetH = $('#fsheet .in').offsetHeight + 24 + 18;
-  const avail = vh - topPad - sheetH;
-  let w = Math.min(vw, 560), h = w / ar, below = true;
+  const avail = vh - topPad - sheetH, maxW = Math.min(vw - 2 * side, 560);
+  let w = maxW, h = w / ar, below = true;
   if (h > avail) {
-    if (avail * ar >= Math.min(vw, 560) * .8) { h = avail; w = h * ar; }
-    else { below = false; w = Math.min(vw, vh * ar); h = w / ar; }
+    if (avail * ar >= maxW * .8) { h = avail; w = h * ar; }
+    else { below = false; w = Math.min(maxW, (vh - 2 * topPad) * ar); h = w / ar; }
   }
-  return { left: (vw - w) / 2, top: below ? topPad + Math.max(0, (avail - h) / 2) : (vh - h) / 2, w, h, below, r };
+  return { left: (vw - w) / 2, top: below ? topPad + Math.max(0, (avail - h) / 2) : Math.max(topPad, (vh - h) / 2), w, h, below, r, sheetTop: vh - sheetH };
 }
 function fitZoomer(anim) {
   const z = $('#zoomer'), m = S.media, T = targetRect();
   z.classList.toggle('anim', !!anim);
   $('#fsheet').classList.toggle('below', T.below);
-  Object.assign(z.style, { left: T.left + 'px', top: T.top + 'px', width: T.w + 'px', height: T.h + 'px', borderRadius: T.w < innerWidth - 1 ? '22px' : '0px' });
+  Object.assign(z.style, { left: T.left + 'px', top: T.top + 'px', width: T.w + 'px', height: T.h + 'px', borderRadius: ((GEO && GEO.R) || 22) + 'px' });
   const k = T.w / T.r.w;   // il media si sposta come nel ritaglio: niente cambio di inquadratura
   Object.assign(m.style, { left: -T.r.x * k + 'px', top: -T.r.y * k + 'px', width: S.natW * k + 'px', height: S.natH * k + 'px' });
   z.classList.add('clear');
+  // zoom: si riparte dalla misura intera; se il messaggio copre la parte bassa, quella parte si può portare in su trascinando
+  ZM.W = T.w; ZM.H = T.h; ZM.L = -T.r.x * k; ZM.T = -T.r.y * k; ZM.visH = T.below ? T.h : Math.min(T.h, T.sheetTop - T.top);
+  if (ZM.s === 1) ZM.orig = m.style.transformOrigin;   // quello del ritaglio (serve alla sfocatura iniziale)
+  zoomTo(1, 0, 0, false);
 }
+/* ---------- vittoria: ingrandire e spostare la foto (due dita, doppio tocco, rotellina) ----------
+   Il contenuto (la foto ritagliata, grande quanto la cartolina) si scala di s e si sposta di (ox, oy) dentro la cartolina,
+   senza mai lasciare spazi vuoti ai lati. */
+const ZM = { s: 1, ox: 0, oy: 0, W: 0, H: 0, L: 0, T: 0, visH: 0, orig: '' };
+function zoomClamp(s, ox, oy) {
+  s = Math.min(5, Math.max(1, s));
+  ox = Math.min(0, Math.max(ZM.W - s * ZM.W, ox));
+  oy = Math.min(0, Math.max(Math.min(ZM.visH, ZM.H) - s * ZM.H, oy));
+  return [s, ox, oy];
+}
+function zoomTo(s, ox, oy, ease) {
+  [ZM.s, ZM.ox, ZM.oy] = zoomClamp(s, ox, oy);
+  const z = $('#zoomer'), m = S && S.media; if (!m) return;
+  z.classList.toggle('zease', !!ease); z.classList.toggle('zoomed', ZM.s > 1.01);
+  const idle = ZM.s === 1 && ZM.ox === 0 && ZM.oy === 0;
+  m.style.transformOrigin = idle ? ZM.orig : '0 0';   // origine nell'angolo: un punto u del media va in s·(L+u)+o
+  m.style.transform = idle ? '' : `translate(${((ZM.s - 1) * ZM.L + ZM.ox).toFixed(2)}px, ${((ZM.s - 1) * ZM.T + ZM.oy).toFixed(2)}px) scale(${ZM.s.toFixed(4)})`;
+}
+function zoomAt(s, px, py, ease) {   // cambia scala tenendo fermo il punto (px, py) della cartolina
+  const k = Math.min(5, Math.max(1, s)) / ZM.s;
+  zoomTo(ZM.s * k, px - (px - ZM.ox) * k, py - (py - ZM.oy) * k, ease);
+}
+(() => {
+  const z = $('#zoomer'), pts = new Map(); let pinch = null, lastTap = 0, moved = false;
+  const local = e => { const r = z.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const ready = () => S && S.done && z.classList.contains('clear');
+  z.addEventListener('pointerdown', e => {
+    if (!ready()) return;
+    z.classList.remove('anim'); z.setPointerCapture(e.pointerId); pts.set(e.pointerId, local(e)); moved = false;
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: ZM.s, cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2, ox: ZM.ox, oy: ZM.oy }; }
+  });
+  z.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return;
+    const prev = pts.get(e.pointerId), cur = local(e); pts.set(e.pointerId, cur);
+    if (Math.hypot(cur[0] - prev[0], cur[1] - prev[1]) > 2) moved = true;
+    if (pts.size >= 2 && pinch) {
+      const [a, b] = [...pts.values()], cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
+      const s = Math.min(5, Math.max(1, pinch.s * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d)), k = s / pinch.s;
+      zoomTo(s, cx - (pinch.cx - pinch.ox) * k, cy - (pinch.cy - pinch.oy) * k, false);
+    } else if (pts.size === 1) zoomTo(ZM.s, ZM.ox + cur[0] - prev[0], ZM.oy + cur[1] - prev[1], false);
+  });
+  const up = e => {
+    if (!pts.has(e.pointerId)) return;
+    const p = pts.get(e.pointerId); pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
+    if (!moved && !pts.size) {   // doppio tocco: ingrandisce lì, oppure torna alla misura intera
+      const now = Date.now();
+      if (now - lastTap < 320) { lastTap = 0; if (ZM.s > 1.05) zoomTo(1, 0, 0, true); else zoomAt(2.5, p[0], p[1], true); }
+      else lastTap = now;
+    }
+  };
+  z.addEventListener('pointerup', up); z.addEventListener('pointercancel', up);
+  z.addEventListener('wheel', e => {   // rotellina e trackpad (anche il pizzico del trackpad, che arriva come ctrl+rotellina)
+    if (!ready()) return; e.preventDefault(); z.classList.remove('anim');
+    const [px, py] = local(e);
+    zoomAt(ZM.s * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), px, py, false);
+  }, { passive: false });
+  z.addEventListener('dblclick', e => e.preventDefault());
+})();
 function showFinal(total, hints, animate) {
   S.done = true; S.total = total;
   const z = $('#zoomer'), m = S.media, F = $('#frame').getBoundingClientRect();
@@ -2708,7 +2788,6 @@ function confetti() {
   box.innerHTML = h; document.body.appendChild(box);
   setTimeout(() => box.remove(), 4800);
 }
-function toggleSheet() { $('#fsheet').classList.toggle('show'); }
 function setAudioIcon() { $('#audioWave').setAttribute('opacity', S.media.muted ? '.3' : '1'); }
 function toggleAudio() { S.media.muted = !S.media.muted; setAudioIcon(); }
 /* la cartolina, alla Wordle: niente spoiler, un quadratino per parola (bianco se ci è voluto un aiuto) */

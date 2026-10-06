@@ -63,7 +63,8 @@ Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553
 
 ## Fatto il 6 ottobre 2026, seconda parte (branch word-challenge)
 Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate con Playwright su 375×553, 390×664, 390×844 e 1280×800.
-- **Guida animata al posto della demo** (`mountGuide`, usata da home e intro): tre passi che avanzano da soli, un solo giro che finisce sul lilla. Alla fine i puntini lasciano il posto alla pillola "↻ Rivedi". Toccando l'animazione riparte, toccando un puntino si salta a quel passo. La griglia resta invisibile finché la guida non parte (niente lampo iniziale) e il primo testo non rifà la dissolvenza alla fine del logo iniziale.
+- **Guida animata al posto della demo** (`mountGuide`, usata da home e intro): tre passi che avanzano da soli, un solo giro che finisce sul lilla. Toccando l'animazione riparte, toccando un puntino si salta a quel passo.
+  - **Fine guida:** l'ultima frase resta circa un secondo sul lilla, poi svanisce e subito dopo, al suo posto, compare il pulsante "↻ Rivedi come funziona" (a contorno scuro, 46 px, secondario rispetto al pulsante pieno). Sempre in sequenza, mai in dissolvenza incrociata: frase via in 0,3 s, pausa, pulsante da trasparente a pieno in 0,35 s; al "Rivedi" il contrario. I puntini restano visibili sull'ultimo passo (`.gwrap`, classi `end` e `hold`). La griglia resta invisibile finché la guida non parte (niente lampo iniziale) e il primo testo non rifà la dissolvenza alla fine del logo iniziale.
   - Chi crea (`GUIDE_CREA`): "Scegli una foto / o un video." · "Scrivi una / frase segreta." · "Chi la riceve / dovrà trovarle." (sotto: "Ogni parola scoperta rivela parte dell'immagine."). Al passo 3 ECCOMI si trascina, QUI si tocca lettera per lettera.
   - Chi riceve (`GUIDE_GIOCA`), un'azione per passo:
     1. "Trova le parole / nella griglia." · "Trascina il dito o tocca le lettere una a una." Il dito trascina ECCOMI, che resta accesa.
@@ -83,6 +84,8 @@ Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate c
 - **Generatore v3 (`GEN_VERSION = 3`): il centro della griglia coperto da parole.** Una parola scelta a caso parte dal centro, e fra le prime griglie valide (fino a 10) si tiene quella con il centro più coperto (`centerScore`: «cuore» = 1-4 caselle più vicine al centro, «zona centrale» = riquadro di metà lato). Centro coperto da parole: 26% prima, 97% ora (480 griglie di prova). Effetto: il riempimento finisce più spesso ai bordi, a volte in basso.
   - `generate({…, v})` usa la versione del link: chi riceve passa `cfg.v || 2`, quindi i link v2 danno esattamente la griglia di prima (verificato su 480 griglie). I link nuovi hanno `v: 3`.
 - **Rimescola senza ripetizioni** (`pickShuffleSeed`): prima a volte le parole tornavano negli stessi posti (cambiavano solo le lettere di riempimento). Ora si confronta la disposizione delle parole: si scartano quella attuale e le ultime 4 viste, e si chiede che cambi almeno un terzo delle lettere (fino a 30 tentativi). Con poche combinazioni possibili si gira fra quelle, mai la stessa due volte di fila.
+- **Vittoria:** la foto resta una cartolina con gli angoli arrotondati (stesso raggio della partita) e 12 px di margine ai lati. Si ingrandisce e si sposta: due dita, doppio tocco (2,5× nel punto toccato, di nuovo per tornare intera), rotellina/trackpad su computer; da 1× a 5×, senza mai lasciare spazi vuoti ai lati (`ZM`, `zoomTo`, `zoomAt`). Il messaggio in basso è sempre visibile e sopra a tutto (niente più tocco che lo nasconde); dove copre la foto, la foto si può trascinare in su. La sfumatura sopra il messaggio lascia passare i gesti.
+- **Riquadro "La sua sfida" a messaggio vuoto:** "Ogni parola inserita diventerà una fila di caselle vuote da scoprire." e, più piccolo, "Quelle di una o due lettere restano visibili." Mentre si scrive, "Le parole di una o due lettere restano visibili." compare sotto il messaggio solo se ce n'è almeno una (`#seeNote`).
 - **Meta description:** "Nascondi una foto o un video tra le parole di un messaggio: per vederla, dovrà trovarle." (og:description invariata).
 
 ## Scelte di prodotto (ottobre 2026)
@@ -90,12 +93,14 @@ Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate c
 - **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).
 - **Foto e video non si salvano:** scelta voluta, coerente con la privacy. Già oggi il media non si trascina e non si tiene premuto per salvarlo. Limiti noti (screenshot, indirizzo Cloudinary leggibile nel link).
 
+- **Niente difficoltà "Facile"** (messaggio scritto per intero, da trovare solo nella griglia): scartata, toglie il gusto di scoprire il messaggio. Restano normale e difficile.
+
 ## Prossimo passo concordato: branch `griglia-5x8`
 Da fare su una branch separata, senza toccare word-challenge.
 - **Cornice:** 5:8 invece di 3:4, nell'inquadratura, nell'anteprima e nella partita.
 - **Griglie:** 4×6 per i messaggi corti e 5×8 per quelli medi. Massimo circa 30 lettere.
 - **Link già inviati:** aumentare `GEN_VERSION` (sarà la 4) e tenere le vecchie misure, così i link vecchi generano la stessa griglia (`generate` riceve già la versione del link).
-- **Vittoria:** riempire lo schermo (cover). Con 5:8 il taglio è di circa il 3–5% per lato. Su desktop o in orizzontale si resta all'altezza massima, con lo sfondo sfocato ai lati.
+- **Vittoria:** in stand-by l'idea di riempire lo schermo (cover; con 5:8 il taglio è di circa il 3–5% per lato). Da rivalutare rispetto alla cartolina arrotondata con lo zoom, che oggi è la scelta attuale.
 - **Consegna:** come file separato da provare (es. `index-5x8.html`).
 
 ## Rimandato (dopo)
