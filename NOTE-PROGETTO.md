@@ -20,7 +20,7 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 - I media vengono caricati su Cloudinary, con caricamento non firmato e preset `sito_upload`.
 
 ## Stato attuale (branch word-challenge)
-- **Home compatta:** un unico blocco centrato. Demo di misura massima 216 px, uguale per chi crea e chi riceve.
+- **Home e intro di chi riceve gemelle:** stessi blocchi nella stessa posizione (logo, guida animata, puntini, testi, frase fissa, pulsante). Demo di misura massima 216 px, identica nelle due pagine. Vedi sotto, "Guida animata".
 - **Pagina lilla allo svelamento:** la cartolina ruota mentre si allarga (`FLOOD_MODE='spin'`) e la pagina si inverte. L'icona della demo è solo sfocata e l'animazione parte una volta sola.
 - **Messaggio:** massimo 50 caratteri, minimo 10 lettere nascoste. Il massimo di 35 lettere resta solo come limite tecnico.
 - **Il pulsante fa da stato:**
@@ -61,6 +61,21 @@ Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553
 - **Niente più "sorpresa"** (suona vecchio): "sfida" dove parla chi riceve, "la tua foto / il tuo video" nel caricamento e nell'invio (`mediaName`).
 - **Statistiche:** rimandate. Ipotesi pronta: GoatCounter (gratuito, senza cookie), 8 eventi su creazione, gioco e passaparola; serve che Fara crei l'account.
 
+## Fatto il 6 ottobre 2026, seconda parte (branch word-challenge)
+Decisioni prese con Fara e implementate. Provate con Playwright su 375×553, 390×664, 390×844 e 1280×800.
+- **Guida animata al posto della demo** (`mountGuide`, usata da home e intro): tre passi che avanzano da soli, un solo giro che finisce sul lilla. Alla fine i puntini lasciano il posto alla pillola "↻ Rivedi". Toccando l'animazione riparte, toccando un puntino si salta a quel passo. La griglia resta invisibile finché la guida non parte (niente lampo iniziale) e il primo testo non rifà la dissolvenza alla fine del logo iniziale.
+  - Chi crea (`GUIDE_CREA`): "Scegli una foto / o un video." · "Scrivi una / frase segreta." · "Chi la riceve / dovrà trovarle." (sotto: "Ogni parola scoperta rivela parte dell'immagine.").
+  - Chi riceve (`GUIDE_GIOCA`): "Trova le parole / nella griglia." · "Puoi anche toccarle / una a una." · "Ogni parola scoperta / rivela parte della foto." ("del video" per i video).
+  - A capo scelti a mano con `<br>`, il resto con `text-wrap: balance`.
+  - Tempi misurati: passi a circa 6,1 s e 9,6 s, "Rivedi" a circa 13 s dal caricamento.
+- **Frase della griglia: ECCOMI QUI** (`DEMO_L = 'ECCQMOUII'`, E C C / Q M O / U I I). Nove lettere, nessuna casella avanzata (`DEMO_REST` vuoto). ECCOMI si trascina con un pezzo in diagonale; per chi riceve, al passo 2 l'aiuto illumina la Q e si toccano Q e U, al passo 3 si tocca la I e la foto si scopre. Niente caselle del messaggio nella demo: si scoprono nel gioco.
+- **Home e intro gemelle:** logo in alto nella stessa posizione, stessi margini e spazi (`#introOv` copia `.home`), stessa misura della demo. Sotto i testi c'è una frase fissa (`.tagline`): "Spoiler: dovrà guadagnarsela." per chi crea, "Alberto ti sta nascondendo qualcosa" per chi riceve ("Qualcuno" se manca il nome, "Bentornato!" alla ripresa). Lilla sul nero, bianca quando la pagina diventa lilla. Sta sempre in due righe: con nomi lunghi il carattere si rimpicciolisce (`fitTag`), così nulla si sposta.
+- **Svelamento lilla:** l'immagine della demo è rientrata di 6 px con raggio 18 (esattamente dentro la cornice), è sfocata solo l'icona e il lilla parte dal rettangolo dell'immagine: niente "saltino". Sul lilla il pulsante è bianco (#f6eef4) con testo scuro e senza ombra; il puntino della "ı" del logo diventa bianco.
+- **Buchi morbidi nella demo** (`holesPath(open, g, true)`): le parti scoperte hanno la forma delle caselle unite (angoli arrotondati, raccordi concavi intorno alle caselle ancora coperte). Partita e anteprima usano ancora la forma vecchia.
+- **"?" nell'intestazione della creazione** (`#helpBtn`, al posto del logo): apre il tutorial in tre passi (`TUT_STEPS`) su scheda scura, con l'ultimo passo che si allaga di lilla. Si apre solo dal pulsante: niente apertura automatica, niente "Non mostrarlo più".
+- **Sfondo animato (doodle):** caselle con le lettere a contorno, come le altre icone (anche nello sfondo fisso delle altre pagine). Ogni icona ha la sua cella (`DD_CELL` 100 px, stacco minimo `DD_GAP` 6 px) e non ne esce mai, nemmeno ruotando: le icone non possono sovrapporsi. Verificato con 400 istanti casuali per schermo, stacco minimo misurato circa 10 px.
+- **Meta description:** "Nascondi una foto o un video tra le parole di un messaggio: per vederla, dovrà trovarle." (og:description invariata).
+
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
 - **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).
@@ -75,6 +90,7 @@ Da fare su una branch separata, senza toccare word-challenge.
 - **Consegna:** come file separato da provare (es. `index-5x8.html`).
 
 ## Rimandato (dopo)
+- **Buchi morbidi anche in partita e nell'anteprima di chi crea**, come nella demo.
 - **Privacy:** cifratura del media nel browser, cancellazione dopo la soluzione o dopo 24 ore, link usabile una volta, pagina d'aiuto, segnalazioni.
 - **Nome nell'anteprima del link:** "Alberto ti sta nascondendo qualcosa". Richiede un piccolo servizio (es. Cloudflare Worker) e va fatto insieme alla privacy.
 - **Validazione dell'idea e statistiche d'uso.**
