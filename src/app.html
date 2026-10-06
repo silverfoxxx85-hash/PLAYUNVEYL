@@ -496,6 +496,11 @@
     background: var(--accent); color: #130f16; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px rgba(19,15,22,.55), 0 6px 18px rgba(0,0,0,.35);
     opacity: 0; transform: scale(.85); pointer-events: none; transition: opacity .35s ease, transform .35s cubic-bezier(.3,1.6,.5,1); }
   .fnext svg { width: 24px; height: 24px; }
+  /* l'invito a ingrandire: box lilla pieno (leggibile su qualunque foto) con l'icona animata del pizzico */
+  .fhint { position: fixed; left: 50%; top: 50%; z-index: 54; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 34px; background: var(--accent); box-shadow: 0 0 0 2px rgba(19,15,22,.45), 0 10px 30px rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.8); pointer-events: none; transition: opacity .3s ease, transform .3s ease; }
+  .fhint.show { opacity: 1; transform: none; transition: opacity .3s ease, transform .45s cubic-bezier(.3,1.6,.5,1); }
+  .fhint svg { width: 96px; height: 96px; }
   .fnext.show { opacity: 1; transform: none; pointer-events: auto; }
   .fnext.nudge { animation: fnudge 1.1s ease 1; }
   @keyframes fnudge { 0%, 100% { transform: none; } 30% { transform: scale(1.12); } 55% { transform: scale(.96); } 75% { transform: scale(1.04); } }
@@ -509,11 +514,10 @@
   .ftools.show { opacity: 1; }
   .ftools button { width: 44px; height: 44px; border-radius: 50%; background: rgba(19,15,22,.7); color: var(--ink); display: flex; align-items: center; justify-content: center; }
   .ftools svg { width: 18px; height: 18px; }
-  .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 18px 22px max(24px, env(safe-area-inset-bottom));
-    background: linear-gradient(to bottom, rgba(19,15,22,0), var(--bg) 18px); transform: translateY(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1); }   /* fondo pieno: la cartolina ingrandita ci passa sotto */
+  .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 24px 22px max(24px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0;
+    background: var(--bg); box-shadow: 0 -10px 30px rgba(0,0,0,.35); transform: translateY(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1); }   /* sale sopra la foto, che resta a schermo pieno */
+  .fsheet.instant { transition: none; }
   .fsheet.show { transform: none; }
-  .fsheet { pointer-events: none; } .fsheet .in { pointer-events: auto; }   /* la sfumatura sopra il messaggio lascia passare i gesti alla foto */
-  .fsheet.below { padding-top: 0; background: none; }
   .fsheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
   .fmsg { font-size: 27px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
   .fstats { font-size: 14px; color: var(--soft); }
@@ -757,6 +761,7 @@
     <div class="ftools" id="ftools">
       <button id="audioBtn" style="display:none" onclick="toggleAudio()" aria-label="Audio del video"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v4h3l4 3V4L6 7z"/><path id="audioWave" d="M13 6.5a4 4 0 0 1 0 5" opacity=".3"/></svg></button>
     </div>
+    <div class="fhint" id="fHint" aria-hidden="true"></div>
     <button class="fnext" id="fNext" onclick="vicNext()" aria-label="Avanti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="fsheet" id="fsheet"><div class="in">
       <span class="pvfor" id="fFor">Per te</span>
@@ -1296,6 +1301,7 @@ const ICO_LILLA = ['#b3a6ff', '#e9e4ff'];   // icone dei momenti: tratti lilla, 
 $('#pickArt').innerHTML = icoSVG('pk', { colors: ICO_LILLA, once: true, src: ICONS.immagine });
 $('#writeArt').innerHTML = icoSVG('wa', { colors: ICO_LILLA, once: true, src: ICONS.messaggio });
 $('#doneLogo').innerHTML = icoSVG('dl', { colors: ICO_LILLA, once: true, src: ICONS.aeroplanino });
+$('#fHint').innerHTML = icoSVG('ph', { colors: ['#130f16', '#4b3bc4'], once: true, src: ICONS.pinch });   // pizzico sul box lilla: mano scura, frecce viola intenso (il bianco sul lilla si vedrebbe poco)
 $('#cropFrame').querySelector('.ghost').innerHTML = '<span></span>'.repeat(48);
 // (al posto del logo nell'intestazione c'è il pulsante «?»: come funziona e consigli)
 $('#homeLogo').innerHTML = logoSVG(44, 'static', '#1e1823'); $('#homeLogo svg').classList.add('breathe');
@@ -2342,29 +2348,26 @@ function win() {
 /* finale: resta il ritaglio scelto da chi crea (3:4), grande quanto possibile, con il messaggio sotto.
    Se lo schermo è troppo basso per stare sopra il messaggio, va a tutta larghezza e il messaggio gli scorre sopra. */
 /* ---------- vittoria ----------
-   Sequenza: la cartolina si mette a fuoco al suo posto → si allarga a tutto schermo, ancorata a sinistra (o in alto,
-   in orizzontale) → scorre piano fino all'altro lato (comandi bloccati: un tocco salta alla fine) → torna al centro
-   come cartolina con un rimbalzo e un'inclinazione che si raddrizza, coriandoli → un piccolo «respiro» che suggerisce
-   lo zoom → compare la freccia in basso a destra. Toccandola la cartolina sale e arrivano messaggio e pulsanti.
-   La cartolina si ingrandisce e si sposta intera (con gli angoli tondi sempre di R px sullo schermo).
-   Gli angoli seguono lo spazio libero: R con 12 px di margine o più, dritti quando la foto tocca i bordi. */
-const VIC = { phase: 'off', base: null, cur: null, T: null, tw: null, onSkip: null, hintT: null };
-const VIC_M = 12, VIC_NEXT = 56 + 18 + 12;   // margine attorno alla cartolina; spazio in basso per la freccia
+   1. Spettacolo: la cartolina si mette a fuoco al suo posto, si allarga a tutto schermo ancorata a sinistra (in orizzontale:
+      in alto), scorre piano fino all'altro lato e torna al centro, sempre a schermo pieno. Comandi bloccati: un tocco salta.
+   2. Esplorazione: al centro compare (solo la prima volta su questo telefono) un box lilla con l'icona animata del pizzico;
+      poi la freccia in basso a destra. La foto si ingrandisce e si rimpicciolisce intera: da «intera, con margine» a 5×.
+   3. Azione: con la freccia sale dal basso il pannello con messaggio e pulsanti, sopra la foto che resta a schermo pieno.
+   La foto è sempre il rettangolo del ritaglio (x, y, w, h): può essere più grande dello schermo. Gli angoli seguono lo
+   spazio libero: dritti quando tocca i bordi, R px con 12 px di margine o più. */
+const VIC = { phase: 'off', base: null, cur: null, T: null, tw: null, hintT: null, token: {} };
+const VIC_M = 12, VIC_SEEN = 'unveil:pinch';
 const vicR = () => (GEO && GEO.R) || 26;
-const ease = { io: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, sine: t => -(Math.cos(Math.PI * t) - 1) / 2,
-  out: t => 1 - Math.pow(1 - t, 3), back: t => { const c = 1.25, c3 = c + 1; return 1 + c3 * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); } };
-/* vista = rettangolo della cartolina (x, y, w, h) + come ci sta dentro il ritaglio (scala k, posizione px, py) + rotazione */
-function vicCard(x, y, w, h, rot = 0) { const r = cropOf(S); return { x, y, w, h, k: w / r.w, px: 0, py: 0, rot }; }
+const ease = { io: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, sine: t => -(Math.cos(Math.PI * t) - 1) / 2, out: t => 1 - Math.pow(1 - t, 3) };
+const vicRect = (x, y, w, h) => ({ x, y, w, h });
 function vicApply(v) {
-  const z = $('#zoomer'), m = S.media, r = cropOf(S), vw = innerWidth, vh = innerHeight;
+  const z = $('#zoomer'), m = S.media, r = cropOf(S), vw = innerWidth, vh = innerHeight, k = v.w / r.w;
   const gap = Math.max(0, Math.min(v.x, v.y, vw - v.x - v.w, vh - v.y - v.h));
-  Object.assign(z.style, { left: v.x + 'px', top: v.y + 'px', width: v.w + 'px', height: v.h + 'px',
-    borderRadius: (VIC.phase === 'explore' || VIC.phase === 'sheet' ? vicR() : vicR() * Math.min(1, gap / VIC_M)).toFixed(2) + 'px',   // cartolina in mano: angoli sempre tondi
-    transform: v.rot ? `rotate(${v.rot.toFixed(2)}deg)` : '' });
-  Object.assign(m.style, { left: v.px - r.x * v.k + 'px', top: v.py - r.y * v.k + 'px', width: S.natW * v.k + 'px', height: S.natH * v.k + 'px' });
+  Object.assign(z.style, { left: v.x + 'px', top: v.y + 'px', width: v.w + 'px', height: v.h + 'px', borderRadius: (vicR() * Math.min(1, gap / VIC_M)).toFixed(2) + 'px', transform: '' });
+  Object.assign(m.style, { left: -r.x * k + 'px', top: -r.y * k + 'px', width: S.natW * k + 'px', height: S.natH * k + 'px' });
   VIC.cur = v;
 }
-const lerpV = (a, b, t) => { const o = {}; for (const k in a) o[k] = a[k] + (b[k] - a[k]) * t; return o; };
+const lerpV = (a, b, t) => vicRect(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.w + (b.w - a.w) * t, a.h + (b.h - a.h) * t);
 function vicTween(a, b, ms, fn) {
   return new Promise(res => {
     cancelAnimationFrame(VIC.tw); const t0 = performance.now();
@@ -2372,98 +2375,101 @@ function vicTween(a, b, ms, fn) {
     VIC.tw = requestAnimationFrame(step); VIC.stopTween = () => { cancelAnimationFrame(VIC.tw); res(); };
   });
 }
-/* cartolina centrata: nello schermo meno la zona della freccia, oppure sopra al messaggio */
-function vicBase(withSheet) {
-  const vw = innerWidth, vh = innerHeight, r = cropOf(S), ar = r.w / r.h, top = Math.max(VIC_M, 14);
-  const bottom = withSheet ? vh - ($('#fsheet .in').offsetHeight + 24 + 18) : vh - VIC_NEXT;
-  const availW = Math.min(vw - 2 * VIC_M, 560), availH = Math.max(120, bottom - top);
-  let w = availW, h = w / ar; if (h > availH) { h = availH; w = h * ar; }
-  return vicCard((vw - w) / 2, top + Math.max(0, (availH - h) / 2), w, h);
+/* a schermo pieno: il ritaglio copre lo schermo; at = 0 un lato, 1 l'altro, .5 il centro */
+function vicCover(at = .5) {
+  const vw = innerWidth, vh = innerHeight, r = cropOf(S), k = Math.max(vw / r.w, vh / r.h), w = r.w * k, h = r.h * k;
+  return vicRect((vw - w) * at, (vh - h) * at, w, h);
 }
-/* tutto schermo: il ritaglio copre lo schermo, ancorato a un lato; «end» = l'altro lato */
-function vicFull(end) {
-  const vw = innerWidth, vh = innerHeight, r = cropOf(S), k = Math.max(vw / r.w, vh / r.h);
-  const ox = vw - r.w * k, oy = vh - r.h * k;   // ≤ 0: quanto sporge
-  return { x: 0, y: 0, w: vw, h: vh, k, px: end ? ox : 0, py: end ? oy : 0, rot: 0 };
+function vicContain() {   // intera, con il margine (e quindi gli angoli tondi)
+  const vw = innerWidth, vh = innerHeight, r = cropOf(S), k = Math.min((vw - 2 * VIC_M) / r.w, (vh - 2 * VIC_M) / r.h), w = r.w * k, h = r.h * k;
+  return vicRect((vw - w) / 2, (vh - h) / 2, w, h);
 }
-function vicReset() { VIC.token = {}; VIC.phase = 'off'; clearTimeout(VIC.T); clearTimeout(VIC.hintT); cancelAnimationFrame(VIC.tw); $('#fNext').classList.remove('show', 'nudge'); $('#finalOv').classList.remove('sheet'); }
 const vicWait = ms => new Promise(res => { VIC.T = setTimeout(res, ms); });
+function vicReset() { VIC.token = {}; VIC.phase = 'off'; clearTimeout(VIC.T); clearTimeout(VIC.hintT); cancelAnimationFrame(VIC.tw); $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show'); $('#finalOv').classList.remove('sheet'); }
 async function vicPlay(animate) {
   const z = $('#zoomer'), F = $('#frame').getBoundingClientRect(), token = VIC.token = {};
   const alive = () => VIC.token === token;
-  $('#fNext').classList.remove('show', 'nudge'); $('#fsheet').classList.remove('show'); $('#finalOv').classList.remove('sheet');
-  if (!animate || reducedMotion() || !F.width) { vicApply(vicBase(!animate)); z.classList.add('clear'); vicSettled(!animate); return; }
+  $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show'); $('#fsheet').classList.remove('show'); $('#finalOv').classList.remove('sheet');
+  VIC.base = vicCover(.5);
+  if (!animate) { vicApply(VIC.base); z.classList.add('clear'); vicSheet(true); return; }   // sfida già risolta: subito il messaggio
+  if (reducedMotion() || !F.width) { vicApply(VIC.base); z.classList.add('clear'); vicExplore(); return; }
   VIC.phase = 'show';
-  vicApply(vicCard(F.left, F.top, F.width, F.height));
+  const r = cropOf(S); vicApply(vicRect(F.left, F.top, F.width, F.width * r.h / r.w));
   void z.offsetWidth; z.classList.add('clear');   // si mette a fuoco al suo posto
   await vicWait(700); if (!alive()) return;
-  await vicTween(VIC.cur, vicFull(false), 950, ease.io); if (!alive()) return;
-  const end = vicFull(true), dist = Math.hypot(end.px, end.py);
-  if (dist > 12) { await vicTween(VIC.cur, end, Math.min(3400, 1400 + dist * 9), ease.sine); if (!alive()) return; }
-  await vicLand(token);
-}
-async function vicLand(token) {   // ritorno al centro: rimbalzo e inclinazione che si raddrizza
-  VIC.phase = 'land';
-  const b = vicBase(false), from = { ...VIC.cur };
+  await vicTween(VIC.cur, vicCover(0), 950, ease.io); if (!alive()) return;
   confetti();
-  await vicTween({ ...from, rot: 0 }, { ...b, rot: 0 }, 900, t => ease.back(t));
-  if (VIC.token !== token) return;
-  vicSettled(false);
-}
-function vicSettled(withSheet) {
-  VIC.phase = withSheet ? 'sheet' : 'explore'; VIC.base = vicBase(withSheet); vicApply(VIC.base);
-  if (withSheet) { $('#finalOv').classList.add('sheet'); $('#fsheet').classList.add('show'); $('#ftools').classList.add('show'); return; }
-  $('#ftools').classList.add('show');
-  if (!reducedMotion()) {   // un respiro: si avvicina appena e torna, una volta
-    const b = VIC.base, big = vicCard(b.x - b.w * .02, b.y - b.h * .02, b.w * 1.04, b.h * 1.04);
-    setTimeout(() => { if (VIC.phase === 'explore' && VIC.cur === b) vicTween(b, big, 380, ease.out).then(() => VIC.phase === 'explore' && vicTween(VIC.cur, b, 420, ease.io)); }, 250);
+  const a = vicCover(0), b = vicCover(1), dist = Math.hypot(b.x - a.x, b.y - a.y);
+  if (dist > 12) {
+    await vicTween(VIC.cur, b, Math.min(3400, 1400 + dist * 9), ease.sine); if (!alive()) return;
+    await vicTween(VIC.cur, VIC.base, Math.min(1800, 700 + dist * 4), ease.io); if (!alive()) return;
   }
-  setTimeout(() => { if (VIC.phase === 'explore') $('#fNext').classList.add('show'); }, 700);
+  vicExplore();
+}
+function vicSkip() {   // un tocco durante lo spettacolo: dritti alla foto ferma al centro
+  if (VIC.phase !== 'show') return;
+  const token = VIC.token = {}; clearTimeout(VIC.T); cancelAnimationFrame(VIC.tw); VIC.phase = 'skip';
+  $('#zoomer').classList.add('clear');
+  vicTween(VIC.cur, VIC.base, 550, ease.out).then(() => { if (VIC.token === token) vicExplore(); });
+}
+function vicExplore() {
+  VIC.phase = 'explore'; $('#ftools').classList.add('show');
+  let seen = false; try { seen = !!localStorage.getItem(VIC_SEEN); } catch (e) {}
+  if (seen) { VIC.T = setTimeout(vicShowNext, 400); return; }
+  try { localStorage.setItem(VIC_SEEN, '1'); } catch (e) {}
+  const h = $('#fHint'), ico = h.querySelector('svg');
+  h.classList.add('show'); setTimeout(() => { if (!reducedMotion()) icoBegin(ico); }, 250);
+  VIC.T = setTimeout(vicHideHint, 2700);
+}
+function vicHideHint() {
+  const h = $('#fHint'); if (!h.classList.contains('show')) return;
+  h.classList.remove('show'); clearTimeout(VIC.T);
+  VIC.T = setTimeout(vicShowNext, 380);   // prima svanisce il box, poi arriva la freccia
+}
+function vicShowNext() {
+  if (VIC.phase !== 'explore') return;
+  $('#fNext').classList.add('show');
   clearTimeout(VIC.hintT); VIC.hintT = setTimeout(() => { if (VIC.phase === 'explore') $('#fNext').classList.add('nudge'); }, 6000);
 }
-function vicNext() {   // freccia: la cartolina sale e arrivano messaggio e pulsanti
-  if (VIC.phase !== 'explore') return;
-  VIC.phase = 'sheet'; clearTimeout(VIC.hintT);
-  $('#fNext').classList.remove('show', 'nudge'); $('#finalOv').classList.add('sheet'); $('#fsheet').classList.add('show');
-  const b = vicBase(true); VIC.base = b; vicTween(VIC.cur, b, 600, ease.io);
+function vicNext() { if (VIC.phase === 'explore') vicSheet(false); }
+function vicSheet(instant) {   // il pannello con messaggio e pulsanti sale sopra la foto, che resta a schermo pieno
+  VIC.phase = 'sheet'; clearTimeout(VIC.hintT); clearTimeout(VIC.T);
+  $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show');
+  $('#finalOv').classList.add('sheet'); $('#fsheet').classList.add('show'); $('#ftools').classList.add('show');
+  if (instant) $('#fsheet').classList.add('instant'), requestAnimationFrame(() => $('#fsheet').classList.remove('instant'));
 }
-function vicSkip() {   // un tocco durante lo spettacolo: dritti alla cartolina
-  if (VIC.phase !== 'show') return;
-  VIC.token = {}; clearTimeout(VIC.T); cancelAnimationFrame(VIC.tw); VIC.phase = 'land';
-  const token = VIC.token; confetti();
-  vicTween(VIC.cur, vicBase(false), 600, ease.out).then(() => { if (VIC.token === token) vicSettled(false); });
+function fitZoomer() {
+  if (!S || !S.done || VIC.phase === 'off') return;
+  if (VIC.phase === 'show') { vicSkip(); return; }
+  VIC.base = vicCover(.5); vicApply(VIC.base);
 }
-function fitZoomer() { if (!S || !S.done) return; if (VIC.phase === 'explore' || VIC.phase === 'sheet') { VIC.base = vicBase(VIC.phase === 'sheet'); vicApply(VIC.base); } else if (VIC.phase === 'show') vicSkip(); }
 
-/* ---------- la cartolina si ingrandisce e si sposta intera ----------
-   Scala da 1× a 5×; quando è più grande dello schermo si sposta finché un bordo non arriva al margine;
-   oltre fa resistenza come un elastico e al rilascio torna a posto. Doppio tocco: 2,5× nel punto, poi di nuovo intera. */
-function vicBounds(v) {   // dove può stare una cartolina di quella misura
-  const vw = innerWidth, vh = innerHeight, b = VIC.base;
-  const bottom = VIC.phase === 'sheet' ? vh - VIC_M : vh - VIC_M;
-  const lim = (pos, size, lo, hi, home) => size <= hi - lo ? [home, home] : [hi - size, lo];
-  const s = v.w / b.w;
-  const hx = b.x + b.w / 2 - v.w / 2, hy = b.y + b.h / 2 - v.h / 2;
-  return { x: s <= 1.0001 ? [b.x, b.x] : lim(v.x, v.w, VIC_M, vw - VIC_M, hx), y: s <= 1.0001 ? [b.y, b.y] : lim(v.y, v.h, VIC_M, bottom, hy) };
+/* ---------- la foto si ingrandisce, si rimpicciolisce e si sposta ----------
+   Scala rispetto allo schermo pieno: da «intera con margine» a 5×. Più grande dello schermo si sposta finché un bordo non
+   arriva al bordo dello schermo (in basso: al pannello, se aperto); più piccola sta al centro. Oltre i limiti fa da elastico.
+   Doppio tocco: alterna intera e schermo pieno. */
+function vicLimits(v) {
+  const vw = innerWidth, vh = innerHeight, bottom = VIC.phase === 'sheet' ? vh - $('#fsheet').offsetHeight : vh;
+  const ax = v.w > vw ? [vw - v.w, 0] : [(vw - v.w) / 2, (vw - v.w) / 2];
+  const ay = v.h > bottom ? [bottom - v.h, 0] : v.h > vh ? [vh - v.h, 0] : [(vh - v.h) / 2, (vh - v.h) / 2];
+  return { ax, ay };
 }
-function vicScaled(s, fx, fy, from) {   // cartolina di scala s rispetto alla base, tenendo fermo il punto (fx, fy) di «from»
-  const b = VIC.base, w = b.w * s, h = b.h * s, k = w / from.w;
-  return vicCard(fx - (fx - from.x) * k, fy - (fy - from.y) * k, w, h);
-}
+function vicScaleAt(w, fx, fy, from) { const k = w / from.w; return vicRect(fx - (fx - from.x) * k, fy - (fy - from.y) * k, w, from.h * k); }
 function vicClamp(v, rubber) {
-  const b = VIC.base; let s = v.w / b.w;
-  if (!rubber) { if (s < 1) return { ...b }; if (s > 5) v = vicScaled(5, v.x + v.w / 2, v.y + v.h / 2, v); }
-  const B = vicBounds(v), fit = (p, [lo, hi]) => p < lo ? (rubber ? lo - (lo - p) * .35 : lo) : p > hi ? (rubber ? hi + (p - hi) * .35 : hi) : p;
-  return vicCard(fit(v.x, B.x), fit(v.y, B.y), v.w, v.h);
+  const minW = vicContain().w, maxW = VIC.base.w * 5;
+  if (!rubber && (v.w < minW || v.w > maxW)) v = vicScaleAt(Math.min(maxW, Math.max(minW, v.w)), v.x + v.w / 2, v.y + v.h / 2, v);
+  const { ax, ay } = vicLimits(v), fit = (p, [lo, hi]) => p < lo ? (rubber ? lo - (lo - p) * .35 : lo) : p > hi ? (rubber ? hi + (p - hi) * .35 : hi) : p;
+  return vicRect(fit(v.x, ax), fit(v.y, ay), v.w, v.h);
 }
 (() => {
   const ov = $('#finalOv'), pts = new Map(); let pinch = null, lastTap = 0, moved = false, raw = null;
   const interactive = () => S && S.done && (VIC.phase === 'explore' || VIC.phase === 'sheet');
-  const skipZone = e => e.target.closest('#fsheet .in, .ftools, #fNext');
+  const skipZone = e => e.target.closest('#fsheet, .ftools, #fNext');
   ov.addEventListener('pointerdown', e => {
     if (!S || !S.done || skipZone(e)) return;
     if (VIC.phase === 'show') { vicSkip(); return; }
     if (!interactive()) return;
+    vicHideHint();   // ha già capito
     VIC.stopTween && VIC.stopTween(); ov.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; raw = { ...VIC.cur };
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), from: { ...raw }, cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2 }; }
   });
@@ -2473,10 +2479,11 @@ function vicClamp(v, rubber) {
     if (Math.hypot(cur[0] - prev[0], cur[1] - prev[1]) > 2) moved = true;
     if (pts.size >= 2 && pinch) {
       const [a, b] = [...pts.values()], cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
-      let s = pinch.from.w / VIC.base.w * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d;
-      if (s < 1) s = 1 - (1 - s) * .4; if (s > 5) s = 5 + (s - 5) * .2;   // elastico ai limiti
-      const v = vicScaled(s, pinch.cx, pinch.cy, pinch.from); v.x += cx - pinch.cx; v.y += cy - pinch.cy; raw = v;
-    } else if (pts.size === 1) { raw = { ...raw, x: raw.x + cur[0] - prev[0], y: raw.y + cur[1] - prev[1] }; }
+      let w = pinch.from.w * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d;
+      const minW = vicContain().w, maxW = VIC.base.w * 5;
+      if (w < minW) w = minW - (minW - w) * .35; if (w > maxW) w = maxW + (w - maxW) * .2;   // elastico ai limiti
+      const v = vicScaleAt(w, pinch.cx, pinch.cy, pinch.from); v.x += cx - pinch.cx; v.y += cy - pinch.cy; raw = v;
+    } else if (pts.size === 1) raw = { ...raw, x: raw.x + cur[0] - prev[0], y: raw.y + cur[1] - prev[1] };
     vicApply(vicClamp({ ...raw }, true));
   });
   const up = e => {
@@ -2484,19 +2491,19 @@ function vicClamp(v, rubber) {
     const p = pts.get(e.pointerId); pts.delete(e.pointerId);
     if (pts.size < 2) pinch = null;
     if (pts.size) { raw = { ...VIC.cur }; return; }
-    if (!moved) {   // doppio tocco: 2,5× nel punto toccato, oppure di nuovo intera
+    if (!moved) {   // doppio tocco: intera ↔ schermo pieno
       const now = Date.now();
-      if (now - lastTap < 320) { lastTap = 0; const zoomed = VIC.cur.w > VIC.base.w * 1.05;
-        vicTween(VIC.cur, zoomed ? { ...VIC.base } : vicClamp(vicScaled(2.5, p[0], p[1], VIC.cur), false), 320, ease.out); return; }
+      if (now - lastTap < 320) { lastTap = 0; const atCover = Math.abs(VIC.cur.w - VIC.base.w) < 4;
+        vicTween(VIC.cur, atCover ? vicContain() : vicClamp({ ...VIC.base }, false), 360, ease.out); return; }
       lastTap = now;
     }
     vicTween(VIC.cur, vicClamp({ ...VIC.cur }, false), 300, ease.out);   // torna dentro i limiti
   };
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
   ov.addEventListener('wheel', e => {   // rotellina e trackpad (il pizzico del trackpad arriva come ctrl+rotellina)
-    if (!interactive() || skipZone(e)) return; e.preventDefault(); VIC.stopTween && VIC.stopTween();
-    const s = VIC.cur.w / VIC.base.w * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025));
-    vicApply(vicClamp(vicScaled(Math.max(1, Math.min(5, s)), e.clientX, e.clientY, VIC.cur), false));
+    if (!interactive() || skipZone(e)) return; e.preventDefault(); VIC.stopTween && VIC.stopTween(); vicHideHint();
+    const w = VIC.cur.w * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025));
+    vicApply(vicClamp(vicScaleAt(w, e.clientX, e.clientY, VIC.cur), false));
   }, { passive: false });
   ov.addEventListener('dblclick', e => e.preventDefault());
 })();
