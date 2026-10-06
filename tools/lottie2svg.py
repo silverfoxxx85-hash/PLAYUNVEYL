@@ -1,6 +1,7 @@
 """Converte un'animazione Lottie (icona a tratti) in un SVG animato con SMIL, senza librerie.
 Gestisce: livelli forma e precomposizioni, genitori, trasformazioni animate (posizione/rotazione),
-forme con morph, rettangoli, tratti/riempimenti, gruppi annidati, trim path, matte alfa (normale e invertito).
+forme con morph, rettangoli, tratti/riempimenti, gruppi annidati, trim path, matte alfa (normale e invertito),
+livelli visibili solo in un intervallo (ip/op) e colori dati per espressione (Base Color / Highlight).
 Uso: python3 lottie2svg.py animazione.json uscita.svg"""
 import json, sys
 SRC, OUT = sys.argv[1], sys.argv[2]
@@ -12,7 +13,9 @@ ASSETS = {a['id']: a for a in d.get('assets', [])}
 uid = [0]
 def nid(p): uid[0] += 1; return '%s%d' % (p, uid[0])
 def fmt(x): return ('%.2f' % x).rstrip('0').rstrip('.') if abs(x) > 1e-9 else '0'
-def color(c):
+def color(c, expr=''):
+    if 'Highlight' in expr: return ACC        # il colore vero arriva dal controllo "Highlight"
+    if 'Base Color' in expr: return INK
     r, g, b = c[:3]
     return ACC if (r < .5 and g > .5) else INK
 def first(x): return x[0] if isinstance(x, list) else x
@@ -81,9 +84,9 @@ def trim_anims(tm):
 def paint_attr(p, matte):
     if p['ty'] == 'st':
         w = p['w']['k']
-        col = '#000' if matte else color(p['c']['k'])
+        col = '#000' if matte else color(p['c']['k'], p['c'].get('x', ''))
         return 'fill="none" stroke="%s" stroke-width="%s" stroke-linecap="%s" stroke-linejoin="round"' % (col, fmt(w), {1: 'butt', 2: 'round', 3: 'square'}[p.get('lc', 2)])
-    return 'fill="%s"' % ('#000' if matte else color(p['c']['k']))
+    return 'fill="%s"' % ('#000' if matte else color(p['c']['k'], p['c'].get('x', '')))
 def render_items(items, paints, trim, matte):
     """un livello di elementi (come in un gruppo Lottie): le pitture valgono per le forme dello stesso livello e di quelli annidati"""
     own = [x for x in items if x['ty'] in ('st', 'fl') and not x.get('hd') and (x.get('o', {'k': 100})['k'] if not x.get('o', {}).get('a') else 100) > 0]
@@ -121,6 +124,17 @@ def with_parents(L, byind, inner):
     while L.get('parent'):
         L = byind[L['parent']]; out = xform(L['ks'], out)
     return out
+def visible_window(L, g):
+    """livello che esiste solo tra ip e op (in fotogrammi della composizione): si accende e si spegne a scatti"""
+    ip, op = max(0, L.get('ip', 0)), min(OP, L.get('op', OP))
+    if ip <= 0 and op >= OP: return g
+    vals, kt = [], []
+    if ip > 0: vals.append('hidden'); kt.append(0)
+    vals.append('visible'); kt.append(ip / OP)
+    if op < OP: vals.append('hidden'); kt.append(op / OP)
+    return '<g visibility="%s">%s%s</g>' % (
+        'hidden' if ip > 0 else 'visible',
+        '<animate attributeName="visibility" begin="indefinite" dur="%ss" repeatCount="indefinite" calcMode="discrete" values="%s" keyTimes="%s"/>' % (fmt(DUR), ';'.join(vals), ';'.join(fmt(t) for t in kt)), g)
 def render_layers(layers, matte=False):
     byind = {x['ind']: x for x in layers}
     out = []
@@ -136,6 +150,7 @@ def render_layers(layers, matte=False):
             out.append('<mask id="%s" maskUnits="userSpaceOnUse" x="-100" y="-100" width="700" height="700"><rect x="-100" y="-100" width="700" height="700" fill="%s"/>%s</mask><g mask="url(#%s)">%s</g>' % (
                 mid, '#fff' if inv else '#000', mg, mid, g))
         else: out.append(g)
+        out[-1] = visible_window(L, out[-1])
     return ''.join(reversed(out))   # in Lottie il primo livello è quello in alto
 svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d">%s</svg>' % (d['w'], d['h'], render_layers(d['layers']))
 open(OUT, 'w').write(svg); print(len(svg))

@@ -11,7 +11,8 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 ## Struttura
 - `src/app.html` è il sorgente. `src/gen.js` è il generatore della griglia: deterministico, versionato con `GEN_VERSION`.
 - `tools/build.sh` inserisce i font in base64 (Unbounded, DM Sans) e gen.js, e scrive `index.html` nella radice. È un unico file per GitHub Pages.
-- `tools/lottie2svg.py` converte le animazioni Lottie in SVG animato (SMIL).
+- `tools/lottie2svg.py` converte le animazioni Lottie in SVG animato (SMIL). Gestisce anche i livelli visibili solo in un intervallo (ip/op) e i colori dati per espressione (Base Color → tratti, Highlight → accenti).
+- Icone dei momenti: sorgenti Lottie in `src/art/lottie/`, convertite in `src/art/ico-NOME.svg` (`python3 tools/lottie2svg.py src/art/lottie/NOME.json src/art/ico-NOME.svg`); `tools/build.sh` le inserisce tutte in `ICONS.NOME`. Ricolorate con `ICO_LILLA` (tratti #b3a6ff, accenti #e9e4ff), animazione una volta sola.
 - Link condiviso: `#g=` più JSON in base64url `{v,m,h,s,d,k,u,c,n,f}`:
   - `n` = nome di chi invia;
   - `f` = indizi: 1 normale (prima lettera visibile), 0 difficile; se manca vale normale;
@@ -51,6 +52,13 @@ Decisioni prese con Fara e già implementate. Provate con Playwright su 375×553
 - **Home e intro di chi riceve:** la demo si rimpicciolisce fino a 0,45 per far entrare tutto; i pulsanti non si comprimono più (prima "Inizia" su SE era alto 19 px).
 - **Partita:** niente cronometro durante il gioco (il tempo si misura e compare solo alla fine); l'avanzamento ("0 di 6" con i pallini) sta al centro della barra in alto. Con più di 7 parole restano solo i numeri.
 - **Vittoria:** "Rispondi" diventa "Fai sapere com'è andata" (forma senza genere).
+- **Icone animate dei momenti** (Flaticon, abbonamento di Fara):
+  - scelta della foto: **immagine** (due foto che si rimescolano) sopra il +; nascosta su schermi bassi (max-height 600 px) per non schiacciare il +;
+  - scrittura: **messaggio** (telefono con fumetti # e cuore), al centro dello spazio libero sotto il campo, solo a tastiera chiusa, grande al massimo 150 px e nascosta sotto i 90 (`fitWriteArt`); riparte ogni volta che ricompare;
+  - "Inviata!": **aeroplanino** al posto del logo, parte all'apertura e vola libero fuori dal riquadro;
+  - pagina d'errore di chi riceve, tre casi (`gameError(kind)`): **latte** "Questa sfida è scaduta" (foto o video non più disponibili), **cuore spezzato** "Questo link non funziona" (link rotto o sfida non valida), **spina** "Sei offline" con pulsante "Riprova".
+  - La ragazza della demo (home e intro) resta quella di prima (`ICO_ANIM`).
+- **Niente più "sorpresa"** (suona vecchio): "sfida" dove parla chi riceve, "la tua foto / il tuo video" nel caricamento e nell'invio (`mediaName`).
 - **Statistiche:** rimandate. Ipotesi pronta: GoatCounter (gratuito, senza cookie), 8 eventi su creazione, gioco e passaparola; serve che Fara crei l'account.
 
 ## Scelte di prodotto (ottobre 2026)
