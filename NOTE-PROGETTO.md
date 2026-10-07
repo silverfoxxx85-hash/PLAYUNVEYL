@@ -86,7 +86,7 @@ Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate c
 - **Generatore v3 (`GEN_VERSION = 3`): il centro della griglia coperto da parole.** Una parola scelta a caso parte dal centro, e fra le prime griglie valide (fino a 10) si tiene quella con il centro più coperto (`centerScore`: «cuore» = 1-4 caselle più vicine al centro, «zona centrale» = riquadro di metà lato). Centro coperto da parole: 26% prima, 97% ora (480 griglie di prova). Effetto: il riempimento finisce più spesso ai bordi, a volte in basso.
   - `generate({…, v})` usa la versione del link: chi riceve passa `cfg.v || 2`, quindi i link v2 danno esattamente la griglia di prima (verificato su 480 griglie). I link nuovi hanno `v: 3`.
 - **Rimescola senza ripetizioni** (`pickShuffleSeed`): prima a volte le parole tornavano negli stessi posti (cambiavano solo le lettere di riempimento). Ora si confronta la disposizione delle parole: si scartano quella attuale e le ultime 4 viste, e si chiede che cambi almeno un terzo delle lettere (fino a 30 tentativi). Con poche combinazioni possibili si gira fra quelle, mai la stessa due volte di fila.
-- **Vittoria in tre momenti** (`vicPlay`, stato in `VIC`; la foto è sempre il rettangolo del ritaglio, anche più grande dello schermo):
+- **Vittoria in tre momenti** (dal 7 ottobre senza invito al pizzico) (`vicPlay`, stato in `VIC`; la foto è sempre il rettangolo del ritaglio, anche più grande dello schermo):
   1. *Spettacolo:* la cartolina si mette a fuoco al suo posto, si allarga a tutto schermo ancorata a sinistra (in orizzontale: in alto), coriandoli, scorre piano fino all'altro lato e torna lentamente al centro, sempre a schermo pieno. Nessun rimpicciolimento. Comandi bloccati: un tocco salta alla foto ferma al centro.
   2. *Esplorazione:* al centro compare un box lilla (132 px, angoli 34 px, anello scuro) con l'icona animata del pizzico (Flaticon, `ICONS.pinch`, mano scura e frecce bianche, box senza ombra), solo la prima volta su quel telefono (`unveil:pinch`); dopo ~2,7 s, o al primo tocco, il box svanisce e poi compare la freccia "Avanti" in basso a destra (cerchio lilla 56 px; dopo 6 s un impulso). Niente testi sopra la foto.
   3. *Azione:* con la freccia sale dal basso il pannello (fondo pieno, angoli in alto 28 px) con messaggio e pulsanti, sopra la foto che resta a schermo pieno.
@@ -120,6 +120,19 @@ I caratteri pixel disegnati da noi non hanno convinto Fara: sostituiti con due c
 - **Figtree** (variabile 300–900, solo dritto) per tutto il resto: messaggio, pulsanti, testi, campi. Le misure dei testi sono tornate quelle di prima dei caratteri pixel.
 - DM Sans, Unbounded e i TTF "unveil Pixel" non sono più incorporati e sono stati tolti da `src/fonts` (restano nella storia della branch).
 - Il resto della prima parte (schermata "Ordine", luce ad anello, musica lo-fi, frecce bianche del pizzico) resta invariato.
+
+## Fatto il 7 ottobre 2026, terza parte (branch `caratteri-pixel`)
+Prove di Fara e della sua compagna sul telefono; varianti della frase confrontate in `varianti-frase` (scelta: B, misura media, parola trovata in Regular).
+- **La frase (partita, "La sua sfida", messaggio della vittoria):** parole visibili tutte in Figtree 600 bianco, stessa misura (via il grigio e la misura più piccola delle parole corte). Parole del gioco in **Silkscreen Regular viola** (`--word`), al 96% della misura del testo (a metà fra minuscole e maiuscole di Figtree):
+  - pillola: una riga di testo (`line-height: 1`, padding uguale sopra e sotto le maiuscole di Silkscreen), così lettere e trattini poggiano sulla **stessa linea di base** di Figtree;
+  - lettere mancanti: **trattini bassi** di 4×1 pixel di Silkscreen sulla linea di base, uno spazio fisso di 6 pixel per lettera (stesso ritmo delle lettere: rivelandole il ritmo non cambia);
+  - parola trovata: resta in Silkscreen Regular viola dentro la frase; nella vittoria il messaggio mostra in viola tutte le parole nascoste.
+  - Il grigio resta solo nel pannello "Tocca una parola" (parole che non si possono nascondere).
+- **Frase fissa:** "Spoiler:" e il nome di chi invia in bianco, il resto lilla; sul lilla la parola chiave diventa scura e il resto bianco (`.tagline .tk`).
+- **Scatta e Registra:** fondo viola, icona e testo scuri.
+- **Guida obbligatoria alla prima visita** (`gateButton`, `d.lock/unlock` in `mountGuide`): la guida non avanza da sola; a destra dei puntini c'è la pillola "Avanti". Il pulsante grande è spento con "Guarda come si gioca · 1/3" (in home "Guarda come funziona · n/3"); toccato fa un piccolo scatto e fa pulsare "Avanti". Si accende ("Inizia" / "Nascondi qualcosa", con un rimbalzo) solo a fine animazione del terzo passo. Ricordato per telefono (`unveil:guida:gioca`, `unveil:guida:crea`). In home non si blocca se su quel telefono si è già vista la guida di gioco; niente blocco per "Prova a giocare", per chi riprende una partita e con "Riduci movimento".
+- **Vittoria:** tolto l'invito al pizzico (icona e box); finito lo spettacolo arriva subito la freccia, ora senza ombra né bordo scuro.
+- **Una sola colonna:** margine laterale 24 px per pagine, pannelli e piè di pagina; pulsanti grandi alti 54 px e larghi al massimo 360 px, allineati alle schede.
 
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.

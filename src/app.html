@@ -20,6 +20,7 @@
     --bg: #130f16; --card: #1e1823; --board: #1a151e; --tile: #2c2432; --tiledark: #3a3142; --box: #352b3c; --line: #30283a;
     --ink: #f6eef4; --soft: #a99cad; --accent: #b3a6ff; --onaccent: #130f16; --danger: #ff8a9a;
     --display: 'Silkscreen', 'Arial Black', system-ui, sans-serif;   /* Silkscreen Bold: titoli, griglia, parole da trovare */
+    --word: 'Silkscreen Regular', 'Silkscreen', monospace;   /* parole del gioco nella frase */
     --pixel: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;   /* il messaggio (stesso carattere del resto) */
     --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;    /* Figtree: tutto il resto */
   }
@@ -51,6 +52,8 @@
   .tagline, .overlay h2.tagline { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 1.2; letter-spacing: -.01em; margin: 0; max-width: 340px; min-height: 48px; display: flex; align-items: center; justify-content: center; text-align: center; text-wrap: balance; color: var(--accent); transition: color .6s ease .3s; }
   .lit .tagline, .lit.overlay h2.tagline { color: #fff; }   /* lilla sul nero, bianca quando la pagina diventa lilla */
   html.tagdark .lit .tagline, html.tagdark .lit.overlay h2.tagline { color: #130f16; }
+  .tagline .tk { font-weight: inherit; color: var(--ink); transition: color .6s ease .3s; }   /* parola chiave (Spoiler:, il nome): bianca sul nero, scura sul lilla */
+  .lit .tagline .tk { color: #130f16; }
   .gtext h3, .gtext p { text-wrap: balance; }
   .tagline > span { display: block; }
   .homebtns { width: 100%; max-width: 440px; margin-top: 4px; }
@@ -109,13 +112,15 @@
   #splash.in .wordmark { opacity: 1; transform: none; }
 
   /* ---------- PULSANTI ---------- */
-  .btn-main { width: 100%; height: 58px; border-radius: 999px; background: var(--accent); color: var(--onaccent); font-family: var(--body); font-size: 18px; font-weight: 700; }
+  .btn-main { width: 100%; max-width: 360px; margin-inline: auto; display: block; height: 54px; border-radius: 999px; background: var(--accent); color: var(--onaccent); font-family: var(--body); font-size: 18px; font-weight: 700; }
   /* micro-interazioni a molla: si schiaccia al tocco, rimbalza al rilascio */
   .btn-main, .btn-ghost, .btn-link, .iconbtn, .shufflebtn, #hintBtn, .wtok, .donebtn { transition: opacity .2s, background .25s, transform .45s cubic-bezier(.3,1.8,.5,1); }
   .btn-main:active:not(:disabled), .btn-ghost:active, .iconbtn:active, .shufflebtn:active, #hintBtn:active:not(:disabled), .wtok:active, .donebtn:active { transform: scale(.94); transition: transform .08s ease; }
   .btn-main:disabled { opacity: .3; cursor: not-allowed; }
   .btn-ghost { width: 100%; height: 52px; border-radius: 999px; background: var(--card); font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .btn-ghost svg { width: 18px; height: 18px; color: var(--accent); }
+  .camrow .btn-ghost { background: var(--accent); color: var(--onaccent); font-weight: 700; }   /* Scatta e Registra: accento viola, contenuto scuro */
+  .camrow .btn-ghost svg { color: var(--onaccent); }
   .btn-link { color: var(--accent); font-size: 15px; font-weight: 600; padding: 10px 4px; }
   .iconbtn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--soft); }
   .iconbtn svg { width: 18px; height: 18px; }
@@ -168,6 +173,19 @@
   .gwrap.end .greplay { opacity: 1; pointer-events: auto; transition: opacity .35s ease .4s; }
   .gdots button { width: 8px; height: 8px; padding: 0; border-radius: 4px; background: var(--soft); opacity: .4; }
   .gdots button.on { width: 22px; opacity: 1; background: var(--ink); }
+  /* prima visita: la guida avanza solo con «Avanti» (a destra dei puntini) e il pulsante grande si accende a fine guida */
+  .gdots { align-self: stretch; }
+  .gdots .gnext { position: absolute; right: 0; top: 50%; width: auto; height: 34px; padding: 0 12px 0 15px; border-radius: 999px; opacity: 0; pointer-events: none; transform: translateY(-50%) scale(.9);
+    display: inline-flex; align-items: center; gap: 6px; background: var(--card); color: var(--ink); font-size: 14px; font-weight: 700; transition: opacity .3s ease, transform .35s cubic-bezier(.3,1.6,.5,1), background .6s ease .3s, color .6s ease .3s; }
+  .gdots .gnext svg { width: 14px; height: 14px; }
+  .gdots .gnext.show { opacity: 1; pointer-events: auto; transform: translateY(-50%); }
+  .gdots .gnext.nudge { animation: gnudge 1s ease 2; }
+  @keyframes gnudge { 0%, 100% { transform: translateY(-50%); } 30% { transform: translateY(-50%) scale(1.12); } 60% { transform: translateY(-50%) scale(.97); } }
+  .lit .gdots .gnext { background: #130f16; color: var(--accent); }
+  .btn-main.locked { background: #2a2233; color: var(--soft); box-shadow: inset 0 0 0 1.5px #3a3142; font-size: 16px; }
+  .lit .btn-main.locked { background: rgba(19,15,22,.14); color: #130f16; box-shadow: none; }
+  .btn-main.unlocked { animation: unlockpop .55s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes unlockpop { 0% { transform: scale(.94); } 60% { transform: scale(1.04); } 100% { transform: none; } }
   .gtext { min-height: 112px; max-width: 330px; display: flex; flex-direction: column; gap: 8px; text-align: center; flex-shrink: 0; }
   .tagline, .wordmark, .gtext h3, .step h1, .ssheet h2, .overlay h2, .ttext h3 { letter-spacing: -.125em !important; }   /* Silkscreen: un pixel (125/1000) tra le lettere invece di due */
   .tile, .dtiles span, .pv .ptiles span { letter-spacing: 0 !important; }
@@ -201,12 +219,12 @@
   .dots i.done { background: #5a5080; }
   .steps { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .steps::-webkit-scrollbar { display: none; }   /* niente barra: il contenuto resta allineato al pulsante in fondo */
-  .step { display: none; max-width: 480px; margin: 0 auto; padding: 12px 20px 26px; flex-direction: column; gap: 16px; animation: stepin .3s ease; }
+  .step { display: none; max-width: 480px; margin: 0 auto; padding: 12px 24px 26px; flex-direction: column; gap: 16px; animation: stepin .3s ease; }
   .step.active { display: flex; }
   @keyframes stepin { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
   .step h1 { text-align: center; font-family: var(--display); font-weight: 700; font-size: 25px; line-height: 1.12; letter-spacing: -.02em; }
   .lead { color: var(--soft); font-size: 16px; line-height: 1.45; }
-  .cfoot { padding: 10px 20px max(16px, env(safe-area-inset-bottom)); max-width: 480px; width: 100%; margin: 0 auto; }
+  .cfoot { padding: 10px 24px max(16px, env(safe-area-inset-bottom)); max-width: 480px; width: 100%; margin: 0 auto; }
   .label { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--soft); }
 
   .home { justify-content: center; align-items: center; text-align: center; min-height: 100%; gap: 18px; padding-top: max(26px, env(safe-area-inset-top)); padding-bottom: calc(max(22px, env(safe-area-inset-bottom)) + 5vh); }   /* blocco unico, poco sopra il centro */
@@ -288,7 +306,7 @@
   .liveprev .empty small { font-size: 13px; color: var(--soft); }
   .seenote { font-size: 13px; color: var(--soft); line-height: 1.35; }
   .seenote[hidden] { display: none; }
-  .wtok { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; padding: 0 3px; border-radius: 8px; white-space: nowrap; font-size: 20px; font-weight: 600; transition: background .25s; }
+  .wtok { white-space: nowrap; transition: background .25s; }
   .seesub { font-size: 13px; color: var(--soft); margin-top: -2px; }
   .seetitle, .cardtitle { font-size: 15px; font-weight: 700; line-height: 1.35; }
   .liveprev .wtok { color: var(--ink); }
@@ -316,6 +334,7 @@
   @keyframes alflash { 0%, 100% { transform: none } 30% { transform: scale(1.03) } }
   .btn-main.off { opacity: .3; }  .shake { animation: shake .35s; }
   .fixedtxt, .typing { color: var(--soft); }
+  .liveprev .fixedtxt { color: var(--ink); }   /* nella frase tutte le parole visibili sono uguali: stesso bianco, stessa misura */
   @keyframes shake { 0%,100% { transform: none } 25% { transform: translateX(-4px) } 75% { transform: translateX(4px) } }
   .tawrap { position: relative; }
   textarea.msg { width: 100%; height: 92px; padding: 14px 16px; border-radius: 18px; border: 2px solid var(--line); background: var(--card); font-family: var(--pixel); font-size: 17px; font-weight: 500; line-height: 1.35; resize: none; }
@@ -367,7 +386,7 @@
   .ttoast svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
   .cfoot { display: flex; flex-direction: column; gap: 10px; }
   .cfoot.row { flex-direction: row; align-items: center; }
-  .cfoot.row > button { flex: 1; min-width: 0; height: 56px; white-space: nowrap; }
+  .cfoot.row > button { flex: 1; min-width: 0; height: 54px; white-space: nowrap; }
   .cfoot.row .btn-ghost { gap: 8px; padding: 0 10px; }
   /* scrittura: a tastiera aperta c'è la pillola accanto al campo, a tastiera chiusa il pulsante grande in basso */
   .s2.writing:not(.kbd) .donebtn { display: none; }
@@ -404,7 +423,7 @@
   /* pannello di invio */
   .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(8,6,10,.6); opacity: 0; pointer-events: none; transition: opacity .3s; }
   .scrim.show { opacity: 1; pointer-events: auto; }
-  .ssheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; background: var(--card); border-radius: 28px 28px 0 0; padding: 10px 20px max(20px, env(safe-area-inset-bottom));
+  .ssheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; background: var(--card); border-radius: 28px 28px 0 0; padding: 10px 24px max(20px, env(safe-area-inset-bottom));
     transform: translateY(105%); transition: transform .45s cubic-bezier(.2,.9,.25,1.05); }
   .ssheet.show { transform: none; }
   .ssheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
@@ -437,19 +456,22 @@
   #hintBtn { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--card); font-size: 14px; font-weight: 700; }
   #hintBtn:disabled { color: var(--soft); cursor: default; }
   #hintBtn svg { width: 20px; height: 20px; transform: rotate(-90deg); }
-  .msgarea { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 16px 2px; transition: opacity .5s; }
+  .msgarea { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 20px 2px; transition: opacity .5s; }
   .msgbar { font-family: var(--pixel); font-size: 23px; font-weight: 600; line-height: 1.75; text-align: center; letter-spacing: -.01em; }
   .msgbar.sm { font-size: 19px; }
-  .msgbar .fixed { color: var(--soft); }
-  /* parola da trovare: un'unica pillola, un pallino per lettera; le lettere rivelate (prima lettera, aiuti) prendono il posto del pallino */
-  .slot { display: inline-flex; align-items: center; vertical-align: middle; white-space: nowrap; height: 1.3em; padding: 0 .4em; margin: 0 .1em; border-radius: .65em; background: var(--box); }
-  .slot .box { display: inline-flex; align-items: center; justify-content: center; width: .72em; height: 100%; font-family: var(--display); font-size: .85em; font-weight: 700; color: var(--accent); line-height: 1; letter-spacing: 0; }   /* uno spazio fisso per lettera: la pillola non cambia larghezza */
-  .slot .box:empty::before { content: ''; width: .2em; height: .2em; border-radius: 50%; background: #8a7e9a; }
-  .slot .box.rev { color: var(--ink); animation: boxin .25s ease; }
-  @keyframes boxin { from { opacity: 0; transform: scale(.4); } }
+  .msgbar .fixed { color: var(--ink); }
+  /* parole del gioco (pillole, lettere rivelate, parole trovate): Silkscreen Regular viola, alto il 96% del testo (a metà fra minuscole e maiuscole di Figtree).
+     Tutto poggia sulla linea di base di Figtree: la pillola è una riga di testo (line-height 1) con lo stesso spazio sopra e sotto le maiuscole di Silkscreen (625/1000). */
+  .slot { display: inline-block; vertical-align: baseline; white-space: nowrap; font-family: var(--word); font-size: .96em; font-weight: 400; line-height: 1; letter-spacing: 0;
+    padding: .3em .3em .3em; margin: 0 .06em; border-radius: .7em; background: var(--box); color: var(--accent); }
+  .slot .box { display: inline-block; width: .75em; text-align: center; }   /* uno spazio fisso per lettera: la pillola non cambia larghezza */
+  .slot .box:empty::before { content: ''; display: inline-block; vertical-align: baseline; width: .5em; height: .125em; background: #8a7e9a; }   /* trattino basso: 4 pixel × 1, sulla linea di base */
+  .slot .box.rev { animation: boxin .25s ease; }
+  @keyframes boxin { from { opacity: 0; } }
   .nb { white-space: nowrap; }
-  .slot.done { transition: opacity .25s ease, background .25s ease; background: transparent; }
-  .msgbar .found { font-family: var(--display); font-size: .9em; letter-spacing: -.125em; animation: pop .45s ease; }   /* la parola trovata resta nel carattere della griglia */
+  .slot.done { transition: background .25s ease; background: transparent; }
+  .found { font-family: var(--word); font-size: .96em; font-weight: 400; letter-spacing: -.125em; padding-right: .125em; color: var(--accent); }   /* parola trovata: resta viola, nel carattere del gioco */
+  .msgbar .found { animation: pop .45s ease; }
   @keyframes pop { 0% { opacity: 0; transform: translateY(6px) } 100% { opacity: 1; transform: none } }
   .progress { display: flex; align-items: center; gap: 10px; }
   .progress .pd { display: flex; gap: 4px; width: min(150px, calc(var(--n, 5) * 28px)); }
@@ -488,11 +510,11 @@
   .bubble.show, .toastmsg.show { opacity: 1; }
   .playing-done .topbar, .playing-done .msgarea { opacity: 0; pointer-events: none; }
 
-  .overlay { position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px 26px; }
+  .overlay { position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px 24px; }
   .overlay.active { display: flex; }
   .overlay h2 { font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1.12; letter-spacing: -.02em; margin: 10px 0 22px; }
-  .overlay .btn-main { max-width: 320px; }
-  #introOv .btn-main { max-width: none; }   /* come «Nascondi qualcosa» in home */
+  .overlay .btn-main { max-width: 360px; }
+  #introOv .btn-main { max-width: 360px; }   /* come «Nascondi qualcosa» in home */
   .overlay > *, .home > * { flex-shrink: 0; }
   .pvfor { font-size: 12px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
   .introtxt { color: var(--soft); font-size: 15px; line-height: 1.45; max-width: 300px; margin: 22px 0 24px; }
@@ -508,14 +530,9 @@
   #zoomer.clear .media { transition: filter 1s ease, transform 1s cubic-bezier(.2,.8,.2,1); }
   /* freccia «Avanti»: piena, sempre leggibile su qualunque foto */
   .fnext { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 54; width: 56px; height: 56px; border-radius: 50%;
-    background: var(--accent); color: #130f16; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px rgba(19,15,22,.55), 0 6px 18px rgba(0,0,0,.35);
+    background: var(--accent); color: #130f16; display: flex; align-items: center; justify-content: center;
     opacity: 0; transform: scale(.85); pointer-events: none; transition: opacity .35s ease, transform .35s cubic-bezier(.3,1.6,.5,1); }
   .fnext svg { width: 24px; height: 24px; }
-  /* l'invito a ingrandire: box lilla pieno (leggibile su qualunque foto) con l'icona animata del pizzico */
-  .fhint { position: fixed; left: 50%; top: 50%; z-index: 54; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 34px; background: var(--accent);
-    display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.8); pointer-events: none; transition: opacity .3s ease, transform .3s ease; }
-  .fhint.show { opacity: 1; transform: none; transition: opacity .3s ease, transform .45s cubic-bezier(.3,1.6,.5,1); }
-  .fhint svg { width: 96px; height: 96px; }
   .fnext.show { opacity: 1; transform: none; pointer-events: auto; }
   .fnext.nudge { animation: fnudge 1.1s ease 1; }
   @keyframes fnudge { 0%, 100% { transform: none; } 30% { transform: scale(1.12); } 55% { transform: scale(.96); } 75% { transform: scale(1.04); } }
@@ -529,15 +546,15 @@
   .ftools.show { opacity: 1; }
   .ftools button { width: 44px; height: 44px; border-radius: 50%; background: rgba(19,15,22,.7); color: var(--ink); display: flex; align-items: center; justify-content: center; }
   .ftools svg { width: 18px; height: 18px; }
-  .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 24px 22px max(24px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0;
+  .fsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 52; padding: 24px 24px max(24px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0;
     background: var(--bg); box-shadow: 0 -10px 30px rgba(0,0,0,.35); transform: translateY(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1); }   /* sale sopra la foto, che resta a schermo pieno */
   .fsheet.instant { transition: none; }
   .fsheet.show { transform: none; }
   .fsheet .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-  .fmsg { font-family: var(--pixel); font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+  .fmsg { font-family: var(--pixel); font-size: 25px; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; }
   .fstats { font-size: 14px; color: var(--soft); }
   .fbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
-  .fbtns .btn-main { max-width: none; }
+  .fbtns .btn-main { max-width: 360px; }
   .confetti { position: fixed; inset: 0; z-index: 54; pointer-events: none; overflow: hidden; }
   .confetti i { position: absolute; top: -20px; border-radius: 2px; animation: fall var(--d, 2.6s) cubic-bezier(.25,.6,.45,1) var(--w, 0s) forwards; opacity: 0; }
   @keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0) } 85% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--x, 0), 105vh) rotate(var(--r, 360deg)) } }
@@ -611,8 +628,8 @@
       <div class="demo" id="homeDemo" aria-hidden="true"></div>
       <div class="gdots" id="homeDots"></div>
       <div class="gtext" id="homeText" aria-live="polite"></div>
-      <p class="tagline" id="homeTag">Spoiler: dovrà guadagnarsela.</p>
-      <div class="homebtns" id="homeBtns"><button class="btn-main" onclick="newDraft()">Nascondi qualcosa</button></div>
+      <p class="tagline" id="homeTag"><span><b class="tk">Spoiler:</b> dovrà guadagnarsela.</span></p>
+      <div class="homebtns" id="homeBtns"><button class="btn-main" onclick="homeGo()">Nascondi qualcosa</button></div>
     </div>
 
     <!-- 1 · FOTO O VIDEO -->
@@ -777,7 +794,6 @@
     <div class="ftools" id="ftools">
       <button id="audioBtn" style="display:none" onclick="toggleAudio()" aria-label="Audio del video"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v4h3l4 3V4L6 7z"/><path id="audioWave" d="M13 6.5a4 4 0 0 1 0 5" opacity=".3"/></svg></button>
     </div>
-    <div class="fhint" id="fHint" aria-hidden="true"></div>
     <button class="fnext" id="fNext" onclick="vicNext()" aria-label="Avanti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="fsheet" id="fsheet"><div class="in">
       <span class="pvfor" id="fFor">Per te</span>
@@ -1282,6 +1298,9 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
   wrap.insertAdjacentHTML('beforeend', `<button class="greplay" tabindex="-1"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7"/><path d="M3.5 3.5v3.8h3.8"/></svg>Rivedi come funziona</button>`);
   const grid = root.querySelector('.dgrid'), pic = root.querySelector('.pic'), holes = root.querySelector('.dh'), fg = root.querySelector('.finger');
   const tiles = [...root.querySelectorAll('.dtiles span')], ico = root.querySelector('.pic svg'), dots = [...dotsEl.querySelectorAll('button')], replay = wrap.querySelector('.greplay');
+  dotsEl.insertAdjacentHTML('beforeend', '<button class="gnext" tabindex="-1">Avanti<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>');
+  const next = dotsEl.querySelector('.gnext'); let nudgeT = 0;
+  const showNext = on => { next.classList.toggle('show', on); next.classList.remove('nudge'); next.tabIndex = on ? 0 : -1; clearTimeout(nudgeT); };
   grid.style.opacity = 0;   // invisibile finché la guida non parte: la prima cosa che si vede è la sua entrata
   const geo = { sw: 52, sh: 52, gap: 6, pad: 6, cols: 3, rows: 3, r: 13 }, ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
   const pos = i => [6 + (i % 3) * 58 + 26, 6 + ((i / 3) | 0) * 58 + 26];
@@ -1335,16 +1354,23 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
     dots.forEach((b, k) => b.classList.toggle('on', k === n));
     const s = steps[n]; if (wasEnd) { wrap.classList.add('hold'); at(260, () => { wrap.classList.remove('hold'); say(s.h, s.p); }); } else say(s.h, s.p); s.init(c);   // dopo «Rivedi»: prima svanisce il pulsante, poi torna la frase
     const dur = s.run(c);
-    if (n < steps.length - 1) at(dur, () => go(n + 1)); else at(dur, () => { d.running = false; d.done = true; });
+    if (d.gate) { d.gate.onStep(n); showNext(n < steps.length - 1); }
+    if (n < steps.length - 1) at(dur, () => { if (!d.gate) return go(n + 1); d.running = false; nudgeT = setTimeout(() => d.gate && next.classList.add('nudge'), 1200); });   // prima visita: aspetta «Avanti»
+    else at(dur, () => { d.running = false; d.done = true; d.unlock(); });
   }
   d.run = (n = 0) => {
-    if (reducedMotion()) { T.forEach(clearTimeout); T = []; c.state({ covered: true, found: ALL }); pic.classList.add('clear'); grid.classList.add('bare'); grid.style.opacity = ''; setLit(d.host, true, grid); if (final) say(final[0], final[1]); dotsEl.classList.add('end'); wrap.classList.add('end'); replay.tabIndex = 0; d.done = true; return; }
+    if (reducedMotion()) { d.unlock(); T.forEach(clearTimeout); T = []; c.state({ covered: true, found: ALL }); pic.classList.add('clear'); grid.classList.add('bare'); grid.style.opacity = ''; setLit(d.host, true, grid); if (final) say(final[0], final[1]); dotsEl.classList.add('end'); wrap.classList.add('end'); replay.tabIndex = 0; d.done = true; return; }
     go(n);
   };
+  // prima visita: gate = { onStep(n), onUnlock() }. Si sblocca solo a fine animazione dell'ultimo passo
+  d.lock = gate => { d.gate = gate; };
+  d.unlock = () => { const g = d.gate; if (!g) return; d.gate = null; showNext(false); g.onUnlock(); };
+  d.poke = () => { if (!d.gate) return; next.classList.remove('nudge'); void next.offsetWidth; next.classList.add('nudge'); };
+  next.addEventListener('click', e => { e.stopPropagation(); if (d.gate && splashDone && d.step < steps.length - 1) go(d.step + 1); });
   d.pause = () => { if (d.done) { try { ico.pauseAnimations(); } catch (e) {} return; } T.forEach(clearTimeout); T = []; d.running = false; icoEnd(ico); };
   d.resume = () => { if (d.done) { try { ico.unpauseAnimations(); } catch (e) {} } else if (!d.running) d.run(d.step); };
   d.start = () => { d.wanted = true; if (splashDone && !document.hidden) d.run(0); else { const s = steps[0]; say(s.h, s.p); dots[0].classList.add('on'); } };
-  d.stop = () => { d.wanted = false; d.done = false; d.running = false; T.forEach(clearTimeout); T = []; icoEnd(ico); setLit(d.host, false); dotsEl.classList.remove('end'); wrap.classList.remove('end', 'hold'); grid.style.opacity = 0; };
+  d.stop = () => { showNext(false); d.wanted = false; d.done = false; d.running = false; T.forEach(clearTimeout); T = []; icoEnd(ico); setLit(d.host, false); dotsEl.classList.remove('end'); wrap.classList.remove('end', 'hold'); grid.style.opacity = 0; };
   root.addEventListener('click', () => { if (d.wanted && splashDone) d.run(0); });
   dots.forEach((b, k) => b.addEventListener('click', () => { if (d.wanted && splashDone) d.run(k); }));
   replay.addEventListener('click', () => { if (d.wanted && splashDone) d.run(0); });
@@ -1378,6 +1404,20 @@ const homeDemo = mountGuide($('#homeDemo'), { textEl: $('#homeText'), dotsEl: $(
 const introDemo = mountGuide($('#introDemo'), { textEl: $('#introText'), dotsEl: $('#introDots'), steps: GUIDE_GIOCA,
   final: null });   // il nome di chi invia è già fisso sotto i testi
 homeDemo.host = $('#screenCreate'); introDemo.host = $('#introOv');
+/* prima visita: la guida va vista fino in fondo prima di poter partire (chi ha già giocato una sfida su questo telefono la salta anche in home) */
+const GUIDE_KEY = { crea: 'unveil:guida:crea', gioca: 'unveil:guida:gioca' };
+const guideSeen = k => { try { return !!localStorage.getItem(GUIDE_KEY[k]); } catch (e) { return true; } };
+const markGuide = k => { try { localStorage.setItem(GUIDE_KEY[k], '1'); } catch (e) {} };
+function gateButton(btn, demo, key, label, readyText) {
+  btn.classList.add('locked'); btn.classList.remove('unlocked');
+  if (!btn.disabled) btn.textContent = `${label} · ${demo.step + 1}/3`;
+  demo.lock({
+    onStep: n => { if (btn.classList.contains('locked') && !btn.disabled) btn.textContent = `${label} · ${n + 1}/3`; },
+    onUnlock: () => { markGuide(key); btn.classList.remove('locked'); if (!btn.disabled) { btn.textContent = readyText(); btn.classList.add('unlocked'); } }
+  });
+}
+function lockedTap(btn, demo) { btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake'); demo.poke(); }
+function homeGo() { const b = $('#homeBtns .btn-main'); if (b.classList.contains('locked')) return lockedTap(b, homeDemo); newDraft(); }
 /* doodle animato: una griglia irregolare di icone, ognuna con il suo ritmo (18-34 s) e il suo percorso */
 const DD_S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 const ddTile = l => `<svg viewBox="0 0 30 30"><rect x="1" y="1" width="28" height="28" rx="8" fill="none" stroke="currentColor" stroke-width="2"/><text x="15" y="19.7" text-anchor="middle" font-family="Silkscreen, sans-serif" font-weight="700" font-size="15" fill="currentColor">${l}</text></svg>`;   // casella a tratto, come le altre icone
@@ -1458,7 +1498,6 @@ const ICO_LILLA = ['#b3a6ff', '#e9e4ff'];   // icone dei momenti: tratti lilla, 
 $('#pickArt').innerHTML = icoSVG('pk', { colors: ICO_LILLA, once: true, src: ICONS.immagine });
 $('#writeArt').innerHTML = icoSVG('wa', { colors: ICO_LILLA, once: true, src: ICONS.messaggio });
 $('#doneLogo').innerHTML = icoSVG('dl', { colors: ICO_LILLA, once: true, src: ICONS.aeroplanino });
-$('#fHint').innerHTML = icoSVG('ph', { colors: ['#130f16', '#ffffff'], once: true, src: ICONS.pinch });   // pizzico sul box lilla: mano scura, frecce bianche
 $('#cropFrame').querySelector('.ghost').innerHTML = '<span></span>'.repeat(48);
 // (al posto del logo nell'intestazione c'è il pulsante «?»: come funziona e consigli)
 $('#homeLogo').innerHTML = logoSVG(44, 'static', '#1e1823'); $('#homeLogo svg').classList.add('breathe');
@@ -1476,7 +1515,7 @@ function goStep(n) {
   $('#nextBtn').textContent = n === 2 ? 'Invia' : 'Avanti'; $('#nextBtn').classList.remove('wait'); $('#cfoot').classList.remove('row');
   if (n !== 0 && $('#screenCreate').classList.contains('lit')) setLit($('#screenCreate'), false, $('#homeBtns .btn-main'));   // il lilla rientra nel pulsante
   $('#screenCreate').classList.toggle('onhome', n === 0);
-  if (n === 0) { homeDemo.start(); layoutDemos(); } else homeDemo.stop();
+  if (n === 0) { if (!guideSeen('crea') && !guideSeen('gioca') && !homeDemo.gate) gateButton($('#homeBtns .btn-main'), homeDemo, 'crea', 'Guarda come funziona', () => 'Nascondi qualcosa'); homeDemo.start(); layoutDemos(); } else homeDemo.stop();
   if (n === 1) { fitMediaStep(); layoutCrop(); if (!C.mediaEl) { const a = $('#pickArt svg'); icoEnd(a); setTimeout(() => C.step === 1 && icoBegin(a), 350); } }
   if (n === 2) { recompute(); renderMsg(); setWriting(C.view !== 'preview'); if (C.view === 'preview') refreshPreview(true); } else { stopLoop(); closeWords(false, true); }
   validate(); saveDraft();
@@ -2317,19 +2356,19 @@ function startGame(cfg, opts = {}) {
   updateProgress();
 
   const resuming = !!(saved && !saved.done && saved.found && saved.found.length);
-  $('#introTitle').textContent = resuming ? 'Bentornato!' : `${cfg.n || 'Qualcuno'} ti sta nascondendo qualcosa`;
+  $('#introTitle').innerHTML = resuming ? '<span>Bentornato!</span>' : `<span><b class="tk">${esc(cfg.n || 'Qualcuno')}</b> ti sta nascondendo qualcosa</span>`;   // il nome in bianco, il resto lilla
   ['#introDemo', '#introDots', '#introText'].forEach(id => $(id).style.display = resuming ? 'none' : '');
   introDemo.noun = cfg.k === 'v' ? 'il video' : 'la foto';
   $('#introTxt').style.display = resuming ? '' : 'none';
   $('#introTxt').textContent = resuming ? `Hai già trovato ${saved.found.length} ${saved.found.length === 1 ? 'parola' : 'parole'} su ${grid.words.length}: riprendi da dove eri rimasto.` : '';
   $('#startBtn').disabled = true; $('#startBtn').textContent = 'Caricamento…';
   $('#timer').textContent = fmtTime(S.base); $('#hintBtn').disabled = true; setHintRing(0);
-  if (!S.resumeDone) { $('#introOv').classList.add('active'); if (!resuming) introDemo.start(); layoutDemos(); }
+  if (!S.resumeDone) { $('#introOv').classList.add('active'); if (!resuming) { if (!opts.local && !guideSeen('gioca')) gateButton($('#startBtn'), introDemo, 'gioca', 'Guarda come si gioca', () => S && S.found.size ? 'Continua' : 'Inizia'); introDemo.start(); } layoutDemos(); }
   layoutGame();
 }
 function mediaReady() {
   if (S.resumeDone) return showFinal(S.resumeDone.total || 0, S.resumeDone.hu || 0, false);
-  $('#startBtn').disabled = false; $('#startBtn').textContent = S.found.size ? 'Continua' : 'Inizia';
+  $('#startBtn').disabled = false; $('#startBtn').textContent = $('#startBtn').classList.contains('locked') ? `Guarda come si gioca · ${introDemo.step + 1}/3` : S.found.size ? 'Continua' : 'Inizia';
 }
 /* pagina d'errore di chi riceve: icona, titolo e pulsante secondo il motivo */
 const GAME_ERR = {
@@ -2352,7 +2391,7 @@ function restoreProgress(p) {
   (p.found || []).forEach(wi => {
     const w = S.grid.words[wi]; if (!w) return;
     S.found.add(wi); w.cells.forEach(c => { S.tiles[c].classList.add('gone'); S.open.add(c); });
-    const slot = document.querySelector(`#msgBar .slot[data-seg="${w.seg}"]`); if (slot) slot.outerHTML = `<span>${esc(w.text)}</span>`;
+    const slot = document.querySelector(`#msgBar .slot[data-seg="${w.seg}"]`); if (slot) slot.outerHTML = `<span class="found">${esc(w.text)}</span>`;
   });
   Object.entries(S.hintLevel).forEach(([wi, lvl]) => { if (!S.found.has(+wi)) for (let l = 1; l <= lvl; l++) applyHint(+wi, l); });
 }
@@ -2394,6 +2433,7 @@ function drawHoles() { if (GEO && S) $('#holes').setAttribute('d', holesPath(S.o
 
 function beginPlay() {
   if (!S || !S.ready) return;
+  if ($('#startBtn').classList.contains('locked')) return lockedTap($('#startBtn'), introDemo);   // prima visita: prima la guida
   SFX.unlock(); introDemo.stop(); $('#introOv').classList.remove('active');
   MUSIC.duck(1, .1); MUSIC.start();   // la musica parte con la partita (serve il tocco su Inizia)
   if (S.cfg.k === 'v') S.media.play().catch(() => {});
@@ -2554,7 +2594,7 @@ function win() {
    La foto è sempre il rettangolo del ritaglio (x, y, w, h): può essere più grande dello schermo. Gli angoli seguono lo
    spazio libero: dritti quando tocca i bordi, R px con 12 px di margine o più. */
 const VIC = { phase: 'off', base: null, cur: null, T: null, tw: null, hintT: null, token: {} };
-const VIC_M = 12, VIC_SEEN = 'unveil:pinch';
+const VIC_M = 12;
 const vicR = () => (GEO && GEO.R) || 26;
 const ease = { io: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, sine: t => -(Math.cos(Math.PI * t) - 1) / 2, out: t => 1 - Math.pow(1 - t, 3) };
 const vicRect = (x, y, w, h) => ({ x, y, w, h });
@@ -2583,11 +2623,11 @@ function vicContain() {   // intera, con il margine (e quindi gli angoli tondi)
   return vicRect((vw - w) / 2, (vh - h) / 2, w, h);
 }
 const vicWait = ms => new Promise(res => { VIC.T = setTimeout(res, ms); });
-function vicReset() { VIC.token = {}; VIC.phase = 'off'; clearTimeout(VIC.T); clearTimeout(VIC.hintT); cancelAnimationFrame(VIC.tw); $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show'); $('#finalOv').classList.remove('sheet'); }
+function vicReset() { VIC.token = {}; VIC.phase = 'off'; clearTimeout(VIC.T); clearTimeout(VIC.hintT); cancelAnimationFrame(VIC.tw); $('#fNext').classList.remove('show', 'nudge'); $('#finalOv').classList.remove('sheet'); }
 async function vicPlay(animate) {
   const z = $('#zoomer'), F = $('#frame').getBoundingClientRect(), token = VIC.token = {};
   const alive = () => VIC.token === token;
-  $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show'); $('#fsheet').classList.remove('show'); $('#finalOv').classList.remove('sheet');
+  $('#fNext').classList.remove('show', 'nudge'); $('#fsheet').classList.remove('show'); $('#finalOv').classList.remove('sheet');
   VIC.base = vicCover(.5);
   if (!animate) { vicApply(VIC.base); z.classList.add('clear'); vicSheet(true); return; }   // sfida già risolta: subito il messaggio
   if (reducedMotion() || !F.width) { vicApply(VIC.base); z.classList.add('clear'); vicExplore(); return; }
@@ -2610,19 +2650,9 @@ function vicSkip() {   // un tocco durante lo spettacolo: dritti alla foto ferma
   $('#zoomer').classList.add('clear');
   vicTween(VIC.cur, VIC.base, 550, ease.out).then(() => { if (VIC.token === token) vicExplore(); });
 }
-function vicExplore() {
+function vicExplore() {   // niente invito al pizzico (lo zoom con due dita lo conoscono tutti): subito la freccia
   VIC.phase = 'explore'; $('#ftools').classList.add('show');
-  let seen = false; try { seen = !!localStorage.getItem(VIC_SEEN); } catch (e) {}
-  if (seen) { VIC.T = setTimeout(vicShowNext, 400); return; }
-  try { localStorage.setItem(VIC_SEEN, '1'); } catch (e) {}
-  const h = $('#fHint'), ico = h.querySelector('svg');
-  h.classList.add('show'); setTimeout(() => { if (!reducedMotion()) icoBegin(ico); }, 250);
-  VIC.T = setTimeout(vicHideHint, 2700);
-}
-function vicHideHint() {
-  const h = $('#fHint'); if (!h.classList.contains('show')) return;
-  h.classList.remove('show'); clearTimeout(VIC.T);
-  VIC.T = setTimeout(vicShowNext, 380);   // prima svanisce il box, poi arriva la freccia
+  VIC.T = setTimeout(vicShowNext, 400);
 }
 function vicShowNext() {
   if (VIC.phase !== 'explore') return;
@@ -2632,7 +2662,7 @@ function vicShowNext() {
 function vicNext() { if (VIC.phase === 'explore') vicSheet(false); }
 function vicSheet(instant) {   // il pannello con messaggio e pulsanti sale sopra la foto, che resta a schermo pieno
   VIC.phase = 'sheet'; clearTimeout(VIC.hintT); clearTimeout(VIC.T);
-  $('#fNext').classList.remove('show', 'nudge'); $('#fHint').classList.remove('show');
+  $('#fNext').classList.remove('show', 'nudge');
   $('#finalOv').classList.add('sheet'); $('#fsheet').classList.add('show'); $('#ftools').classList.add('show');
   if (instant) $('#fsheet').classList.add('instant'), requestAnimationFrame(() => $('#fsheet').classList.remove('instant'));
 }
@@ -2667,7 +2697,6 @@ function vicClamp(v, rubber) {
     if (!S || !S.done || skipZone(e)) return;
     if (VIC.phase === 'show') { vicSkip(); return; }
     if (!interactive()) return;
-    vicHideHint();   // ha già capito
     VIC.stopTween && VIC.stopTween(); ov.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; raw = { ...VIC.cur };
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), from: { ...raw }, cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2 }; }
   });
@@ -2699,7 +2728,7 @@ function vicClamp(v, rubber) {
   };
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
   ov.addEventListener('wheel', e => {   // rotellina e trackpad (il pizzico del trackpad arriva come ctrl+rotellina)
-    if (!interactive() || skipZone(e)) return; e.preventDefault(); VIC.stopTween && VIC.stopTween(); vicHideHint();
+    if (!interactive() || skipZone(e)) return; e.preventDefault(); VIC.stopTween && VIC.stopTween();
     const w = VIC.cur.w * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025));
     vicApply(vicClamp(vicScaleAt(w, e.clientX, e.clientY, VIC.cur), false));
   }, { passive: false });
@@ -2711,7 +2740,7 @@ function showFinal(total, hints, animate) {
   $('#finalOv').classList.add('active'); $('#introOv').classList.remove('active'); introDemo.stop();
   z.classList.remove('anim', 'clear');
   $('#fFor').textContent = S.cfg.n ? `Da ${S.cfg.n}` : 'Per te';
-  $('#fMsg').textContent = S.cfg.m;
+  { const hid = new Set(S.grid.words.map(w => w.seg)); $('#fMsg').innerHTML = glueParts(S.segs.map((s, i) => hid.has(i) ? `<span class="found">${esc(s.text)}</span>` : s.type === 'p' ? s.text : esc(s.text)), S.segs); }   // le parole trovate restano viola
   $('#fStats').textContent = `Svelata in ${fmtTime(total)} · ` + (hints ? `${hints} ${hints === 1 ? 'aiuto' : 'aiuti'}` : 'senza aiuti');
   $('#fBtns').innerHTML = S.opts.local
     ? `<button class="btn-main" onclick="exitGame()">Torna al messaggio</button>`

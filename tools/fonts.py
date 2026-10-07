@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Prepara i caratteri da incorporare (src/fonts/originali -> src/fonts/*.woff).
-- Figtree (variabile, 300-900) per tutti i testi; Silkscreen Bold per titoli, griglia e parole da trovare. Entrambi SIL OFL 1.1.
+- Figtree (variabile, 300-900) per tutti i testi; Silkscreen Bold per titoli e griglia, Silkscreen Regular per le parole da trovare nella frase. Entrambi SIL OFL 1.1.
 - Si tengono solo i caratteri latini che servono (italiano, punteggiatura tipografica, euro e frecce): file molto piu' leggeri.
 - Silkscreen: ascendente portato a 875 (era 1030) cosi' (875-250)/2 = 312 = meta' dell'altezza delle maiuscole (625, 5 pixel da 125):
   nelle caselle le lettere stanno esattamente al centro in altezza.
@@ -21,3 +21,4 @@ def center_caps(f):
     f['OS/2'].fsSelection |= 0x80   # USE_TYPO_METRICS
 make('Figtree-VariableFont_wght.ttf', 'figtree.woff')
 make('Silkscreen-Bold.ttf', 'silkscreen-bold.woff', center_caps)
+make('Silkscreen-Regular.ttf', 'silkscreen-regular.woff', center_caps)   # parole del gioco nella frase
