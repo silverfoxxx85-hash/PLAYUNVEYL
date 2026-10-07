@@ -10,8 +10,9 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 
 ## Struttura
 - `src/app.html` è il sorgente. `src/gen.js` è il generatore della griglia: deterministico, versionato con `GEN_VERSION`.
-- `tools/build.sh` inserisce i font in base64 (i due "unveil Pixel" e DM Sans come riserva) e gen.js, e scrive `index.html` nella radice. È un unico file per GitHub Pages. Unbounded non è più incorporato (il file resta in `src/fonts`).
-- `tools/pixelfont.py` disegna i caratteri pixel e scrive `src/fonts/unveil-bold.ttf` e `unveil-medium.ttf` (`python3 tools/pixelfont.py`, poi `tools/build.sh`). Vedi "Caratteri pixel" più sotto.
+- `tools/build.sh` inserisce i caratteri in base64 (Silkscreen Bold e Figtree) e gen.js, e scrive `index.html` nella radice. È un unico file per GitHub Pages.
+- `tools/fonts.py` prepara i caratteri: parte dagli originali in `src/fonts/originali/`, tiene solo i caratteri latini e scrive `src/fonts/silkscreen-bold.woff` e `figtree.woff` (`python3 tools/fonts.py`, poi `tools/build.sh`). Licenze in `src/fonts/OFL-Figtree-Silkscreen.txt`.
+- `tools/pixelfont.py` (i caratteri pixel disegnati da noi, ora non più usati) resta per memoria: rigenera i TTF se mai servissero.
 - `tools/lottie2svg.py` converte le animazioni Lottie in SVG animato (SMIL). Gestisce anche i livelli visibili solo in un intervallo (ip/op) e i colori dati per espressione (Base Color → tratti, Highlight → accenti).
 - Icone dei momenti: sorgenti Lottie in `src/art/lottie/`, convertite in `src/art/ico-NOME.svg` (`python3 tools/lottie2svg.py src/art/lottie/NOME.json src/art/ico-NOME.svg`); `tools/build.sh` le inserisce tutte in `ICONS.NOME`. Ricolorate con `ICO_LILLA` (tratti #b3a6ff, accenti #e9e4ff), animazione una volta sola.
 - Link condiviso: `#g=` più JSON in base64url `{v,m,h,s,d,k,u,c,n,f}`:
@@ -101,13 +102,24 @@ Modifica delicata: tocca tutti i testi dell'app. Per questo sta su una branch nu
   - **Bold** ("Compresso", 5×9 pixel, aste di 2): solo maiuscole (le minuscole mostrano le maiuscole), numeri, accenti, punteggiatura. Pesi 600–900.
   - **Medium** (4×9, aste di 1): maiuscole, minuscole con ascendenti e discendenti, numeri, accenti italiani, punteggiatura (anche ’ “ ” … ·). Pesi 400–599.
   - Ogni pixel è un contorno; i pixel vicini si sovrappongono di 4 unità e si arrotondano solo gli angoli esterni. Pixel = 80 unità su 1000; maiuscola 720; ascendente 960, discendente 240: (960−240)/2 = 360 = metà maiuscola, così le lettere stanno al centro in altezza. Mezzo pixel di spalla a sinistra e a destra: al centro anche in larghezza (misurato da 18 a 40 px: scarto entro mezzo pixel).
-  - Uso: `--display` (Bold) per logo, titoli, pulsanti, griglie; `--pixel` e `--body` (Medium) per tutto il resto. Attenzione: un testo con font-weight 600 o più esce in Bold maiuscolo; nei testi del messaggio il peso è forzato a 500.
+  - (Sostituiti nella seconda parte: vedi sotto.) Uso: `--display` (Bold) per logo, titoli, pulsanti, griglie; `--pixel` e `--body` (Medium) per tutto il resto. Attenzione: un testo con font-weight 600 o più esce in Bold maiuscolo; nei testi del messaggio il peso è forzato a 500.
   - I testi piccoli sono stati alzati di 2 px (12→14, 13→15, 14→16, 15→17, 16→18, 17→19): il Medium è più stretto di DM Sans.
   - Logo: "UNVEIL" in Bold, con un pixel lilla sopra la I.
   - Da provare su Safari/iPhone (testati solo Chromium e FreeType). Peso: circa 126 KB di TTF; si può ridurre unendo i contorni.
 - **Schermata di gioco "Ordine":** messaggio con pillole (un posto fisso per lettera, pallini al posto delle lettere mancanti, lettere che si riempiono una a una quando la parola è trovata); barra di avanzamento a segmenti; altezza del messaggio fissata alla partenza, così la griglia non cambia misura; buchi morbidi anche in partita e nell'anteprima.
 - **Luce dietro la griglia:** alone che respira più un anello di luce che segue il dito lungo la cornice (angolo dal centro, molla morbida, più intensa vicino al bordo) e un impulso dove si trova una parola. Si spegne alla vittoria; con "Riduci movimento" niente anello.
 - **Musica lo-fi generata** (`makeMusic`, Web Audio, nessun file): piano elettrico con tremolo ed eco, basso, batteria con swing, fruscio di vinile; 74 bpm, in Do come gli effetti. Generativa: voicing, rullate e piccole frasi cambiano. Parte con "Inizia", segue il pulsante dei suoni, si abbassa alla vittoria, tace con l'audio del video, si ferma uscendo e in pausa quando l'app va in secondo piano. Le fonti di musica libera online non erano raggiungibili; se Fara vuole un brano vero (es. Pixabay Music), va come file separato caricato all'inizio della partita.
+
+## Fatto il 7 ottobre 2026, seconda parte (branch `caratteri-pixel`)
+I caratteri pixel disegnati da noi non hanno convinto Fara: sostituiti con due caratteri scelti da lei (entrambi SIL OFL 1.1, gratuiti, file in `src/fonts/originali/`).
+- **Silkscreen Bold** (`--display`) per titoli, frase fissa, logo, griglie (partita, anteprima, guida, caselle dello sfondo) e **parole da trovare**: le lettere nelle pillole e la parola quando viene trovata.
+  - Le minuscole di Silkscreen sono uguali alle maiuscole. Pixel = 125 unità, maiuscola 625 (5 pixel).
+  - Ascendente ritoccato a 875 (`tools/fonts.py`): (875−250)/2 = 312 = metà maiuscola, così le lettere stanno al centro delle caselle (misurato: scarto entro mezzo pixel). Spalle già simmetriche.
+  - Tra le lettere un pixel invece di due nei titoli (`letter-spacing: -.125em`), titoli con `text-wrap: balance`.
+  - Lettere della griglia al 60% della casella (prima 52%): Silkscreen ha la maiuscola più bassa.
+- **Figtree** (variabile 300–900, solo dritto) per tutto il resto: messaggio, pulsanti, testi, campi. Le misure dei testi sono tornate quelle di prima dei caratteri pixel.
+- DM Sans, Unbounded e i TTF "unveil Pixel" non sono più incorporati e sono stati tolti da `src/fonts` (restano nella storia della branch).
+- Il resto della prima parte (schermata "Ordine", luce ad anello, musica lo-fi, frecce bianche del pizzico) resta invariato.
 
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.

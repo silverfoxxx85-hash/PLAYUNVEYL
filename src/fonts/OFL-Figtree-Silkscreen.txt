@@ -1,0 +1,6 @@
+Figtree: Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)
+Silkscreen: Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
+
+Entrambi sono rilasciati con la SIL Open Font License, Version 1.1: https://openfontlicense.org
+I file in src/fonts/originali sono quelli originali. Quelli incorporati in index.html tengono solo i caratteri latini
+e in Silkscreen e' ritoccato l'ascendente per centrare le lettere (vedi tools/fonts.py).
