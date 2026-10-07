@@ -134,6 +134,15 @@ Prove di Fara e della sua compagna sul telefono; varianti della frase confrontat
 - **Vittoria:** tolto l'invito al pizzico (icona e box); finito lo spettacolo arriva subito la freccia, ora senza ombra né bordo scuro.
 - **Una sola colonna:** margine laterale 24 px per pagine, pannelli e piè di pagina; pulsanti grandi alti 54 px e larghi al massimo 360 px, allineati alle schede.
 
+## Fatto il 7 ottobre 2026, quarta parte (branch `splash-e-scrittura`, nata da caratteri-pixel)
+- **Frase fissa nello splash:** sotto il logo, "Nascondi qualcosa" per chi crea (stesso tempo di prima) e "Alberto ti ha nascosto qualcosa" per chi riceve (nome in bianco, ~1 s in più; un tocco salta). Tolte le frasi fisse sotto le guide: le due home restano identiche e la guida cresce fino a 270 px (`DEMO_MAX = 1.5`). Il nome resta per i lettori di schermo (`#introTitle`, nascosto) e nel titolo della scheda.
+- **"Spoiler: dovrà guadagnarsela."** ora è il sottotitolo di "Inviata!" / "Link copiato!" (Silkscreen, Spoiler in bianco).
+- **Guida alla prima visita:** puntini e freccia sono un solo comando centrato (pillola scura con il cerchio lilla in fondo, `.gdots.gated`); a guida finita la pillola sparisce e restano i puntini.
+- **"Prova a giocare":** niente intro, si va subito alla partita.
+- **Scrittura:** la parola che si sta scrivendo conta subito (nel conteggio e in "La sua sfida", come pillola più tenue `.slot.nascent`); si chiude da sola dopo un secondo di pausa, al limite dei caratteri, con spazio/punteggiatura o chiudendo la tastiera. Niente più parola "in sospeso" fino allo spazio.
+- **"La sua sfida" a messaggio vuoto:** riquadro d'aiuto lilla tenue (viola al 16%, titolo lilla); al primo tasto sfuma nello scuro.
+- **Griglia di gioco e dell'anteprima in Silkscreen Regular** (lettere più aperte, uguali a quelle delle parole da trovare). La guida resta in Bold. Per tornare indietro basta togliere la regola `.tile, .pv .ptiles span { font-family: var(--word) }`.
+
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
 - **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).
