@@ -10,7 +10,8 @@ Promemoria per riprendere il lavoro in una nuova sessione. Contiene le decisioni
 
 ## Struttura
 - `src/app.html` è il sorgente. `src/gen.js` è il generatore della griglia: deterministico, versionato con `GEN_VERSION`.
-- `tools/build.sh` inserisce i font in base64 (Unbounded, DM Sans) e gen.js, e scrive `index.html` nella radice. È un unico file per GitHub Pages.
+- `tools/build.sh` inserisce i font in base64 (i due "unveil Pixel" e DM Sans come riserva) e gen.js, e scrive `index.html` nella radice. È un unico file per GitHub Pages. Unbounded non è più incorporato (il file resta in `src/fonts`).
+- `tools/pixelfont.py` disegna i caratteri pixel e scrive `src/fonts/unveil-bold.ttf` e `unveil-medium.ttf` (`python3 tools/pixelfont.py`, poi `tools/build.sh`). Vedi "Caratteri pixel" più sotto.
 - `tools/lottie2svg.py` converte le animazioni Lottie in SVG animato (SMIL). Gestisce anche i livelli visibili solo in un intervallo (ip/op) e i colori dati per espressione (Base Color → tratti, Highlight → accenti).
 - Icone dei momenti: sorgenti Lottie in `src/art/lottie/`, convertite in `src/art/ico-NOME.svg` (`python3 tools/lottie2svg.py src/art/lottie/NOME.json src/art/ico-NOME.svg`); `tools/build.sh` le inserisce tutte in `ICONS.NOME`. Ricolorate con `ICO_LILLA` (tratti #b3a6ff, accenti #e9e4ff), animazione una volta sola.
 - Link condiviso: `#g=` più JSON in base64url `{v,m,h,s,d,k,u,c,n,f}`:
@@ -86,13 +87,27 @@ Decisioni prese con Fara e implementate (commit 2f25788 e successivo). Provate c
 - **Rimescola senza ripetizioni** (`pickShuffleSeed`): prima a volte le parole tornavano negli stessi posti (cambiavano solo le lettere di riempimento). Ora si confronta la disposizione delle parole: si scartano quella attuale e le ultime 4 viste, e si chiede che cambi almeno un terzo delle lettere (fino a 30 tentativi). Con poche combinazioni possibili si gira fra quelle, mai la stessa due volte di fila.
 - **Vittoria in tre momenti** (`vicPlay`, stato in `VIC`; la foto è sempre il rettangolo del ritaglio, anche più grande dello schermo):
   1. *Spettacolo:* la cartolina si mette a fuoco al suo posto, si allarga a tutto schermo ancorata a sinistra (in orizzontale: in alto), coriandoli, scorre piano fino all'altro lato e torna lentamente al centro, sempre a schermo pieno. Nessun rimpicciolimento. Comandi bloccati: un tocco salta alla foto ferma al centro.
-  2. *Esplorazione:* al centro compare un box lilla (132 px, angoli 34 px, anello scuro) con l'icona animata del pizzico (Flaticon, `ICONS.pinch`, mano scura e frecce #4b3bc4), solo la prima volta su quel telefono (`unveil:pinch`); dopo ~2,7 s, o al primo tocco, il box svanisce e poi compare la freccia "Avanti" in basso a destra (cerchio lilla 56 px; dopo 6 s un impulso). Niente testi sopra la foto.
+  2. *Esplorazione:* al centro compare un box lilla (132 px, angoli 34 px, anello scuro) con l'icona animata del pizzico (Flaticon, `ICONS.pinch`, mano scura e frecce bianche, box senza ombra), solo la prima volta su quel telefono (`unveil:pinch`); dopo ~2,7 s, o al primo tocco, il box svanisce e poi compare la freccia "Avanti" in basso a destra (cerchio lilla 56 px; dopo 6 s un impulso). Niente testi sopra la foto.
   3. *Azione:* con la freccia sale dal basso il pannello (fondo pieno, angoli in alto 28 px) con messaggio e pulsanti, sopra la foto che resta a schermo pieno.
   - **Zoom:** due dita, rotellina/trackpad: da "intera con 12 px di margine" a 5× lo schermo pieno; elastico oltre i limiti. Più grande dello schermo si sposta fino ai bordi (con il pannello aperto, fino al pannello). Doppio tocco: alterna intera e schermo pieno.
   - **Angoli:** seguono sempre lo spazio libero: dritti quando la foto tocca i bordi, 26 px (raggio della partita) con 12 px di margine o più.
   - "Riduci movimento": niente spettacolo, subito la foto a schermo pieno. Riaprendo una sfida già risolta: foto e pannello subito.
 - **Riquadro "La sua sfida" a messaggio vuoto:** "Ogni parola inserita diventerà una fila di caselle vuote da scoprire." e, più piccolo, "Quelle di una o due lettere restano visibili." Mentre si scrive, "Le parole di una o due lettere restano visibili." compare sotto il messaggio solo se ce n'è almeno una (`#seeNote`).
 - **Meta description:** "Nascondi una foto o un video tra le parole di un messaggio: per vederla, dovrà trovarle." (og:description invariata).
+
+## Fatto il 7 ottobre 2026 (branch `caratteri-pixel`, nata da word-challenge)
+Modifica delicata: tocca tutti i testi dell'app. Per questo sta su una branch nuova; word-challenge resta com'era.
+- **Caratteri pixel "unveil Pixel"**, disegnati da noi (nessuna licenza), veri TTF generati da `tools/pixelfont.py`:
+  - **Bold** ("Compresso", 5×9 pixel, aste di 2): solo maiuscole (le minuscole mostrano le maiuscole), numeri, accenti, punteggiatura. Pesi 600–900.
+  - **Medium** (4×9, aste di 1): maiuscole, minuscole con ascendenti e discendenti, numeri, accenti italiani, punteggiatura (anche ’ “ ” … ·). Pesi 400–599.
+  - Ogni pixel è un contorno; i pixel vicini si sovrappongono di 4 unità e si arrotondano solo gli angoli esterni. Pixel = 80 unità su 1000; maiuscola 720; ascendente 960, discendente 240: (960−240)/2 = 360 = metà maiuscola, così le lettere stanno al centro in altezza. Mezzo pixel di spalla a sinistra e a destra: al centro anche in larghezza (misurato da 18 a 40 px: scarto entro mezzo pixel).
+  - Uso: `--display` (Bold) per logo, titoli, pulsanti, griglie; `--pixel` e `--body` (Medium) per tutto il resto. Attenzione: un testo con font-weight 600 o più esce in Bold maiuscolo; nei testi del messaggio il peso è forzato a 500.
+  - I testi piccoli sono stati alzati di 2 px (12→14, 13→15, 14→16, 15→17, 16→18, 17→19): il Medium è più stretto di DM Sans.
+  - Logo: "UNVEIL" in Bold, con un pixel lilla sopra la I.
+  - Da provare su Safari/iPhone (testati solo Chromium e FreeType). Peso: circa 126 KB di TTF; si può ridurre unendo i contorni.
+- **Schermata di gioco "Ordine":** messaggio con pillole (un posto fisso per lettera, pallini al posto delle lettere mancanti, lettere che si riempiono una a una quando la parola è trovata); barra di avanzamento a segmenti; altezza del messaggio fissata alla partenza, così la griglia non cambia misura; buchi morbidi anche in partita e nell'anteprima.
+- **Luce dietro la griglia:** alone che respira più un anello di luce che segue il dito lungo la cornice (angolo dal centro, molla morbida, più intensa vicino al bordo) e un impulso dove si trova una parola. Si spegne alla vittoria; con "Riduci movimento" niente anello.
+- **Musica lo-fi generata** (`makeMusic`, Web Audio, nessun file): piano elettrico con tremolo ed eco, basso, batteria con swing, fruscio di vinile; 74 bpm, in Do come gli effetti. Generativa: voicing, rullate e piccole frasi cambiano. Parte con "Inizia", segue il pulsante dei suoni, si abbassa alla vittoria, tace con l'audio del video, si ferma uscendo e in pausa quando l'app va in secondo piano. Le fonti di musica libera online non erano raggiungibili; se Fara vuole un brano vero (es. Pixabay Music), va come file separato caricato all'inizio della partita.
 
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
@@ -110,7 +125,6 @@ Da fare su una branch separata, senza toccare word-challenge.
 - **Consegna:** come file separato da provare (es. `index-5x8.html`).
 
 ## Rimandato (dopo)
-- **Buchi morbidi anche in partita e nell'anteprima di chi crea**, come nella demo.
 - **Privacy:** cifratura del media nel browser, cancellazione dopo la soluzione o dopo 24 ore, link usabile una volta, pagina d'aiuto, segnalazioni.
 - **Nome nell'anteprima del link:** "Alberto ti sta nascondendo qualcosa". Richiede un piccolo servizio (es. Cloudflare Worker) e va fatto insieme alla privacy.
 - **Validazione dell'idea e statistiche d'uso.**

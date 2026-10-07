@@ -6,7 +6,10 @@ a = open('src/app.html').read(); g = open('src/gen.js').read()
 def face(fam, f, w):
     b = base64.b64encode(open('src/fonts/' + f, 'rb').read()).decode()
     return "@font-face{font-family:'%s';src:url(data:font/woff;base64,%s) format('woff');font-weight:%s;font-style:normal;font-display:swap}" % (fam, b, w)
-fonts = face('Unbounded', 'unbounded.woff', '500 800') + '\n' + face('DM Sans', 'dmsans.woff', '400 700')
+def tface(fam, f, w):   # i caratteri pixel di unveil (generati da tools/pixelfont.py)
+    b = base64.b64encode(open('src/fonts/' + f, 'rb').read()).decode()
+    return "@font-face{font-family:'%s';src:url(data:font/ttf;base64,%s) format('truetype');font-weight:%s;font-style:normal;font-display:block}" % (fam, b, w)
+fonts = tface('unveil Pixel', 'unveil-bold.ttf', '600 900') + '\n' + tface('unveil Pixel', 'unveil-medium.ttf', '400 599') + '\n' + face('DM Sans', 'dmsans.woff', '400 700')
 # src/art/ico-NOME.svg -> ICONS.NOME (le genera tools/lottie2svg.py dai file in src/art/lottie)
 icons = {os.path.basename(f)[4:-4]: open(f).read() for f in sorted(glob.glob('src/art/ico-*.svg'))}
 icons_js = 'const ICONS = ' + json.dumps(icons, ensure_ascii=False) + ';'
