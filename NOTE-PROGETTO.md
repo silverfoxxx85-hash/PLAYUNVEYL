@@ -143,6 +143,12 @@ Prove di Fara e della sua compagna sul telefono; varianti della frase confrontat
 - **"La sua sfida" a messaggio vuoto:** riquadro d'aiuto lilla tenue (viola al 16%, titolo lilla); al primo tasto sfuma nello scuro.
 - **Griglia di gioco e dell'anteprima in Silkscreen Regular** (lettere più aperte, uguali a quelle delle parole da trovare). La guida resta in Bold. Per tornare indietro basta togliere la regola `.tile, .pv .ptiles span { font-family: var(--word) }`.
 
+## Fatto il 7 ottobre 2026, quinta parte (branch `splash-e-scrittura`)
+- **Tutte le griglie in Silkscreen Regular** (partita, anteprima, guide): la regola precedente era scritta prima di quella delle caselle e non aveva effetto; ora il carattere è nelle regole stesse (`.tile`, `.pv .ptiles span`, `.dtiles span`). Bold solo per titoli, logo, splash e caselle dello sfondo.
+- **"Avanti" della prima visita:** pillola lilla piena alta 44 px con puntini e freccia scuri, tutta toccabile (i singoli puntini non saltano); respira (ingrandimento leggero e alone) quando l'animazione del passo è finita; al terzo passo freccia spenta; sul lilla diventa scura.
+- **Splash:** stesso tempo per chi crea e per chi riceve (1,5 s dopo il logo), un tocco salta.
+- **Icona delle guide:** originale, senza sfocatura né duotono, ferma per tutta la guida; allo svelamento cresce una volta del 6% a molla insieme al lilla; quando la guida riparte torna alla misura normale senza animazione.
+
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
 - **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).

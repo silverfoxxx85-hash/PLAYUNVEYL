@@ -147,11 +147,11 @@
   .dgrid::after, .pv::after, .frame::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--board); pointer-events: none; z-index: 6; }
   .demo.reset, .demo.reset * { transition: none !important; }
   .dgrid .pic { position: absolute; inset: 6px; border-radius: 18px; overflow: hidden; }   /* esattamente dentro il bordo della griglia: quando la cornice svanisce il lilla non cambia misura */   /* rientrata di 3px: il lilla non arriva al bordo antialiasato della cartolina */
-  .dgrid .pic > svg { display: block; position: absolute; left: -6px; top: -6px; width: 180px; height: 180px; transform: scale(1.08); transition: transform 1.2s cubic-bezier(.2,.8,.2,1); }
-  /* si sfoca solo la ragazza: il fondo lilla ha sempre il bordo netto, così mettendo a fuoco non "cresce" */
-  .dgrid .pic > svg > svg { filter: blur(3px); transition: filter 1s ease; }
-  .dgrid .pic.clear > svg { transform: none; }
-  .dgrid .pic.clear > svg > svg { filter: none; }
+  /* l'icona resta com'è (niente sfocatura né duotono) e ferma per tutta la guida; allo svelamento cresce una volta sola (6%, a molla) mentre parte il lilla.
+     Quando la guida riparte torna alla misura normale di colpo (la transizione c'è solo sul lilla) */
+  .dgrid .pic > svg { display: block; position: absolute; left: -6px; top: -6px; width: 180px; height: 180px; transform: none; transition: none; }
+  .lit .dgrid .pic > svg { transform: scale(1.06); transition: transform .9s cubic-bezier(.3,1.5,.5,1); }
+  .dgrid .duo-a, .dgrid .duo-b { display: none; }
   /* duotono di precisione: b/n → (moltiplica per luci-ombre) + ombre = ombre #2a2140, luci #e9e4ff. Sparisce allo svelamento */
   .dgrid, .pv, .frame, #zoomer { isolation: isolate; }
   .duo-a, .duo-b { position: absolute; inset: 0; pointer-events: none; transition: opacity 1s ease; }
@@ -183,25 +183,27 @@
   .gdots button.on { width: 22px; opacity: 1; background: var(--ink); }
   /* prima visita: la guida avanza solo con «Avanti» (a destra dei puntini) e il pulsante grande si accende a fine guida */
   /* prima visita: puntini e freccia diventano un solo comando centrato (pillola scura, freccia lilla in fondo) */
+  /* prima visita: puntini e freccia sono un solo comando, una pillola lilla piena alta 44 px, tutta da toccare; respira quando tocca a te */
   .gdots .gnext { display: none; }
-  .gdots.gated { gap: 7px; height: 40px; padding: 0 5px 0 15px; border-radius: 999px; background: var(--card); transition: background .6s ease .3s; }
-  .gdots.gated .gnext { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: 7px; padding: 0; border-radius: 50%; opacity: 1; background: var(--accent); color: var(--onaccent);
-    transition: opacity .3s ease, transform .35s cubic-bezier(.3,1.6,.5,1); }
-  .gdots.gated .gnext svg { width: 15px; height: 15px; }
-  .gdots.gated .gnext:disabled { opacity: .25; }
-  .gdots.gated .gnext:active:not(:disabled) { transform: scale(.88); transition: transform .08s ease; }
-  .gdots .gnext.nudge { animation: gnudge 1s ease 2; }
-  @keyframes gnudge { 0%, 100% { transform: none; } 30% { transform: scale(1.18); } 60% { transform: scale(.95); } }
-  .lit .gdots.gated { background: rgba(19,15,22,.14); }
-  .lit .gdots.gated .gnext { background: #130f16; color: var(--accent); }
+  .gdots.gated { gap: 7px; height: 44px; padding: 0 12px 0 18px; border-radius: 999px; background: var(--accent); cursor: pointer; transition: background .6s ease .3s, transform .08s ease; }
+  .gdots.gated button:not(.gnext) { background: var(--onaccent); opacity: .3; pointer-events: none; }
+  .gdots.gated button.on:not(.gnext) { opacity: 1; background: var(--onaccent); }
+  .gdots.gated .gnext { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-left: 4px; padding: 0; border-radius: 50%; background: none; color: var(--onaccent); opacity: 1; }
+  .gdots.gated .gnext svg { width: 18px; height: 18px; }
+  .gdots.gated.last .gnext { opacity: .3; }
+  .gdots.gated:active:not(.last) { transform: scale(.95); }
+  .gdots.gated.breathe { animation: gbreathe 1.8s ease-in-out infinite; }
+  @keyframes gbreathe { 0%, 100% { transform: none; box-shadow: 0 0 0 0 rgba(179,166,255,.45); } 50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(179,166,255,0); } }
+  .lit .gdots.gated { background: #130f16; }
+  .lit .gdots.gated button:not(.gnext), .lit .gdots.gated button.on:not(.gnext) { background: var(--accent); }
+  .lit .gdots.gated .gnext { color: var(--accent); }
   .btn-main.locked { background: #2a2233; color: var(--soft); box-shadow: inset 0 0 0 1.5px #3a3142; font-size: 16px; }
   .lit .btn-main.locked { background: rgba(19,15,22,.14); color: #130f16; box-shadow: none; }
   .btn-main.unlocked { animation: unlockpop .55s cubic-bezier(.3,1.6,.5,1); }
   @keyframes unlockpop { 0% { transform: scale(.94); } 60% { transform: scale(1.04); } 100% { transform: none; } }
   .gtext { min-height: 112px; max-width: 330px; display: flex; flex-direction: column; gap: 8px; text-align: center; flex-shrink: 0; }
   .tagline, .wordmark, .gtext h3, .step h1, .ssheet h2, .overlay h2, .ttext h3 { letter-spacing: -.125em !important; }   /* Silkscreen: un pixel (125/1000) tra le lettere invece di due */
-  .tile, .dtiles span, .pv .ptiles span { letter-spacing: 0 !important; }
-  .tile, .pv .ptiles span { font-family: var(--word); font-weight: 400; }   /* griglia di gioco in Silkscreen Regular: lettere più aperte e uguali a quelle delle parole da trovare (la demo resta in Bold) */
+  .tile, .dtiles span, .pv .ptiles span { letter-spacing: 0 !important; }   /* tutte le griglie (partita, anteprima, guide) in Silkscreen Regular, come le parole da trovare */
   .step h1, .ssheet h2, .overlay h2 { text-wrap: balance; }
   .gtext h3 { font-family: var(--display); font-weight: 700; font-size: 23px; line-height: 1.2; margin: 0; color: var(--ink); transition: color .6s ease .3s; }
   .gtext p { font-size: 17px; line-height: 1.4; margin: 0; color: var(--soft); transition: color .6s ease .3s; }
@@ -218,7 +220,7 @@
 
   .dgrid svg.dboard { position: absolute; inset: 0; }
   .dtiles { position: absolute; inset: 0; padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .dtiles span { border-radius: 13px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 31px; transition: background .15s, color .15s, opacity .35s, transform .45s cubic-bezier(.3,1.8,.5,1); }
+  .dtiles span { border-radius: 13px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-family: var(--word); font-weight: 400; font-size: 31px; transition: background .15s, color .15s, opacity .35s, transform .45s cubic-bezier(.3,1.8,.5,1); }
   .dtiles span.sel { background: var(--accent); color: var(--onaccent); }   /* niente ingrandimento: accanto alla parte già scoperta la casella si fonderebbe col lilla */
   .dtiles span.gone { opacity: 0; transform: scale(.6); }
   .finger { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: rgba(246,238,244,.35); border: 2px solid rgba(246,238,244,.85); transform: translate(-50%, -50%); transition: left .13s ease-out, top .13s ease-out, opacity .2s, scale .15s; pointer-events: none; opacity: 0; }
@@ -291,7 +293,7 @@
   .pv .ptiles.swap { opacity: 0; }
   .pv .ptiles.shuf span { animation: shuf .45s cubic-bezier(.3,1.6,.5,1) calc(var(--k, 0) * 8ms) both; }
   @keyframes shuf { from { opacity: 0; transform: scale(.35) rotate(-14deg); } to { opacity: 1; transform: none; } }
-  .pv .ptiles span { display: flex; align-items: center; justify-content: center; background: var(--tile); font-family: var(--display); font-weight: 700; transition: background .12s, color .12s, opacity .5s ease, transform .45s cubic-bezier(.3,1.8,.5,1); }
+  .pv .ptiles span { display: flex; align-items: center; justify-content: center; background: var(--tile); font-family: var(--word); font-weight: 400; transition: background .12s, color .12s, opacity .5s ease, transform .45s cubic-bezier(.3,1.8,.5,1); }
   .pv .ptiles span.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.06); }
   .pv .ptiles span.gone { opacity: 0; transform: scale(.65); transition: opacity .5s ease, transform .5s ease; }
   .pv svg.ptrace { position: absolute; inset: 0; pointer-events: none; }
@@ -513,7 +515,7 @@
   svg.board { position: absolute; inset: 0; display: block; }
   .tiles { position: absolute; inset: 0; display: grid; touch-action: none; }
   .tile { display: flex; align-items: center; justify-content: center; border-radius: var(--tr, 14px); background: var(--tile); color: var(--ink);
-    font-family: var(--display); font-size: var(--fs, 22px); font-weight: 700; user-select: none; transition: transform .45s cubic-bezier(.3,1.8,.5,1), opacity .3s ease, background .12s, color .12s; }
+    font-family: var(--word); font-size: var(--fs, 22px); font-weight: 400; user-select: none; transition: transform .45s cubic-bezier(.3,1.8,.5,1), opacity .3s ease, background .12s, color .12s; }
   .tile.sel { background: var(--accent); color: var(--onaccent); transform: scale(1.07); }
   .tile.gone { transition: transform .3s ease, opacity .3s ease; }
   .tile.hint { box-shadow: inset 0 0 0 2.5px var(--accent); }
@@ -1317,7 +1319,7 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
   const tiles = [...root.querySelectorAll('.dtiles span')], ico = root.querySelector('.pic svg'), dots = [...dotsEl.querySelectorAll('button')], replay = wrap.querySelector('.greplay');
   dotsEl.insertAdjacentHTML('beforeend', '<button class="gnext" aria-label="Avanti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>');
   const next = dotsEl.querySelector('.gnext'); let nudgeT = 0;
-  const showNext = on => { next.disabled = !on; next.classList.remove('nudge'); clearTimeout(nudgeT); };
+  const showNext = on => { next.disabled = !on; dotsEl.classList.toggle('last', !on); dotsEl.classList.remove('breathe'); clearTimeout(nudgeT); };
   grid.style.opacity = 0;   // invisibile finché la guida non parte: la prima cosa che si vede è la sua entrata
   const geo = { sw: 52, sh: 52, gap: 6, pad: 6, cols: 3, rows: 3, r: 13 }, ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
   const pos = i => [6 + (i % 3) * 58 + 26, 6 + ((i / 3) | 0) * 58 + 26];
@@ -1372,7 +1374,7 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
     const s = steps[n]; if (wasEnd) { wrap.classList.add('hold'); at(260, () => { wrap.classList.remove('hold'); say(s.h, s.p); }); } else say(s.h, s.p); s.init(c);   // dopo «Rivedi»: prima svanisce il pulsante, poi torna la frase
     const dur = s.run(c);
     if (d.gate) { d.gate.onStep(n); showNext(n < steps.length - 1); }
-    if (n < steps.length - 1) at(dur, () => { if (!d.gate) return go(n + 1); d.running = false; nudgeT = setTimeout(() => d.gate && next.classList.add('nudge'), 1200); });   // prima visita: aspetta «Avanti»
+    if (n < steps.length - 1) at(dur, () => { if (!d.gate) return go(n + 1); d.running = false; dotsEl.classList.add('breathe'); });   // tocca a te: la pillola respira   // prima visita: aspetta «Avanti»
     else at(dur, () => { d.running = false; d.done = true; d.unlock(); });
   }
   d.run = (n = 0) => {
@@ -1381,9 +1383,9 @@ function mountGuide(root, { textEl, dotsEl, steps, final }) {
   };
   // prima visita: gate = { onStep(n), onUnlock() }. Si sblocca solo a fine animazione dell'ultimo passo
   d.lock = gate => { d.gate = gate; dotsEl.classList.add('gated'); };
-  d.unlock = () => { const g = d.gate; if (!g) return; d.gate = null; showNext(false); dotsEl.classList.remove('gated'); g.onUnlock(); };
-  d.poke = () => { if (!d.gate) return; next.classList.remove('nudge'); void next.offsetWidth; next.classList.add('nudge'); };
-  next.addEventListener('click', e => { e.stopPropagation(); if (d.gate && splashDone && d.step < steps.length - 1) go(d.step + 1); });
+  d.unlock = () => { const g = d.gate; if (!g) return; d.gate = null; showNext(false); dotsEl.classList.remove('gated', 'last', 'breathe'); g.onUnlock(); };
+  d.poke = () => { if (!d.gate) return; dotsEl.classList.remove('breathe'); void dotsEl.offsetWidth; dotsEl.classList.add('breathe'); };
+  dotsEl.addEventListener('click', e => { if (!d.gate) return; e.stopPropagation(); if (splashDone && d.step < steps.length - 1) go(d.step + 1); }, true);   // tutta la pillola vuol dire «avanti» (i puntini non saltano)
   d.pause = () => { if (d.done) { try { ico.pauseAnimations(); } catch (e) {} return; } T.forEach(clearTimeout); T = []; d.running = false; icoEnd(ico); };
   d.resume = () => { if (d.done) { try { ico.unpauseAnimations(); } catch (e) {} } else if (!d.running) d.run(d.step); };
   d.start = () => { d.wanted = true; if (splashDone && !document.hidden) d.run(0); else { const s = steps[0]; say(s.h, s.p); dots[0].classList.add('on'); } };
@@ -2820,11 +2822,11 @@ window.addEventListener('load', () => {
   // chi riceve legge chi gli ha nascosto qualcosa (un secondo in più); chi crea vede solo «Nascondi qualcosa», nello stesso tempo di prima
   let cfg0 = null; if (location.hash.startsWith('#g=')) try { cfg0 = JSON.parse(b64uDecode(location.hash.slice(3))); } catch (e) {}
   $('#splashTag').innerHTML = cfg0 ? `<b class="tk">${esc(cfg0.n || 'Qualcuno')}</b> ti ha nascosto qualcosa` : 'Nascondi qualcosa';
-  const hold = cfg0 ? 1500 : 700;
+  const hold = 1500;   // stesso tempo per chi crea e per chi riceve: la frase si fa in tempo a leggere
   let gone = false;
   const finish = () => { if (gone) return; gone = true; sp.style.opacity = 0; setTimeout(() => { sp.remove(); splashDone = true; layoutDemos(); kickDemos(); }, 450); };
   sp.addEventListener('click', () => { if (sp.classList.contains('in')) finish(); });   // un tocco salta
-  if (reducedMotion()) { $('#splashLogo').innerHTML = logoSVG(96); sp.classList.add('in'); setTimeout(finish, 600 + (cfg0 ? 800 : 0)); }
+  if (reducedMotion()) { $('#splashLogo').innerHTML = logoSVG(96); sp.classList.add('in'); setTimeout(finish, 1400); }
   else animateLogo($('#splashLogo'), () => { sp.classList.add('in'); setTimeout(finish, hold); });
   if (location.hash.startsWith('#g=')) {
     try { startGame(JSON.parse(b64uDecode(location.hash.slice(3)))); }
