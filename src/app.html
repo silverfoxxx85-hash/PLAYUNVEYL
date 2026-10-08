@@ -485,7 +485,8 @@
     padding: .3em .3em .3em; margin: 0 .06em; border-radius: .7em; background: var(--box); color: var(--accent); }
   .slot .box { display: inline-block; width: .75em; text-align: center; }   /* uno spazio fisso per lettera: la pillola non cambia larghezza */
   .slot .box:empty::before { content: ''; display: inline-block; vertical-align: baseline; width: .5em; height: .125em; background: #8a7e9a; }   /* trattino basso: 4 pixel × 1, sulla linea di base */
-  .slot .box.rev { animation: boxin .25s ease; }
+  .slot .box.ghost { color: rgba(179,166,255,.45); }   /* parola da trovare: scritta, ma spenta */
+  .slot .box.rev { color: var(--accent); animation: boxin .25s ease; }
   @keyframes boxin { from { opacity: 0; } }
   .nb { white-space: nowrap; }
   .slot.done { transition: background .25s ease; background: transparent; }
@@ -1425,7 +1426,7 @@ const introDemo = mountGuide($('#introDemo'), { textEl: $('#introText'), dotsEl:
 homeDemo.host = $('#screenCreate'); introDemo.host = $('#introOv');
 /* prima visita: la guida va vista fino in fondo prima di poter partire (chi ha già giocato una sfida su questo telefono la salta anche in home) */
 const GUIDE_KEY = { crea: 'unveil:guida:crea', gioca: 'unveil:guida:gioca' };
-const guideSeen = k => { try { return !!localStorage.getItem(GUIDE_KEY[k]); } catch (e) { return true; } };
+const guideSeen = k => true;   // guida di nuovo automatica per tutti (i tester si bloccavano sulla freccia); il blocco resta nel codice se servisse
 const markGuide = k => { try { localStorage.setItem(GUIDE_KEY[k], '1'); } catch (e) {} };
 function gateButton(btn, demo, key, label, readyText) {
   btn.classList.add('locked'); btn.classList.remove('unlocked');
@@ -2351,7 +2352,7 @@ function startGame(cfg, opts = {}) {
   const nHidden = grid.words.reduce((a, w) => a + w.norm.length, 0);
   const bar = $('#msgBar'); bar.classList.toggle('sm', nHidden > 30);
   bar.innerHTML = glueParts(segs.map((s, i) => hidden.has(i)
-    ? `<span class="slot" data-seg="${i}">${[...s.norm].map((c, k) => k === 0 && cfg.f !== 0 ? `<span class="box cue">${c}</span>` : '<span class="box"></span>').join('')}</span>`
+    ? `<span class="slot" data-seg="${i}">${[...s.norm].map(c => `<span class="box ghost">${c}</span>`).join('')}</span>`   // tutte le parole visibili: si cercano solo nella griglia
     : s.type === 'p' ? s.text : `<span class="fixed">${esc(s.text)}</span>`), segs);
   $('#progDots').innerHTML = grid.words.map(() => '<i></i>').join(''); $('#progDots').style.setProperty('--n', grid.words.length);
   $('#glow').classList.remove('off'); $('.msgarea').style.minHeight = '';
@@ -2572,7 +2573,7 @@ function foundWord(wi) {
   const slot = document.querySelector(`#msgBar .slot[data-seg="${w.seg}"]`);
   if (slot) {
     const bx = [...slot.querySelectorAll('.box')];
-    bx.forEach((b, k) => setTimeout(() => { b.textContent = w.norm[k]; b.classList.add('rev'); }, k * 45));
+    bx.forEach((b, k) => setTimeout(() => { b.textContent = w.norm[k]; b.classList.remove('ghost'); b.classList.add('rev'); }, k * 45));
     setTimeout(() => { slot.classList.add('done'); setTimeout(() => { if (slot.isConnected) slot.outerHTML = `<span class="found">${esc(w.text)}</span>`; }, 260); }, bx.length * 45 + 220);
   }
   glowPulse(w.cells);

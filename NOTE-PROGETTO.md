@@ -149,6 +149,20 @@ Prove di Fara e della sua compagna sul telefono; varianti della frase confrontat
 - **Splash:** stesso tempo per chi crea e per chi riceve (1,5 s dopo il logo), un tocco salta.
 - **Icona delle guide:** originale, senza sfocatura né duotono, ferma per tutta la guida; allo svelamento cresce una volta del 6% a molla insieme al lilla; quando la guida riparte torna alla misura normale senza animazione.
 
+## 8 ottobre 2026: prove con le persone e nuova direzione (branch `parole-visibili`, nata da splash-e-scrittura)
+Le persone trovano il gioco troppo difficile (non sanno che parole cercare) e si bloccano sulla freccia della guida.
+**Fatto in questa branch (tappa 1, parziale):**
+- chi riceve vede tutte le parole da trovare, scritte per intero nelle pillole in viola spento (`.box.ghost`); trovate si accendono;
+- guida di nuovo automatica per tutti (`guideSeen` restituisce sempre vero; il codice del blocco resta).
+
+**Da fare (concordato con Fara, prossima sessione):**
+1. Regola delle parole: in griglia tutte le parole da 3 lettere in su tranne una lista di parole vuote (che, non, per, una, gli…); niente più tocchi per nascondere/mostrare, via il pannello "Parole e difficoltà" e la scelta della difficoltà (al massimo, in futuro, un interruttore "Sfida difficile" = solo prima lettera, spento).
+2. Aiuti: 1° si illumina la prima lettera di una parola nella griglia, 2° il percorso intero.
+3. Scrittura: le parole che vanno in griglia sono già in pillola viola mentre si scrive; sotto il campo una riga: "Le parole in viola si nascondono nella griglia."
+4. Griglia 5×8 e ritaglio 5:8 (più lettere, meno taglio a schermo pieno); `GEN_VERSION` 4, i link vecchi restano uguali.
+5. Nuova anteprima di chi crea, uguale alla schermata di gioco: foto nitida → sfocata → caselle vere che cadono in ordine sparso (con note) → frase sopra → simulazione completa e veloce (prima parola col dito, poi ~1 s a parola, percorso lilla prima di sparire) fino alla foto scoperta. "Invia" e "Rimescola" (rifà cadere le caselle e riparte) attivi da subito; via "Prova a giocare"; freccia indietro per correggere il testo; con "Riduci movimento" griglia con i percorsi evidenziati.
+6. Effetti: nota per ogni casella che cade, vibrazione alla parola trovata (Android). La musica resta.
+
 ## Scelte di prodotto (ottobre 2026)
 - **Chi invia non riceve notifiche:** per ora basta "Rispondi", che condivide il risultato in stile cartolina (tempo, quadratini, aiuti). Niente servizio dedicato finché non si fa la parte privacy.
 - **Niente "Mostrami tutto":** chi si blocca aspetta gli aiuti. È il cuore del gioco: trasformare l'attesa in desiderio. Gli aiuti garantiscono comunque la fine (3 livelli per parola: prima lettera, ultima, parola intera).
